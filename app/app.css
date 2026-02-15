@@ -1,13 +1,14 @@
 body {
     margin: 0;
-    background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
-    display: flex;
+    
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     height: 100vh;
     width: 100vw;
     justify-content: center;
     align-items: center;
+    
   }
+  
   
   main {
     display: flex;
@@ -29,6 +30,7 @@ body {
   }
   button:hover {
     border-color: #646cff;
+
   }
   button:focus,
   button:focus-visible {
@@ -43,10 +45,8 @@ body {
     display: flex;
     flex-direction: column;
     margin: 8px 0;
-    border: 1px solid black;
     gap: 1px;
-    background-color: black;
-    border-radius: 8px;
+    border-radius: 0px;
     overflow: auto;
   }
   

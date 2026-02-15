@@ -1,32 +1,30 @@
-/* app/components/header.module.css */
-
 .header {
-  border-bottom: 1px solid gray;
-  background: #fff;
+  border-bottom: 1px solid #eee;
+  
 }
 
 /* Top utility bar */
 .topbar {
   background: #000;
-  color: #fff;
-  display: grid;
+  color: red;
   grid-template-columns: 1fr 1fr;
-  align-items: center;
-  min-height: 40px;
   padding: 0 16px;
-}
-.topbarList {
+  margin: 0px;
   display: flex;
-  gap: 28px;
+  justify-content: space-between;
+}
+
+.topbarList {
+  gap: 0px;
   margin: 0;
   padding: 0;
   list-style: none;
+  display: flex;
+  flex-direction: row; /* EXPLICITLY override global column */
 }
-.topbarRight {
-  justify-self: end;
-}
+
 .topLink {
-  color: #fff;
+  color: red;
   font-weight: 700;
   font-size: 14px;
   text-decoration: none;
@@ -38,14 +36,23 @@
 
 /* Main bar */
 .mainbar {
-  display: grid;
+  display: flex;
   grid-template-columns: 1fr auto;
   gap: 24px;
   align-items: center;
   padding: 14px 16px;
+  flex-direction: row; 
+  justify-content: space-between;
+  border-bottom: 2px solid gray;
 }
 
+.mainbarList {
+  display: flex;
+  flex-direction: row; 
+  align-items: center;
+}
 
+ 
 /* Brand */
 .brand {
   display: flex;

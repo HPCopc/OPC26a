@@ -77,9 +77,9 @@ export default function Header() {
         </div>
 
         <div>
-          <h1 className={styles.siteTitle}>Opportunity Crudes</h1>
-          <p className={styles.tagline}>in Changing Times<br />
-  Knowledge to Meet Crude Trilemma: Supply, Affordability & Low Carbon Intensity</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Opportunity Crudes</h1>
+          <p className={styles.tagline}>in Changing Times</p>
+  <p className="text-xs md:text-base italic text-gray-600 max-w-3xl mx-auto">Knowledge to Meet Crude Trilemma: Supply, Affordability & Low Carbon Intensity</p>
         </div>
 
         <div>

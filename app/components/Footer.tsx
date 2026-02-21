@@ -4,6 +4,8 @@
  import { View, Flex, Text } from "@aws-amplify/ui-react";
  import Link from 'next/link';
  import { NavItem } from '../types/navigation';
+
+ 
  
    const footerleft: NavItem[] = [
     { label: 'Home', href: '/about' },

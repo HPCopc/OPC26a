@@ -32,30 +32,38 @@
 }
 
 * {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-html {
-  max-width: 100vw;
-  overflow-x: hidden;
+  
+  
+    
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+    @apply font-sans   bg-pink-100 max-w-screen-xl mx-auto;
+   
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/*  sets the maximum width to 1280px - max-w-screen-xl   narrow screen width for mobil - px-8 for large pc screen - lg:px-16  */
+main {
+   @apply flex flex-col items-stretch   bg-blue-200  ;
 }
+
+ 
+
+li {
+    @apply p-2; /* 8px = p-2 (2 * 4px = 8px) */
+}
+  
+li:hover {
+    @apply bg-[#dadbf9] text-black; /* Custom color using arbitrary value */
+}
+  
+/* This styles BOTH <a> AND <Link> */
+  a {
+    @apply no-underline font-bold
+           hover:underline focus-visible:underline
+           transition-colors duration-200;
+  }
+
 
 @media (prefers-color-scheme: dark) {
   html {

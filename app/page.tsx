@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import "./../app/app.css";
+// import "./../app/app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
@@ -57,29 +57,21 @@ export default function App() {
  
 
   return (
-    <main>
-        <section className="container mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-gray-900 border-l-8 border-orange-500 pl-4 mb-8">
-          Featured Insights
-        </h2>
-        <div className="space-y-6">
-          {pairs.map((pair, idx) => (
-            <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pair.map((item, i) => (
-                <GrayCard key={`${idx}-${i}`} title={item.title}  description={item.description}/>
-              ))}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      
-       
-      <div>
-        This is home page container
-       
-       
+  <>
+     
+    
+      <div >
+        {pairs.map((pair, idx) => (
+          <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-4">
+            {pair.map((item, i) => (
+              <GrayCard key={`${idx}-${i}`} title={item.title} description={item.description}/>
+            ))}
+          </div>
+        ))}
       </div>
-    </main>
-  );
+     
+    
+    <div>this is ad</div>
+  </>
+);
 }

@@ -1,19 +1,19 @@
 // app/components/Header.tsx
+// left right p-4/m-4
 import Link from 'next/link';
 // import Image from 'next/image';
 // import HeaderClient from './HeaderClient';
-import styles from './header.module.css';
+// syntax for import the file in the same folder
+//'@/app/types/navigation' → Looks in the app/types folder from root
+//'../../types/navigation' → Goes up 2 levels, then into types folder
 
-export type NavItem = {
-  label: string;
-  href?: string;
-  external?: boolean;
-  children?: NavItem[];  // Add this line for nested navigation items
-};
+import NavItem from '../types/navigation';
+
+
 
 const utilityLeft: NavItem[] = [
   { label: 'HPC', href: 'https://www.hydrocarbonpublishing.com/', external: true },
-  { label: 'OPC', href: '/conf' },
+  { label: 'OPC', href: '/' },
 ];
 
 const utilityRight: NavItem[] = [
@@ -31,23 +31,24 @@ const primaryNav: NavItem[] = [
 
 export default function Header() {
   return (
-    <header className={styles.header}>
+    <header className="border-b border-black ">
       {/* Top utility bar */}
-      <div className={styles.topbar} role="navigation" aria-label="Utility">
-         <ul className={styles.topbarList}>
+      <div className="bg-black text-white p-4  flex justify-between "
+ role="navigation" aria-label="Utility">
+    
+         <ul className="flex flex-row gap-0  list-none text-sm ">
           {utilityLeft.map((item) => (
             <li key={item.label}>
               {item.external ? (
                 <a
                   href={item.href}
                   target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.topLink}
+                  rel="noopener noreferrer"                 
                 >
                   {item.label}
                 </a>
               ) : (
-                <Link href={item.href!} className={styles.topLink}>
+                <Link href={item.href!} >
                   {item.label}
                 </Link>
               )}
@@ -55,10 +56,10 @@ export default function Header() {
           ))}
         </ul>
 
-        <ul className={`${styles.topbarList} ${styles.topbarRight}`}>
+        <ul className="flex flex-row gap-0  list-none text-sm">
           {utilityRight.map((item) => (
             <li key={item.label}>
-              <Link href={item.href!} className={styles.topLink}>
+              <Link href={item.href!} >
                 {item.label}
               </Link>
             </li>
@@ -68,22 +69,20 @@ export default function Header() {
       </div>
 
       {/* Main bar */}
-      <div className={styles.mainbar}>
-       <div className={styles.mainbarList}> 
-        <div>
-        <Link href="/">
-          <img src="/opcdrop.png"></img>
-        </Link>
-        </div>
+      <div className="flex flex-row justify-between   " >
+       <div className="flex flex-row items-center  "> 
+         
+        <Link href="/"><img src="/opcdrop.png"></img> </Link>
+        
 
         <div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Opportunity Crudes</h1>
-          <p className={styles.tagline}>in Changing Times</p>
+          <h1 className="text-6xl md:text-5xl font-bold text-gray-900 mb-4">Opportunity Crudes</h1>
+          <p>in Changing Times</p>
   <p className="text-xs md:text-base italic text-gray-600 max-w-3xl mx-auto">Knowledge to Meet Crude Trilemma: Supply, Affordability & Low Carbon Intensity</p>
         </div>
 
-        <div>
-          <ul className={styles.mainbarList}>
+         
+          <ul className="flex flex-row items-center">
             {primaryNav
               .filter(item => !item.children)  
               .map((item) => (
@@ -94,13 +93,16 @@ export default function Header() {
                </li>
               ))}
           </ul>
+         
+        
         </div>
-       </div>
 
-        <div>
-          <p>login</p>
+         
+        <div className="flex items-center p-4">
+        <Link href="/login" className="text-blue-600 font-semibold hover:underline ">Login</Link>
         </div>
-       
+         
+      
       </div>
 
 

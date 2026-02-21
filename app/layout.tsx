@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./app.css";
+// import "./app.css";
 import "./globals.css";
 
 import Header from "./components/Header";
@@ -21,9 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en">
   
-      <body className="bg-pink-600">
+      <body>
         <Header />
-        <main className="site-main container">{children}</main>
+
+              <main  >{children}</main>
+            
+
         <Footer />
       </body>
     </html>

@@ -7,7 +7,7 @@ import Link from 'next/link';
 //'@/app/types/navigation' → Looks in the app/types folder from root
 //'../../types/navigation' → Goes up 2 levels, then into types folder
 
-import NavItem from '../types/navigation';
+import { NavItem } from '../types/navigation';
 
 
 

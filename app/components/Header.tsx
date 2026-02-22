@@ -72,7 +72,7 @@ export default function Header() {
       <div className="flex flex-row justify-between   " >
        <div className="flex flex-row items-center  "> 
          
-        <Link href="/"><img src="/opcdrop.png"></img> </Link>
+        <Link href="/"><img src="/images/opcdrop.png"></img> </Link>
         
 
         <div>

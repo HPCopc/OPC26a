@@ -24,5 +24,5 @@ export const auth = defineAuth({
     },
   },
   
-  // You can add social providers like Google, Facebook, etc. here
+  // You can add social providers likes Google, Facebook, etc. here
 });

@@ -31,13 +31,17 @@ export async function proxy(request: NextRequest) {
     '/favicon.ico'
   ];
 
+    const isStaticFile = /\.(png|jpg|jpeg|gif|svg|ico|css|js)$/.test(
+    request.nextUrl.pathname
+  );
+  
   const isPublicRoute = publicRoutes.some(route => 
     request.nextUrl.pathname === route || 
     request.nextUrl.pathname.startsWith('/_next')
   );
 
   // Allow public routes
-  if (isPublicRoute) {
+  if (isPublicRoute || isStaticFile) {
     return response;
   }
 

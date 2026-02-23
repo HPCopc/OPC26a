@@ -12,10 +12,17 @@ export const auth = defineAuth({
     },
   },
   
+  // ✅ CORRECT: This object defines your custom attributes
+  userAttributes: {
+    givenName: {
+      required: false,
+      mutable: true,
+    },
+    familyName: {
+      required: false,
+      mutable: true,
+    },
+  },
   
-    // Last name (automatically appears in sign-up form)
-     
-  },  // ← ADD THIS CLOSING BRACE!
-  
-  // You can add social provider like Google, Facebook, etc. here
+  // You can add social providers like Google, Facebook, etc. here
 });

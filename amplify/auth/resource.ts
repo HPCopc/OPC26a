@@ -10,8 +10,9 @@ export const auth = defineAuth({
     email: {
       verificationEmailSubject: 'Welcome! Verify your email!'
     },
-    // You can also add phone number, etc. userAttributes: { givenName:{required: false,}}
-    userAttributes: {
+  },
+  
+  userAttributes: {
     // First name (automatically appears in sign-up form)
     givenName: {
       required: false,      // Set to true if you want to force users to provide this
@@ -22,6 +23,7 @@ export const auth = defineAuth({
       required: false,
       mutable: true,
     },
-  },
+  },  // ← ADD THIS CLOSING BRACE!
+  
   // You can add social providers like Google, Facebook, etc. here
 });

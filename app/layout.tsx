@@ -7,7 +7,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import AmplifyInit from './AmplifyInit';
 import '@aws-amplify/ui-react/styles.css';
-import { Authenticator } from '@aws-amplify/ui-react'; 
+ 
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,11 +25,11 @@ export default function RootLayout({
     <html lang="en">
         <body>
           <AmplifyInit />
-          <Authenticator.Provider>
+           
              <Header />
              <main  >{children}</main>
              <Footer />
-          </Authenticator.Provider>
+           
       </body>
     </html>
   );

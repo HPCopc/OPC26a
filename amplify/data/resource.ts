@@ -36,7 +36,7 @@ const schema = a.schema({
       
       allow.ownerDefinedIn("userId").to(["create", "read", "update", "delete"]),
       allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
-      allow.resource(postConfirmation).to(["create","update"]),
+      
     ]),
 });
 

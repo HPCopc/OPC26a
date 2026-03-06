@@ -1,4 +1,5 @@
 import { defineAuth } from "@aws-amplify/backend";
+import { postConfirmation } from "../functions/post-confirmation/resource";
 
 /**
  * Define and configure your auth resource
@@ -11,18 +12,20 @@ export const auth = defineAuth({
       verificationEmailSubject: 'Welcome! Verify your email!'
     },
   },
-  
-  // ✅ CORRECT: This object defines your custom attributes
+    
+  // Define user groups
+  groups: ['ADMINS', 'USERS'],
+
+  // User attributes stored in Cognito
   userAttributes: {
-    givenName: {
-      required: false,
-      mutable: true,
-    },
-    familyName: {
-      required: false,
-      mutable: true,
-    },
+    givenName: { required: false, mutable: true },
+    familyName: { required: false, mutable: true },
+    phoneNumber: { required: false, mutable: true },
   },
-  
+  // Add the post-confirmation trigger
+  triggers: {
+    postConfirmation,
+  },
+
   // You can add social providers likes Google, Facebook, etc. here
 });

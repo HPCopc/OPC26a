@@ -1,1 +1,12 @@
-
+{
+  "name": "post-confirmation-fn",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "aws-amplify": "^6.16.2",
+    "@aws-amplify/backend": "^1.5.1",
+    "@types/aws-lambda": "^8.10.129"
+  }
+}

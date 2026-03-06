@@ -2,7 +2,7 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { postConfirmation } from '../../app/functions/Post-confirmation/resource';
 
-const postConfirmationFunction = postConfirmation.resources?.lambda || postConfirmation;
+// const postConfirmationFunction = postConfirmation.resources?.lambda || postConfirmation;
 
 const schema = a.schema({
   UserProfile: a.model({
@@ -25,7 +25,7 @@ const schema = a.schema({
     zipCode: a.string(),
     country: a.string(),
     // keep your original name or consider renaming to 'subscriptionType'
-    subscriptiontype: a.string(),
+    subscriptionType: a.string(),
 // New: flag to control onboarding flow
     profileCompleted: a.boolean(),
     // Let the backend manage these; do not mark required
@@ -43,8 +43,8 @@ const schema = a.schema({
       allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
 
       // Allow the post-confirmation Lambda to create/update idempotently
-      // allow.resource(postConfirmation).to(["create", "update"]),
-       allow.resource(postConfirmationFunction).to(["create", "update"]),
+      allow.resource(postConfirmation).to(["create", "update"]),
+      // allow.resource(postConfirmationFunction).to(["create", "update"]),
 
 
     ]),

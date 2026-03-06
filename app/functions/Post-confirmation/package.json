@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=18"
-  },
   "dependencies": {
     "aws-amplify": "^6.16.2",
     "@aws-amplify/backend": "^1.5.1",

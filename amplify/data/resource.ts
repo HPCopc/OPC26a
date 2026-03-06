@@ -32,7 +32,7 @@ const schema = a.schema({
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
   })
-    .authorization(allow => [
+     .authorization(allow => [
       // Owner = the user whose sub is stored in userId
       allow.ownerDefinedIn("userId").to(["create", "read", "update", "delete"]),
 

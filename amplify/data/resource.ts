@@ -33,15 +33,10 @@ const schema = a.schema({
     updatedAt: a.datetime(),
   })
      .authorization(allow => [
-      // Owner = the user whose sub is stored in userId
+      
       allow.ownerDefinedIn("userId").to(["create", "read", "update", "delete"]),
-
-      // If you want all signed-in users to read other profiles, keep this.
-      // Otherwise, remove this line to enforce owner-only read.
-      // allow.authenticated().to(['read']),
-
       allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
-      allow.resource(postConfirmation).to(["create","update"])
+      allow.resource(postConfirmation).to(["create","update"]),
     ]),
 });
 

@@ -36,7 +36,7 @@ const schema = a.schema({
       // allow.authenticated().to(['read']),
 
       allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
-      allow.resource(postConfirmation).to(["create","update"])
+      // allow.resource(postConfirmation).to(["create","update"])
     ]),
 });
 

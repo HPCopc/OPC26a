@@ -41,7 +41,7 @@ const schema = a.schema({
       allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
 
       // Allow the post-confirmation Lambda to create/update idempotently
-      allow.resource(postConfirmation).to(["create", "update"]),
+       allow.resource(postConfirmation.resources).to(["create", "update"]),
     ]),
 });
 

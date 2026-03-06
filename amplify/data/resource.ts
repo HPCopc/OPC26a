@@ -41,12 +41,7 @@ const schema = a.schema({
       // allow.authenticated().to(['read']),
 
       allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
-
-      // Allow the post-confirmation Lambda to create/update idempotently
-      allow.resource(postConfirmation).to(["create", "update"]),
-      // allow.resource(postConfirmationFunction).to(["create", "update"]),
-
-
+      allow.resource(postConfirmation).to(["create","update"])
     ]),
 });
 
@@ -60,4 +55,3 @@ export const data = defineData({
     // apiKeyAuthorizationMode: { expiresInDays: 30 },
   },
 });
-

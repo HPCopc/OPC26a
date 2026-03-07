@@ -40,6 +40,10 @@ const schema = a.schema({
     ]),
 });
 
+// ✅ Put it here — schema-level authorization
+  .authorization((allow) => [
+    allow.resource(postConfirmation).to(['create', 'update']),
+  ]);
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es5",
+//    "target": "es5",
+    "target": "ES2020",
     "lib": [
       "dom",
       "dom.iterable",
@@ -24,9 +25,8 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "$amplify/*": [".amplify/generated/*"]   // ✅ add this mapping
       //      "@/components/*": ["components/*"]
     }
   },
@@ -35,7 +35,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    ".amplify/generated/**/*"                  // ✅ ensure generated env files are included
   ],
   "exclude": [
     "node_modules",

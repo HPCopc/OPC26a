@@ -35,10 +35,13 @@ const schema = a.schema({
       // Otherwise, remove this line to enforce owner-only read.
       // allow.authenticated().to(['read']),
 
-      allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]), 
-      allow.resource(postConfirmation).to(['create', 'update']),
+      allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),       
     ]),
-});
+})
+// ✅ Lambda resource rule MUST be at schema level
+.authorization((allow) => [
+  allow.resource(postConfirmation).to(['create', 'update']),
+]);
 
  
 export type Schema = ClientSchema<typeof schema>;

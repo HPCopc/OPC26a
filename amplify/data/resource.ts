@@ -35,14 +35,12 @@ const schema = a.schema({
       // Otherwise, remove this line to enforce owner-only read.
       // allow.authenticated().to(['read']),
 
-      allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),     
+      allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]), 
+      allow.resource(postConfirmation).to(['create', 'update']),
     ]),
 });
 
-// ✅ Put it here — schema-level authorization
-  .authorization((allow) => [
-    allow.resource(postConfirmation).to(['create', 'update']),
-  ]);
+ 
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({

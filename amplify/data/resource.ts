@@ -29,13 +29,14 @@ const schema = a.schema({
   })
     .authorization(allow => [
       // Owner = the user whose sub is stored in userId
-      allow.ownerDefinedIn("userId").to(["create", "read", "update", "delete"]),
+      // allow.ownerDefinedIn("userId").to(["create", "read", "update", "delete"]),
 
       // If you want all signed-in users to read other profiles, keep this.
       // Otherwise, remove this line to enforce owner-only read.
       // allow.authenticated().to(['read']),
 
-      allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),       
+      // allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),      
+      allow.guest(), 
     ]),
 })
 .authorization((allow) => [
@@ -48,6 +49,9 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "userPool",
+    defaultAuthorizationMode: "apiKey",
+    apiKeyAuthorizationMode: {
+      expiresInDays: 7,
+    },
   },
 });

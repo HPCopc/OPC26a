@@ -38,9 +38,8 @@ const schema = a.schema({
       allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),       
     ]),
 })
-// ✅ Lambda resource rule MUST be at schema level
 .authorization((allow) => [
-  allow.resource(postConfirmation).to(['create', 'update']),
+  allow.resource(postConfirmation).to(['mutate']), // ✅ fixed
 ]);
 
  

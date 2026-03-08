@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "overrides": {
-    "minimatch": "^5.1.6",
+    "minimatch": "^10.0.0",
     "@aws-sdk/xml-builder": "^3.821.0",
     "@aws-sdk/types": "^3.734.0"
   },

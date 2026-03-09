@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '@/amplify/data/resource'; // adjust path if needed
-
+import type { Schema } from '@/amplify/data/resource';  
 const client = generateClient<Schema>();
 
 export default function OnboardingPage() {
@@ -21,7 +20,7 @@ export default function OnboardingPage() {
   state: '',
   zipCode: '',
   country: '',
-  subscriptiontype: 'free',
+  subscriptionType: 'free',
  });
 
  // Combine simple required checks—tune to your needs
@@ -55,7 +54,7 @@ export default function OnboardingPage() {
       state: data.state ?? '',
       zipCode: data.zipCode ?? '',
       country: data.country ?? '',
-      subscriptiontype: data.subscriptiontype ?? 'free',
+      subscriptionType: data.subscriptionType ?? 'free',
      }));
 
      // If already completed, send to dashboard
@@ -201,8 +200,8 @@ export default function OnboardingPage() {
     <div>
      <label className="block text-sm font-medium mb-1">Subscription</label>
      <select
-      name="subscriptiontype"
-      value={form.subscriptiontype}
+      name="subscriptionType"
+      value={form.subscriptionType}
       onChange={onChange}
       className="w-full px-3 py-2 border rounded-md"
      >

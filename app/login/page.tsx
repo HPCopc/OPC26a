@@ -18,7 +18,7 @@ const components: AuthenticatorProps['components'] = {
    return (
     <>
      {/* Keep built-in fields for email login */}
-     <Authenticator.SignUp.FormFields fields={['email', 'password', 'confirm_password']} />
+    <Authenticator.SignUp.FormFields />
 
      {/* Custom-rendered Cognito attributes */}
      <TextField

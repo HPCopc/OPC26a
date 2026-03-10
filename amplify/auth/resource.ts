@@ -1,5 +1,6 @@
 import { defineAuth } from "@aws-amplify/backend";
 import { postConfirmation } from '../../app/functions/Post-confirmation/resource';
+import { preSignUp } from './pre-sign-up/resource'; // ✅ Add this
 
 /**
  * Define and configure your auth resource
@@ -25,6 +26,7 @@ export const auth = defineAuth({
   // Add the post-confirmation trigger
   triggers: {
     postConfirmation,
+    preSignUp,         // ✅ new — blocks disposable emails
   },
 
   // You can add social providers likes Google, Facebook, etc. here

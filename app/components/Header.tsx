@@ -1,3 +1,4 @@
+'use client';
 // app/components/Header.tsx
 // left right p-4/m-4
 import Link from 'next/link';
@@ -8,6 +9,9 @@ import Link from 'next/link';
 //'../../types/navigation' → Goes up 2 levels, then into types folder
 
 import { NavItem } from '../types/navigation';
+import { signOut, getCurrentUser } from 'aws-amplify/auth';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 
 
@@ -30,6 +34,28 @@ const primaryNav: NavItem[] = [
 ];
 
 export default function Header() {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        await getCurrentUser();
+        setIsLoggedIn(true);
+      } catch {
+        setIsLoggedIn(false);
+      }
+    };
+    checkUser();
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsLoggedIn(false);
+    router.replace('/login');
+  };
+
+
   return (
     <header className="border-b border-black ">
       {/* Top utility bar */}
@@ -98,10 +124,16 @@ export default function Header() {
         </div>
 
          
+ 
         <div className="flex items-center p-4">
-        <Link href="/login" className="text-blue-600 font-semibold hover:underline ">Login</Link>
+          {isLoggedIn ? (
+            <button
+              onClick={handleSignOut}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition font-semibold">Sign Out</button>
+          ) : (
+            <Link href="/login" className="text-blue-600 font-semibold hover:underline">Login</Link>
+          )}
         </div>
-         
       
       </div>
 

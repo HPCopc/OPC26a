@@ -65,7 +65,7 @@ export default function LoginPage() {
  return (
   <div className="flex items-center justify-center min-h-screen bg-gray-50 py-8">
       <Authenticator components={components} initialState="signIn">
-        {({ user }) => (
+        {({ user, signOut }) => (
           // This function runs after successful sign-in
           // We don't need to manually redirect here - Hub event handles it
           <div className="text-center">
@@ -74,6 +74,13 @@ export default function LoginPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold mb-4">Welcome!</h1>
                 <p className="text-gray-600">Redirecting to your dashboard...</p>
+                                {/* ✅ Logout Button */}
+                <button
+                  onClick={signOut}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                >
+                  Sign Out
+                </button>
               </>
             )}
           </div>

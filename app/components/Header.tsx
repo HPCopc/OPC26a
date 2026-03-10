@@ -12,6 +12,7 @@ import { NavItem } from '../types/navigation';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Hub } from 'aws-amplify/utils'; // ✅ Add this
 
 
 
@@ -47,7 +48,20 @@ export default function Header() {
       }
     };
     checkUser();
+
+    // ✅ Listen for login/logout events in real time
+    const unsubscribe = Hub.listen('auth', ({ payload }) => {
+      if (payload.event === 'signedIn') {
+        setIsLoggedIn(true);
+      }
+      if (payload.event === 'signedOut') {
+        setIsLoggedIn(false);
+      }
+    });
+
+    return () => unsubscribe(); // ✅ Cleanup on unmount
   }, []);
+
 
   const handleSignOut = async () => {
     await signOut();

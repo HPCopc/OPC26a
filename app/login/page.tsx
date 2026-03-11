@@ -10,6 +10,7 @@ import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Hub } from 'aws-amplify/utils';
+import { signUp } from 'aws-amplify/auth';
 
 
 const components: AuthenticatorProps['components'] = {
@@ -43,6 +44,25 @@ const components: AuthenticatorProps['components'] = {
  },
 };
 
+// ✅ This catches Lambda errors and shows them in the UI
+const services: AuthenticatorProps['services'] = {
+  async handleSignUp(formData) {
+    const { username, password, options } = formData;
+    try {
+      const result = await signUp({
+        username,
+        password,
+        options,
+      });
+      return result;
+    } catch (error: any) {
+      // Extract the Lambda error message and show it in the form
+      const message = error?.message || 'Sign up failed. Please try again.';
+      throw new Error(message);
+    }
+  },
+};
+
 export default function LoginPage() {
  const router = useRouter();
 
@@ -64,7 +84,7 @@ export default function LoginPage() {
 
  return (
   <div className="flex items-center justify-center min-h-screen bg-gray-50 py-8">
-      <Authenticator components={components} initialState="signIn">
+      <Authenticator components={components} services={services}  initialState="signIn">
         {({ user, signOut }) => (
           // This function runs after successful sign-in
           // We don't need to manually redirect here - Hub event handles it

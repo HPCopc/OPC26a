@@ -2,7 +2,7 @@
 
 import {
  Authenticator,
- PhoneNumberField,
+ 
  TextField,
  type AuthenticatorProps,
 } from '@aws-amplify/ui-react';
@@ -32,12 +32,12 @@ const components: AuthenticatorProps['components'] = {
       label="Last Name"
       placeholder="Last Name"
      />
-     <PhoneNumberField
+     <TextField
       name="phone_number"
       label="Phone Number"
-      defaultDialCode="+1"
-      placeholder="+1 555-123-4567"
-     />
+      placeholder="6105551234"
+      descriptiveText="Enter 10 digits, e.g. 6105551234"
+    />
     </>
    );
   },
@@ -49,11 +49,31 @@ const services: AuthenticatorProps['services'] = {
   async handleSignUp(formData) {
     const { username, password, options } = formData;
     try {
+
+      const rawPhone = options?.userAttributes?.phone_number || '';
+      let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '');
+      if (!cleaned.startsWith('+')) {
+       cleaned = '+1' + cleaned;
+      }
+
+      // ✅ Add this check
+      if (cleaned.replace(/^\+1/, '').length !== 10) {
+        throw new Error('Please enter a valid 10-digit US phone number.');
+      }
+   
+
       const result = await signUp({
-        username,
-        password,
-        options,
-      });
+  username,
+  password,
+  options: {
+    ...options,
+    userAttributes: {
+      ...options?.userAttributes,
+      phone_number: cleaned,
+    },
+  },
+});
+
       return result;
     } catch (error: any) {
       // Extract the Lambda error message and show it in the form

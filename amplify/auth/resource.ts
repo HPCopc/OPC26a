@@ -19,8 +19,8 @@ export const auth = defineAuth({
 
   // User attributes stored in Cognito
   userAttributes: {
-    givenName: { required: yes, mutable: true },
-    familyName: { required: yes, mutable: true },
+    givenName: { required: true, mutable: true },
+    familyName: { required: true, mutable: true },
     phoneNumber: { required: false, mutable: true },
   },
   // Add the post-confirmation trigger

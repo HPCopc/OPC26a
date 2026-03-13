@@ -50,7 +50,12 @@ const services: AuthenticatorProps['services'] = {
     const { username, password, options } = formData;
     try {
 
-      const rawPhone = options?.userAttributes?.phone_number || '';
+      const rawPhone = (options?.userAttributes?.phone_number || '')
+        .replace('undefined', '')
+        .trim();
+console.log('ALL userAttributes:', options?.userAttributes);
+console.log('rawPhone:', rawPhone);
+
       let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '');
       if (!cleaned.startsWith('+')) {
        cleaned = '+1' + cleaned;

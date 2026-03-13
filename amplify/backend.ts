@@ -4,7 +4,7 @@ import { data } from './data/resource';
 import { postConfirmation } from '../app/functions/Post-confirmation/resource';  
 
 defineBackend({
- auth,
+ // auth,
  data,
  postConfirmation, 
 });

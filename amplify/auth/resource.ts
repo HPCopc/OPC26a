@@ -1,5 +1,5 @@
 import { defineAuth } from "@aws-amplify/backend";
-import { postConfirmation } from '../../app/functions/Post-confirmation/resource';
+import { postConfirmation } from '../functions/post-confirmation/resource';
 import { preSignUp } from './pre-sign-up/resource'; // ✅ Add this
 
 /**

@@ -56,10 +56,17 @@ const components: AuthenticatorProps['components'] = {
             isRequired={true}
           />
           <TextField
+            name="country_code"
+            label="Country Code"
+            placeholder="+1"
+            defaultValue="+1"
+            descriptiveText="e.g. +1 (US), +44 (UK), +966 (Saudi Arabia), +971 (UAE)"
+          />
+          <TextField
             name="phone_number"
             label="Phone Number"
             placeholder="6105551234"
-            descriptiveText="Enter 10 digits, e.g. 6105551234"
+            descriptiveText="Enter digits only, e.g. 6105551234 no country code"
           />
 
       
@@ -80,24 +87,38 @@ const services: AuthenticatorProps['services'] = {
                     options?.userAttributes?.email || 
                     (formData as any)['email'] || ''
 
-      const rawPhone = (options?.userAttributes?.phone_number || '')
-        .replace('undefined', '')
-        .trim();
-console.log('ALL userAttributes:', options?.userAttributes);
-console.log('rawPhone:', rawPhone);
+      // Get and clean country code
+      const countryCode = ((options?.userAttributes as any)?.country_code || '+1')
+        .trim()
+        .replace(/\s/g, '')
 
-      let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '');
-      if (!cleaned.startsWith('+')) {
-       cleaned = '+1' + cleaned;
+      // Validate country code starts with +
+      if (!countryCode.startsWith('+')) {
+        throw new Error('Country code must start with + (e.g. +1, +44, +966)')
       }
 
-      // ✅ Add this check
-      if (cleaned.replace(/^\+1/, '').length !== 10) {
-        throw new Error('Please enter a valid 10-digit US phone number.');
+      // Get and clean phone number
+      const rawPhone = (options?.userAttributes?.phone_number || '')
+        .replace('undefined', '')
+        .trim()
+
+
+      let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '');
+       // Remove leading 0 for international numbers (e.g. UK 07911 → 7911)
+      if (cleaned.startsWith('0')) {
+        cleaned = cleaned.substring(1)
+      }
+
+      // Combine country code + phone
+      const fullPhone = countryCode + cleaned
+
+      // Validate minimum phone length
+      if (cleaned.length < 7) {
+        throw new Error('Please enter a valid phone number (digits only, no country code)')
       }
    
 
-      const result = await signUp({
+const result = await signUp({
   username: email,
   password,
   options: {
@@ -105,7 +126,7 @@ console.log('rawPhone:', rawPhone);
     userAttributes: {
       ...options?.userAttributes,
       email,
-      phone_number: cleaned,
+      phone_number: fullPhone,
     },
   },
 });

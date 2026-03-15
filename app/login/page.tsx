@@ -23,7 +23,7 @@ const components: AuthenticatorProps['components'] = {
 
      {/* Custom-rendered Cognito attributes */}
                <TextField
-            name="username"
+            name="email"
             label="Email"
             placeholder="Enter your email"
             isRequired={true}
@@ -75,6 +75,11 @@ const services: AuthenticatorProps['services'] = {
     const { username, password, options } = formData;
     try {
 
+      // Get email from either username or userAttributes
+      const email = username || 
+                    options?.userAttributes?.email || 
+                    (formData as any)['email'] || ''
+
       const rawPhone = (options?.userAttributes?.phone_number || '')
         .replace('undefined', '')
         .trim();
@@ -93,12 +98,13 @@ console.log('rawPhone:', rawPhone);
    
 
       const result = await signUp({
-  username,
+  username: email,
   password,
   options: {
     ...options,
     userAttributes: {
       ...options?.userAttributes,
+      email,
       phone_number: cleaned,
     },
   },

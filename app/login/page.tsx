@@ -72,12 +72,20 @@ const services: AuthenticatorProps['services'] = {
   async handleSignUp(formData) {
     const { username, password, options } = formData;
     try {
- const email = (formData as any).username ||
-              (formData as any).email ||
+
+
+const emailFromDOM = typeof document !== 'undefined'
+  ? (document.querySelector('input[name="username"]') as HTMLInputElement)?.value?.trim() || ''
+  : ''
+
+const email = emailFromDOM ||
               username ||
-              options?.userAttributes?.email || ''
+              options?.userAttributes?.email ||
+              (formData as any)['email'] || ''
+             
 
 console.log('formData:', JSON.stringify(formData))
+console.log('emailFromDOM:', emailFromDOM)
 console.log('email resolved:', email)
 
 if (!email) {

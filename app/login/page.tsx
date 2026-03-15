@@ -1,10 +1,9 @@
 'use client';
 
 import {
- Authenticator,
- 
- TextField,
- type AuthenticatorProps,
+  Authenticator,
+  TextField,
+  type AuthenticatorProps,
 } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
@@ -12,18 +11,13 @@ import { useEffect } from 'react';
 import { Hub } from 'aws-amplify/utils';
 import { signUp } from 'aws-amplify/auth';
 
-
 const components: AuthenticatorProps['components'] = {
- SignUp: {
-  FormFields() {
-   return (
-    <>
-     {/* Keep built-in fields for email login */}
-     
-
-     {/* Custom-rendered Cognito attributes */}
-               <TextField
-            name="email"
+  SignUp: {
+    FormFields() {
+      return (
+        <>
+          <TextField
+            name="username"
             label="Email"
             placeholder="Enter your email"
             isRequired={true}
@@ -57,121 +51,121 @@ const components: AuthenticatorProps['components'] = {
           />
           <TextField
             name="country_code"
-            label="Country Code"
+            label="Country Code (optional)"
             placeholder="+1"
             defaultValue="+1"
             descriptiveText="e.g. +1 (US), +44 (UK), +966 (Saudi Arabia), +971 (UAE)"
           />
           <TextField
             name="phone_number"
-            label="Phone Number"
+            label="Phone Number (optional)"
             placeholder="6105551234"
-            descriptiveText="Enter digits only, e.g. 6105551234 no country code"
+            descriptiveText="Enter digits only, no country code"
           />
-
-      
-    </>
-   );
+        </>
+      );
+    },
   },
- },
 };
 
-// ✅ This catches Lambda errors and shows them in the UI
 const services: AuthenticatorProps['services'] = {
   async handleSignUp(formData) {
     const { username, password, options } = formData;
     try {
-
-      // Get email from either username or userAttributes
-      const email = username || 
-                    options?.userAttributes?.email || 
+      const email = username ||
+                    options?.userAttributes?.email ||
                     (formData as any)['email'] || ''
 
-      // Get and clean country code
+      const givenName = options?.userAttributes?.given_name || ''
+      const familyName = options?.userAttributes?.family_name || ''
+
       const countryCode = ((options?.userAttributes as any)?.country_code || '+1')
         .trim()
         .replace(/\s/g, '')
 
-      // Validate country code starts with +
-      if (!countryCode.startsWith('+')) {
-        throw new Error('Country code must start with + (e.g. +1, +44, +966)')
-      }
-
-      // Get and clean phone number
       const rawPhone = (options?.userAttributes?.phone_number || '')
         .replace('undefined', '')
         .trim()
 
+      console.log('email:', email)
+      console.log('givenName:', givenName)
+      console.log('familyName:', familyName)
+      console.log('countryCode:', countryCode)
+      console.log('rawPhone:', rawPhone)
 
-      let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '');
-       // Remove leading 0 for international numbers (e.g. UK 07911 → 7911)
-      if (cleaned.startsWith('0')) {
-        cleaned = cleaned.substring(1)
+      let fullPhone: string | undefined = undefined
+
+      if (rawPhone && rawPhone.length > 0) {
+        if (!countryCode.startsWith('+')) {
+          throw new Error('Country code must start with + (e.g. +1, +44, +966)')
+        }
+
+        let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '')
+
+        if (cleaned.startsWith('0')) {
+          cleaned = cleaned.substring(1)
+        }
+
+        if (cleaned.length < 7) {
+          throw new Error('Please enter a valid phone number (digits only, no country code)')
+        }
+
+        fullPhone = countryCode + cleaned
+        console.log('fullPhone:', fullPhone)
       }
 
-      // Combine country code + phone
-      const fullPhone = countryCode + cleaned
-
-      // Validate minimum phone length
-      if (cleaned.length < 7) {
-        throw new Error('Please enter a valid phone number (digits only, no country code)')
+      const userAttributes: Record<string, string> = {
+        email,
+        given_name: givenName,
+        family_name: familyName,
       }
-   
 
-const result = await signUp({
-  username: email,
-  password,
-  options: {
-    ...options,
-    userAttributes: {
-      ...options?.userAttributes,
-      email,
-      phone_number: fullPhone,
-    },
-  },
-});
+      if (fullPhone) {
+        userAttributes.phone_number = fullPhone
+      }
 
-      return result;
+      console.log('Final userAttributes:', userAttributes)
+
+      const result = await signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes,
+        },
+      })
+
+      return result
     } catch (error: any) {
-      // Extract the Lambda error message and show it in the form
-      const message = error?.message || 'Sign up failed. Please try again.';
-      throw new Error(message);
+      const message = error?.message || 'Sign up failed. Please try again.'
+      throw new Error(message)
     }
   },
-};
+}
 
 export default function LoginPage() {
- const router = useRouter();
+  const router = useRouter()
 
-   // ✅ Move useEffect to the component level, NOT inside Authenticator
   useEffect(() => {
-    // Listen for authentication events
     const unsubscribe = Hub.listen('auth', ({ payload }) => {
-      console.log('Auth event:', payload.event);
-      
-      // Redirect when user signs in
+      console.log('Auth event:', payload.event)
       if (payload.event === 'signedIn') {
-        console.log('User signed in, redirecting...');
-        router.replace('/onboarding'); // or '/'
+        console.log('User signed in, redirecting...')
+        router.replace('/onboarding')
       }
-    });
-     // Cleanup listener on unmount
-    return () => unsubscribe();
-  }, [router]); //
+    })
+    return () => unsubscribe()
+  }, [router])
 
- return (
-  <div className="flex items-center justify-center min-h-screen bg-gray-50 py-8">
-      <Authenticator components={components} services={services}  initialState="signIn">
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 py-8">
+      <Authenticator components={components} services={services} initialState="signIn">
         {({ user, signOut }) => (
-          // This function runs after successful sign-in
-          // We don't need to manually redirect here - Hub event handles it
           <div className="text-center">
             {user && (
               <>
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold mb-4">Welcome!</h1>
                 <p className="text-gray-600">Redirecting to your dashboard...</p>
-                                {/* ✅ Logout Button */}
                 <button
                   onClick={signOut}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
@@ -183,8 +177,6 @@ export default function LoginPage() {
           </div>
         )}
       </Authenticator>
-
-  </div>
- );
+    </div>
+  )
 }
-

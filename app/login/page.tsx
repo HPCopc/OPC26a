@@ -19,25 +19,50 @@ const components: AuthenticatorProps['components'] = {
    return (
     <>
      {/* Keep built-in fields for email login */}
-    <Authenticator.SignUp.FormFields />
+     
 
      {/* Custom-rendered Cognito attributes */}
-     <TextField
-      name="given_name"
-      label="First Name"
-      placeholder="First Name"
-     />
-     <TextField
-      name="family_name"
-      label="Last Name"
-      placeholder="Last Name"
-     />
-     <TextField
-      name="phone_number"
-      label="Phone Number"
-      placeholder="6105551234"
-      descriptiveText="Enter 10 digits, e.g. 6105551234"
-    />
+               <TextField
+            name="username"
+            label="Email"
+            placeholder="Enter your email"
+            isRequired={true}
+            type="email"
+          />
+          <TextField
+            name="password"
+            label="Password"
+            placeholder="Enter your password"
+            isRequired={true}
+            type="password"
+          />
+          <TextField
+            name="confirm_password"
+            label="Confirm Password"
+            placeholder="Please confirm your Password"
+            isRequired={true}
+            type="password"
+          />
+          <TextField
+            name="given_name"
+            label="First Name"
+            placeholder="Enter your First Name"
+            isRequired={true}
+          />
+          <TextField
+            name="family_name"
+            label="Last Name"
+            placeholder="Enter your Last Name"
+            isRequired={true}
+          />
+          <TextField
+            name="phone_number"
+            label="Phone Number"
+            placeholder="6105551234"
+            descriptiveText="Enter 10 digits, e.g. 6105551234"
+          />
+
+      
     </>
    );
   },

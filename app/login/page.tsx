@@ -72,10 +72,17 @@ const services: AuthenticatorProps['services'] = {
   async handleSignUp(formData) {
     const { username, password, options } = formData;
     try {
-      const email = username ||
-                    options?.userAttributes?.email ||
-                    (formData as any)['email'] || ''
+ const email = (formData as any).username ||
+              (formData as any).email ||
+              username ||
+              options?.userAttributes?.email || ''
 
+console.log('formData:', JSON.stringify(formData))
+console.log('email resolved:', email)
+
+if (!email) {
+  throw new Error('Email is required')
+}
       const givenName = options?.userAttributes?.given_name || ''
       const familyName = options?.userAttributes?.family_name || ''
 

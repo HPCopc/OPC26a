@@ -20,18 +20,7 @@ const components: AuthenticatorProps['components'] = {
           <Authenticator.SignUp.FormFields />
 
           {/* Extra custom fields */}
-          <TextField
-            name="given_name"
-            label="First Name"
-            placeholder="Enter your First Name"
-            isRequired={true}
-          />
-          <TextField
-            name="family_name"
-            label="Last Name"
-            placeholder="Enter your Last Name"
-            isRequired={true}
-          />
+  
           <TextField
             name="country_code"
             label="Country Code (optional)"

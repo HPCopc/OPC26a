@@ -16,6 +16,20 @@ const components: AuthenticatorProps['components'] = {
     FormFields() {
       return (
         <>
+          <TextField
+            name="given_name"
+            label="First Name"
+            placeholder="John"
+            required={true}
+          />
+          
+          {/* Last Name - YOU WERE MISSING THIS */}
+          <TextField
+            name="family_name"
+            label="Last Name"
+            placeholder="Doe"
+            required={true}
+          />
           {/* Amplify handles Email + Password + Confirm Password automatically */}
           <Authenticator.SignUp.FormFields />
 

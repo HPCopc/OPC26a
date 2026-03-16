@@ -72,21 +72,22 @@ const services: AuthenticatorProps['services'] = {
     });
 
   // Add this to see verification details
-    if (result.nextStep) {
-      console.log('Next step details:', {
-        signUpStep: result.nextStep.signUpStep,
-        codeDeliveryDetails: result.nextStep.codeDeliveryDetails
-      });
-  
-  // This will tell you if/where Cognito sent the verification code
-  if (result.nextStep.codeDeliveryDetails) {
-    console.log('📧 Verification sent to:', {
-      destination: result.nextStep.codeDeliveryDetails.destination,
-      medium: result.nextStep.codeDeliveryDetails.deliveryMedium,
-      attribute: result.nextStep.codeDeliveryDetails.attributeName
-    });
-  }
-}
+       if (result.nextStep) {
+        console.log('Next step details:', {
+          signUpStep: result.nextStep.signUpStep,
+        });
+        
+        // ✅ FIXED: Type-safe check for codeDeliveryDetails
+        if ('codeDeliveryDetails' in result.nextStep && result.nextStep.codeDeliveryDetails) {
+          console.log('📧 Verification sent to:', {
+            destination: result.nextStep.codeDeliveryDetails.destination,
+            medium: result.nextStep.codeDeliveryDetails.deliveryMedium,
+            attribute: result.nextStep.codeDeliveryDetails.attributeName
+          });
+        } else {
+          console.log('⚠️ No verification code was sent - check Cognito email configuration');
+        }
+      }
 
    return result;
 

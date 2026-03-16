@@ -22,19 +22,7 @@ const components: AuthenticatorProps['components'] = {
 
           {/* Extra custom fields */}
   
-          <TextField
-            name="country_code"
-            label="Country Code (optional)"
-            placeholder="+1"
-            defaultValue="+1"
-            descriptiveText="e.g. +1 (US), +44 (UK), +966 (Saudi Arabia), +971 (UAE)"
-          />
-          <TextField
-            name="phone_number"
-            label="Phone Number (optional)"
-            placeholder="6105551234"
-            descriptiveText="Enter digits only, no country code"
-          />
+           
         </>
       );
     },
@@ -51,31 +39,14 @@ const services: AuthenticatorProps['services'] = {
       const givenName = options?.userAttributes?.given_name || ''
       const familyName = options?.userAttributes?.family_name || ''
 
-      const countryCode = ((options?.userAttributes as any)?.country_code || '+1')
-        .trim().replace(/\s/g, '')
-
-      const rawPhone = (options?.userAttributes?.phone_number || '').trim()
-
+      
       console.log('username/email:', email)
       console.log('givenName:', givenName)
       console.log('familyName:', familyName)
-      console.log('countryCode:', countryCode)
-      console.log('rawPhone:', rawPhone)
 
-      let fullPhone: string | undefined = undefined
 
-      if (rawPhone) {
-        if (!countryCode.startsWith('+')) {
-          throw new Error('Country code must start with + (e.g. +1, +44, +966)')
-        }
-        let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '')
-        if (cleaned.startsWith('0')) cleaned = cleaned.substring(1)
-        if (cleaned.length < 7) {
-          throw new Error('Please enter a valid phone number')
-        }
-        fullPhone = countryCode + cleaned
-        console.log('fullPhone:', fullPhone)
-      }
+       
+       
 
       const userAttributes: Record<string, string> = {
         email,
@@ -83,18 +54,50 @@ const services: AuthenticatorProps['services'] = {
         family_name: familyName,
       }
 
-      if (fullPhone) {
-        userAttributes.phone_number = fullPhone
-      }
+       
 
       console.log('Final userAttributes:', userAttributes)
 
-      return signUp({
-        username: email,
-        password,
-        options: { userAttributes, autoSignIn: true, },
-      })
+      const result = await signUp({
+      username: email,
+      password,
+      options: { 
+        userAttributes, 
+        autoSignIn: true,
+        clientMetadata: {
+          source: 'web-app',
+          timestamp: new Date().toISOString(),
+        }
+      },
+    });
+
+  // Add this to see verification details
+    if (result.nextStep) {
+      console.log('Next step details:', {
+        signUpStep: result.nextStep.signUpStep,
+        codeDeliveryDetails: result.nextStep.codeDeliveryDetails
+      });
+  
+  // This will tell you if/where Cognito sent the verification code
+  if (result.nextStep.codeDeliveryDetails) {
+    console.log('📧 Verification sent to:', {
+      destination: result.nextStep.codeDeliveryDetails.destination,
+      medium: result.nextStep.codeDeliveryDetails.deliveryMedium,
+      attribute: result.nextStep.codeDeliveryDetails.attributeName
+    });
+  }
+}
+
+
+
     } catch (error: any) {
+      console.error('Full signup error:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      details: error
+    });
+
       const message = error?.message || 'Sign up failed. Please try again.'
       throw new Error(message)
     }

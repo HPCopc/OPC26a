@@ -92,7 +92,7 @@ const services: AuthenticatorProps['services'] = {
       return signUp({
         username: email,
         password,
-        options: { userAttributes },
+        options: { userAttributes, autoSignIn: true, },
       })
     } catch (error: any) {
       const message = error?.message || 'Sign up failed. Please try again.'

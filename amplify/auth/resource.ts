@@ -24,7 +24,7 @@ export const auth = defineAuth({
     phoneNumber: { required: false, mutable: true },
   },
   verificationEmailStyle: "CODE",
-  emailSettings: {servicePlan: "COGNITO_DEFAULT" }
+  emailSettings: {servicePlan: "COGNITO_DEFAULT" },
   // Add the post-confirmation trigger
   triggers: {
     postConfirmation,

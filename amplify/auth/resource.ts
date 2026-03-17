@@ -15,9 +15,6 @@ export const auth = defineAuth({
      
   },
   
-  autoVerify: {
-    email: true
-  },
  
   // Define user groups
   groups: ['ADMINS', 'USERS'],

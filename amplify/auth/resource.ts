@@ -24,9 +24,9 @@ export const auth = defineAuth({
 
   // User attributes stored in Cognito
   userAttributes: {
-    given_name: { required: true, mutable: true },
-    family_name: { required: true, mutable: true },
-    phone_number: { required: false, mutable: true },
+    givenName: { required: true, mutable: true },
+    familyName: { required: true, mutable: true },
+    phoneNumber: { required: false, mutable: true },
   },
    
   senders: {

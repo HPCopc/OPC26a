@@ -36,8 +36,8 @@ const services: AuthenticatorProps['services'] = {
       // username is now reliably the email - no DOM hacks needed!
       const email = username
 
-      const givenName = options?.userAttributes?.given_name || ''
-      const familyName = options?.userAttributes?.family_name || ''
+      const givenName = options?.userAttributes?.givenName || ''
+      const familyName = options?.userAttributes?.familyName || ''
 
       
       console.log('username/email:', email)

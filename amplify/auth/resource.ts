@@ -10,8 +10,11 @@ import { preSignUp } from './pre-sign-up/resource'; // ✅ Add this
 export const auth = defineAuth({
   loginWith: {
     email: {
-      verificationEmailSubject: 'Welcome! Verify your email!'
+    verificationEmailSubject: 'Welcome! Verify your email!',
+    verificationEmailStyle: 'CODE',
+    verificationEmailBody: 'Your verification code is {####}', // ✅ Perfect!
     },
+     
   },
     
   // Define user groups
@@ -23,8 +26,8 @@ export const auth = defineAuth({
     familyName: { required: true, mutable: true },
     phoneNumber: { required: false, mutable: true },
   },
-  verificationEmailStyle: "CODE",
-  emailSettings: {servicePlan: "COGNITO_DEFAULT" },
+   
+ // emailSettings: {servicePlan: "COGNITO_DEFAULT" },
   // Add the post-confirmation trigger
   triggers: {
     postConfirmation,

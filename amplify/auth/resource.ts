@@ -11,18 +11,24 @@ export const auth = defineAuth({
   loginWith: {
     email: {
       verificationEmailSubject: 'Welcome! Verify your email!',
+      verificationEmailBody: 'Your verification code is {####}'
+
     },
      
   },
-    
+  
+  autoVerify: {
+    email: true
+  },
+ 
   // Define user groups
   groups: ['ADMINS', 'USERS'],
 
   // User attributes stored in Cognito
   userAttributes: {
-    givenName: { required: true, mutable: true },
-    familyName: { required: true, mutable: true },
-    phoneNumber: { required: false, mutable: true },
+    given_name: { required: true, mutable: true },
+    family_name: { required: true, mutable: true },
+    phone_number: { required: false, mutable: true },
   },
    
   senders: {

@@ -10,9 +10,9 @@ import { preSignUp } from './pre-sign-up/resource'; // ✅ Add this
 export const auth = defineAuth({
   loginWith: {
     email: {
-    verificationEmailSubject: 'Welcome! Verify your email!',
-    verificationEmailStyle: 'CODE',
-    verificationEmailBody: 'Your verification code is {####}', // ✅ Perfect!
+      verificationEmailSubject: 'Welcome! Verify your email!',
+ //   verificationEmailStyle: 'CODE',
+ //   verificationEmailBody: 'Your verification code is {####}', // ✅ Perfect!
     },
      
   },
@@ -27,12 +27,19 @@ export const auth = defineAuth({
     phoneNumber: { required: false, mutable: true },
   },
    
+  senders: {
+    email: {
+    fromEmail: "no-reply@verificationemail.com",
+    fromName: "Opportunity Crudes"
+    }
+  },
+
  // emailSettings: {servicePlan: "COGNITO_DEFAULT" },
   // Add the post-confirmation trigger
-  // triggers: {
- //    postConfirmation,
- //    preSignUp,         // ✅ new — blocks disposable emails
- //  },
+  triggers: {
+    postConfirmation,a
+    preSignUp,         // ✅ new — blocks disposable emails
+  },
 
   // You can add social providers likes Google, Facebook, etc. here
 });

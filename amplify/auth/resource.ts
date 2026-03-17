@@ -11,8 +11,6 @@ export const auth = defineAuth({
   loginWith: {
     email: {
       verificationEmailSubject: 'Welcome! Verify your email!',
- //   verificationEmailStyle: 'CODE',
- //   verificationEmailBody: 'Your verification code is {####}', // ✅ Perfect!
     },
      
   },
@@ -37,7 +35,7 @@ export const auth = defineAuth({
  // emailSettings: {servicePlan: "COGNITO_DEFAULT" },
   // Add the post-confirmation trigger
   triggers: {
-    postConfirmation,a
+    postConfirmation,
     preSignUp,         // ✅ new — blocks disposable emails
   },
 

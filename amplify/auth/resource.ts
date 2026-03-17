@@ -29,10 +29,10 @@ export const auth = defineAuth({
    
  // emailSettings: {servicePlan: "COGNITO_DEFAULT" },
   // Add the post-confirmation trigger
-  triggers: {
-    postConfirmation,
-    preSignUp,         // ✅ new — blocks disposable emails
-  },
+  // triggers: {
+ //    postConfirmation,
+ //    preSignUp,         // ✅ new — blocks disposable emails
+ //  },
 
   // You can add social providers likes Google, Facebook, etc. here
 });

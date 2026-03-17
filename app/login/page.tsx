@@ -21,7 +21,24 @@ const components: AuthenticatorProps['components'] = {
           <Authenticator.SignUp.FormFields />
 
           {/* Extra custom fields */}
-  
+            <TextField
+            name="given_name"
+            label="First Name"
+            placeholder="Enter your first name"
+            isRequired
+          />
+          <TextField
+            name="family_name"
+            label="Last Name"
+            placeholder="Enter your last name"
+            isRequired
+          />
+          <TextField
+            name="phone_number"
+            label="Phone Number"
+            placeholder="Enter your phone number (optional)"
+            isRequired={false}
+          />
            
         </>
       );
@@ -36,8 +53,8 @@ const services: AuthenticatorProps['services'] = {
       // username is now reliably the email - no DOM hacks needed!
       const email = username
 
-      const givenName = options?.userAttributes?.givenName || ''
-      const familyName = options?.userAttributes?.familyName || ''
+      const givenName = options?.userAttributes?.given_name || ''
+      const familyName = options?.userAttributes?.family_name || ''
 
       
       console.log('username/email:', email)

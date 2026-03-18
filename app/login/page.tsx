@@ -1,91 +1,74 @@
 'use client';
 
-import {
-  Authenticator,
-  TextField,
-  type AuthenticatorProps,
-} from '@aws-amplify/ui-react';
+import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Hub } from 'aws-amplify/utils';
 
-const components: AuthenticatorProps['components'] = {
-  SignUp: {
-    FormFields() {
-      return (
-        <>
-          <TextField
-            name="username"
-            label="Email"
-            placeholder="Enter your email"
-            isRequired={true}
-            type="email"
-          />
-          
-          <TextField
-            name="password"
-            label="Password"
-            placeholder="Enter your password"
-            isRequired={true}
-            type="password"
-          />
-          <TextField
-            name="confirm_password"
-            label="Confirm Password"
-            placeholder="Please confirm your Password"
-            isRequired={true}
-            type="password"
-          />
-          <TextField
-            name="given_name"
-            label="First Name"
-            placeholder="Enter your First Name"
-            isRequired={true}
-          />
-          <TextField
-            name="family_name"
-            label="Last Name"
-            placeholder="Enter your Last Name"
-            isRequired={true}
-          />
-          <TextField
-            name="country_code"
-            label="Country Code (optional)"
-            placeholder="+1"
-            defaultValue="+1"
-            descriptiveText="e.g. +1 (US), +44 (UK), +966 (Saudi Arabia), +971 (UAE)"
-          />
-          <TextField
-            name="phone_number"
-            label="Phone Number (optional)"
-            placeholder="6105551234"
-            descriptiveText="Enter digits only, no country code"
-          />
-        </>
-      );
+// Define form fields configuration
+const formFields = {
+  signUp: {
+    username: {
+      order: 1,
+      label: 'Email',
+      placeholder: 'Enter your email',
+      isRequired: true,
+    },
+    password: {
+      order: 2,
+      label: 'Password',
+      placeholder: 'Enter your password',
+      isRequired: true,
+    },
+    confirm_password: {
+      order: 3,
+      label: 'Confirm Password',
+      placeholder: 'Confirm your password',
+      isRequired: true,
+    },
+    given_name: {
+      order: 4,
+      label: 'First Name',
+      placeholder: 'Enter your first name',
+      isRequired: true,
+    },
+    family_name: {
+      order: 5,
+      label: 'Last Name',
+      placeholder: 'Enter your last name',
+      isRequired: true,
+    },
+    phone_number: {
+      order: 6,
+      label: 'Phone Number (optional)',
+      placeholder: '+1 610 555 1234',
+      isRequired: false,
+      dialCode: '+1',
     },
   },
 };
 
 export default function LoginPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = Hub.listen('auth', ({ payload }) => {
-      console.log('Auth event:', payload.event)
+      console.log('Auth event:', payload.event);
       if (payload.event === 'signedIn') {
-        console.log('User signed in, redirecting...')
-        router.replace('/onboarding')
+        console.log('User signed in, redirecting...');
+        router.replace('/onboarding');
       }
-    })
-    return () => unsubscribe()
-  }, [router])
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 py-8">
-      {/* Removed the services prop - now using default Amplify sign-up */}
-      <Authenticator components={components} initialState="signIn">
+      <Authenticator 
+        formFields={formFields}
+        initialState="signIn"
+      >
         {({ user, signOut }) => (
           <div className="text-center">
             {user && (
@@ -105,5 +88,5 @@ export default function LoginPage() {
         )}
       </Authenticator>
     </div>
-  )
+  );
 }

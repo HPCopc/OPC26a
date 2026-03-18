@@ -9,7 +9,6 @@ import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Hub } from 'aws-amplify/utils';
-import { signUp } from 'aws-amplify/auth';
 
 const components: AuthenticatorProps['components'] = {
   SignUp: {
@@ -23,6 +22,7 @@ const components: AuthenticatorProps['components'] = {
             isRequired={true}
             type="email"
           />
+          
           <TextField
             name="password"
             label="Password"
@@ -68,87 +68,6 @@ const components: AuthenticatorProps['components'] = {
   },
 };
 
-const services: AuthenticatorProps['services'] = {
-  async handleSignUp(formData) {
-    const { username, password, options } = formData;
-    try {
- const email = (formData as any).username ||
-              (formData as any).email ||
-              username ||
-              options?.userAttributes?.email || ''
-
-console.log('formData:', JSON.stringify(formData))
-console.log('email resolved:', email)
-
-if (!email) {
-  throw new Error('Email is required')
-}
-      const givenName = options?.userAttributes?.given_name || ''
-      const familyName = options?.userAttributes?.family_name || ''
-
-      const countryCode = ((options?.userAttributes as any)?.country_code || '+1')
-        .trim()
-        .replace(/\s/g, '')
-
-      const rawPhone = (options?.userAttributes?.phone_number || '')
-        .replace('undefined', '')
-        .trim()
-
-      console.log('email:', email)
-      console.log('givenName:', givenName)
-      console.log('familyName:', familyName)
-      console.log('countryCode:', countryCode)
-      console.log('rawPhone:', rawPhone)
-
-      let fullPhone: string | undefined = undefined
-
-      if (rawPhone && rawPhone.length > 0) {
-        if (!countryCode.startsWith('+')) {
-          throw new Error('Country code must start with + (e.g. +1, +44, +966)')
-        }
-
-        let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '')
-
-        if (cleaned.startsWith('0')) {
-          cleaned = cleaned.substring(1)
-        }
-
-        if (cleaned.length < 7) {
-          throw new Error('Please enter a valid phone number (digits only, no country code)')
-        }
-
-        fullPhone = countryCode + cleaned
-        console.log('fullPhone:', fullPhone)
-      }
-
-      const userAttributes: Record<string, string> = {
-        email,
-        given_name: givenName,
-        family_name: familyName,
-      }
-
-      if (fullPhone) {
-        userAttributes.phone_number = fullPhone
-      }
-
-      console.log('Final userAttributes:', userAttributes)
-
-      const result = await signUp({
-        username: email,
-        password,
-        options: {
-          userAttributes,
-        },
-      })
-
-      return result
-    } catch (error: any) {
-      const message = error?.message || 'Sign up failed. Please try again.'
-      throw new Error(message)
-    }
-  },
-}
-
 export default function LoginPage() {
   const router = useRouter()
 
@@ -165,7 +84,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 py-8">
-      <Authenticator components={components} services={services} initialState="signIn">
+      {/* Removed the services prop - now using default Amplify sign-up */}
+      <Authenticator components={components} initialState="signIn">
         {({ user, signOut }) => (
           <div className="text-center">
             {user && (

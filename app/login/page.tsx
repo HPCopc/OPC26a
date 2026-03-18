@@ -16,10 +16,27 @@ const components: AuthenticatorProps['components'] = {
     FormFields() {
       return (
         <>
-          {/* Amplify handles Email + Password + Confirm Password automatically */}
-          <Authenticator.SignUp.FormFields />
-
-          {/* Extra custom fields */}
+          <TextField
+            name="username"
+            label="Email"
+            placeholder="Enter your email"
+            isRequired={true}
+            type="email"
+          />
+          <TextField
+            name="password"
+            label="Password"
+            placeholder="Enter your password"
+            isRequired={true}
+            type="password"
+          />
+          <TextField
+            name="confirm_password"
+            label="Confirm Password"
+            placeholder="Please confirm your Password"
+            isRequired={true}
+            type="password"
+          />
           <TextField
             name="given_name"
             label="First Name"
@@ -55,18 +72,29 @@ const services: AuthenticatorProps['services'] = {
   async handleSignUp(formData) {
     const { username, password, options } = formData;
     try {
-      // username is now reliably the email - no DOM hacks needed!
-      const email = username
+ const email = (formData as any).username ||
+              (formData as any).email ||
+              username ||
+              options?.userAttributes?.email || ''
 
+console.log('formData:', JSON.stringify(formData))
+console.log('email resolved:', email)
+
+if (!email) {
+  throw new Error('Email is required')
+}
       const givenName = options?.userAttributes?.given_name || ''
       const familyName = options?.userAttributes?.family_name || ''
 
       const countryCode = ((options?.userAttributes as any)?.country_code || '+1')
-        .trim().replace(/\s/g, '')
+        .trim()
+        .replace(/\s/g, '')
 
-      const rawPhone = (options?.userAttributes?.phone_number || '').trim()
+      const rawPhone = (options?.userAttributes?.phone_number || '')
+        .replace('undefined', '')
+        .trim()
 
-      console.log('username/email:', email)
+      console.log('email:', email)
       console.log('givenName:', givenName)
       console.log('familyName:', familyName)
       console.log('countryCode:', countryCode)
@@ -74,15 +102,21 @@ const services: AuthenticatorProps['services'] = {
 
       let fullPhone: string | undefined = undefined
 
-      if (rawPhone) {
+      if (rawPhone && rawPhone.length > 0) {
         if (!countryCode.startsWith('+')) {
           throw new Error('Country code must start with + (e.g. +1, +44, +966)')
         }
+
         let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '')
-        if (cleaned.startsWith('0')) cleaned = cleaned.substring(1)
-        if (cleaned.length < 7) {
-          throw new Error('Please enter a valid phone number')
+
+        if (cleaned.startsWith('0')) {
+          cleaned = cleaned.substring(1)
         }
+
+        if (cleaned.length < 7) {
+          throw new Error('Please enter a valid phone number (digits only, no country code)')
+        }
+
         fullPhone = countryCode + cleaned
         console.log('fullPhone:', fullPhone)
       }
@@ -99,11 +133,15 @@ const services: AuthenticatorProps['services'] = {
 
       console.log('Final userAttributes:', userAttributes)
 
-      return signUp({
+      const result = await signUp({
         username: email,
         password,
-        options: { userAttributes },
+        options: {
+          userAttributes,
+        },
       })
+
+      return result
     } catch (error: any) {
       const message = error?.message || 'Sign up failed. Please try again.'
       throw new Error(message)

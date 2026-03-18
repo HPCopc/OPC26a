@@ -16,9 +16,52 @@ const components: AuthenticatorProps['components'] = {
     FormFields() {
       return (
         <>
-         {/* Amplify handles Email + Password + Confirm Password automatically */}
-          <Authenticator.SignUp.FormFields />
-          {/* Extra custom fields */}                 
+          <TextField
+            name="username"
+            label="Email"
+            placeholder="Enter your email"
+            isRequired={true}
+            type="email"
+          />
+          <TextField
+            name="password"
+            label="Password"
+            placeholder="Enter your password"
+            isRequired={true}
+            type="password"
+          />
+          <TextField
+            name="confirm_password"
+            label="Confirm Password"
+            placeholder="Please confirm your Password"
+            isRequired={true}
+            type="password"
+          />
+          <TextField
+            name="given_name"
+            label="First Name"
+            placeholder="Enter your First Name"
+            isRequired={true}
+          />
+          <TextField
+            name="family_name"
+            label="Last Name"
+            placeholder="Enter your Last Name"
+            isRequired={true}
+          />
+          <TextField
+            name="country_code"
+            label="Country Code (optional)"
+            placeholder="+1"
+            defaultValue="+1"
+            descriptiveText="e.g. +1 (US), +44 (UK), +966 (Saudi Arabia), +971 (UAE)"
+          />
+          <TextField
+            name="phone_number"
+            label="Phone Number (optional)"
+            placeholder="6105551234"
+            descriptiveText="Enter digits only, no country code"
+          />
         </>
       );
     },
@@ -29,64 +72,85 @@ const services: AuthenticatorProps['services'] = {
   async handleSignUp(formData) {
     const { username, password, options } = formData;
     try {
-      // username is now reliably the email - no DOM hacks needed!
-      const email = username
 
-      console.log('username/email:', email);
-      console.log('givenName:', options?.userAttributes?.given_name || '');
-      console.log('familyName:', options?.userAttributes?.family_name || '');
 
-      // ✅ Use directly - no intermediate variables
-      const userAttributes: Record<string, string> = {
-        email,
-        given_name: options?.userAttributes?.given_name || '',
-        family_name: options?.userAttributes?.family_name || '',       
-      };
+const emailFromDOM = typeof document !== 'undefined'
+  ? (document.querySelector('input[name="username"]') as HTMLInputElement)?.value?.trim() || ''
+  : ''
 
-      console.log('Final userAttributes:', userAttributes);
+const email = emailFromDOM ||
+              username ||
+              options?.userAttributes?.email ||
+              (formData as any)['email'] || ''
+             
 
-      const result = await signUp({
-      username: email,
-      password,
-      options: { 
-        userAttributes, 
-        autoSignIn: true,
-        clientMetadata: {
-          source: 'web-app',
-          timestamp: new Date().toISOString(),
+console.log('formData:', JSON.stringify(formData))
+console.log('emailFromDOM:', emailFromDOM)
+console.log('email resolved:', email)
+
+if (!email) {
+  throw new Error('Email is required')
+}
+      const givenName = options?.userAttributes?.given_name || ''
+      const familyName = options?.userAttributes?.family_name || ''
+
+      const countryCode = ((options?.userAttributes as any)?.country_code || '+1')
+        .trim()
+        .replace(/\s/g, '')
+
+      const rawPhone = (options?.userAttributes?.phone_number || '')
+        .replace('undefined', '')
+        .trim()
+
+      console.log('email:', email)
+      console.log('givenName:', givenName)
+      console.log('familyName:', familyName)
+      console.log('countryCode:', countryCode)
+      console.log('rawPhone:', rawPhone)
+
+      let fullPhone: string | undefined = undefined
+
+      if (rawPhone && rawPhone.length > 0) {
+        if (!countryCode.startsWith('+')) {
+          throw new Error('Country code must start with + (e.g. +1, +44, +966)')
         }
-      },
-    });
 
-  // Add this to see verification details
-       if (result.nextStep) {
-        console.log('Next step details:', {
-          signUpStep: result.nextStep.signUpStep,
-        });
-        
-        // ✅ FIXED: Type-safe check for codeDeliveryDetails
-        if ('codeDeliveryDetails' in result.nextStep && result.nextStep.codeDeliveryDetails) {
-          console.log('📧 Verification sent to:', {
-            destination: result.nextStep.codeDeliveryDetails.destination,
-            medium: result.nextStep.codeDeliveryDetails.deliveryMedium,
-            attribute: result.nextStep.codeDeliveryDetails.attributeName
-          });
-        } else {
-          console.log('⚠️ No verification code was sent - check Cognito email configuration');
+        let cleaned = rawPhone.replace(/[\s\-\(\)]/g, '')
+
+        if (cleaned.startsWith('0')) {
+          cleaned = cleaned.substring(1)
         }
+
+        if (cleaned.length < 7) {
+          throw new Error('Please enter a valid phone number (digits only, no country code)')
+        }
+
+        fullPhone = countryCode + cleaned
+        console.log('fullPhone:', fullPhone)
       }
 
-   return result;
+      const userAttributes: Record<string, string> = {
+        email,
+        given_name: givenName,
+        family_name: familyName,
+      }
 
+      if (fullPhone) {
+        userAttributes.phone_number = fullPhone
+      }
 
+      console.log('Final userAttributes:', userAttributes)
+
+      const result = await signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes,
+        },
+      })
+
+      return result
     } catch (error: any) {
-      console.error('Full signup error:', {
-      message: error.message,
-      name: error.name,
-      code: error.code,
-      details: error
-    });
-
       const message = error?.message || 'Sign up failed. Please try again.'
       throw new Error(message)
     }

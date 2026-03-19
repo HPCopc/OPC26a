@@ -26,12 +26,12 @@ export const auth = defineAuth({
     phoneNumber: { required: false, mutable: true },
   },
    
-  senders: {
-    email: {
-    fromEmail: "no-reply@verificationemail.com",
-    fromName: "Opportunity Crudes"
-    }
-  },
+  // senders: {
+  //  email: {
+  //  fromEmail: "no-reply@verificationemail.com",
+  //  fromName: "Opportunity Crudes"
+  //  }
+ // },
 
  // emailSettings: {servicePlan: "COGNITO_DEFAULT" },
   // Add the post-confirmation trigger

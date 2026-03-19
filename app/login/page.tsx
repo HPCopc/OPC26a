@@ -68,6 +68,12 @@ export default function LoginPage() {
       <Authenticator 
         formFields={formFields}
         initialState="signIn"
+        loginMechanisms={['email']}
+        signUpAttributes={[
+          'given_name',
+          'family_name',
+          'phone_number'
+        ]}
       >
         {({ user, signOut }) => (
           <div className="text-center">

@@ -37,7 +37,7 @@ export const auth = defineAuth({
   // Add the post-confirmation trigger
   triggers: {
     postConfirmation,
-    preSignUp,         // ✅ new — blocks disposable emails
+//    preSignUp,         
   },
 
   // You can add social providers likes Google, Facebook, etc. here

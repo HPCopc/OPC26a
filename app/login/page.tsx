@@ -6,45 +6,45 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Hub } from 'aws-amplify/utils';
 
-// Define form fields configuration
 const formFields = {
   signUp: {
-    username: {
-      order: 1,
-      label: 'Email',
-      placeholder: 'Enter your email',
-      isRequired: true,
-    },
-    password: {
-      order: 2,
-      label: 'Password',
-      placeholder: 'Enter your password',
-      isRequired: true,
-    },
-    confirm_password: {
-      order: 3,
-      label: 'Confirm Password',
-      placeholder: 'Confirm your password',
-      isRequired: true,
-    },
+    // ❌ Remove username — loginMechanisms={['email']} handles this
     given_name: {
-      order: 4,
+      order: 1,
       label: 'First Name',
       placeholder: 'Enter your first name',
       isRequired: true,
     },
     family_name: {
-      order: 5,
+      order: 2,
       label: 'Last Name',
       placeholder: 'Enter your last name',
       isRequired: true,
     },
+    email: {
+      order: 3,           // ✅ email field, not username
+      label: 'Email',
+      placeholder: 'Enter your email',
+      isRequired: true,
+    },
     phone_number: {
-      order: 6,
+      order: 4,
       label: 'Phone Number (optional)',
       placeholder: '+1 610 555 1234',
       isRequired: false,
       dialCode: '+1',
+    },
+    password: {
+      order: 5,
+      label: 'Password',
+      placeholder: 'Enter your password',
+      isRequired: true,
+    },
+    confirm_password: {
+      order: 6,
+      label: 'Confirm Password',
+      placeholder: 'Confirm your password',
+      isRequired: true,
     },
   },
 };
@@ -65,15 +65,11 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 py-8">
-      <Authenticator 
+      <Authenticator
         formFields={formFields}
         initialState="signIn"
         loginMechanisms={['email']}
-        signUpAttributes={[
-          'given_name',
-          'family_name',
-          'phone_number'
-        ]}
+        // ❌ Remove signUpAttributes — formFields handles ordering/labels
       >
         {({ user, signOut }) => (
           <div className="text-center">

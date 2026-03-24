@@ -3,8 +3,8 @@ import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { getAmplifyDataClientConfig } from '@aws-amplify/backend/function/runtime';
 import { env } from '$amplify/env/post-confirmation';
-// import type { Schema } from '../../data/resource';
-import type { Schema } from '../../../amplify/data/resource';
+import type { Schema } from '../../data/resource';
+// import type { Schema } from '../../../amplify/data/resource';
 
 // ---- Configure Amplify Data client at module load (ESM supports top-level await)
 const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env);

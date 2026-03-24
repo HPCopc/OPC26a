@@ -23,7 +23,7 @@ export const auth = defineAuth({
   userAttributes: {
     givenName: { required: true, mutable: true },
     familyName: { required: true, mutable: true },
-    phoneNumber: { required: false, mutable: true },
+  //  phoneNumber: { required: false, mutable: true },
   },
    
   // senders: {
@@ -37,7 +37,7 @@ export const auth = defineAuth({
   // Add the post-confirmation trigger
   triggers: {
     postConfirmation,
-//    preSignUp,         
+    preSignUp,         
   },
 
   // You can add social providers likes Google, Facebook, etc. here

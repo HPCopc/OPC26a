@@ -8,5 +8,3 @@ const backend = defineBackend({
  data,
  postConfirmation, 
 });
-
-backend.data.resources.graphqlApi.addFunctionAccess(backend.postConfirmation.resources.lambda);

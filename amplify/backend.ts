@@ -3,8 +3,10 @@ import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { postConfirmation } from './functions/post-confirmation/resource';  
 
-defineBackend({
+const backend = defineBackend({
  auth,
  data,
  postConfirmation, 
 });
+
+backend.data.resources.graphqlApi.addFunctionAccess(backend.postConfirmation.resources.lambda);

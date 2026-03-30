@@ -108,6 +108,11 @@ export default function OnboardingPage() {
       console.log('⚠️ No profile found. Creating fallback profile...');
       result = await client.models.UserProfile.create({
         id: sub,
+        userId: sub,
+        email: userEmail,
+        givenName: userAttributes.given_name || '',  
+        familyName: userAttributes.family_name || '', 
+        phoneNumber: userAttributes.phone_number || '',
         ...form,
         profileCompleted: true,
       });
@@ -115,6 +120,7 @@ export default function OnboardingPage() {
       // 3. If exists, just update it.
       result = await client.models.UserProfile.update({
         id: sub,
+        userId: sub,
         ...form,
         profileCompleted: true,
       });

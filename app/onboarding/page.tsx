@@ -81,20 +81,79 @@ export default function OnboardingPage() {
   e.preventDefault();
   if (!sub || !canSubmit) return;
 
-  try {
-   await client.models.UserProfile.update({
-    id: sub,
-    userId: sub,
-    ...form,
-    profileCompleted: true,
-   });
+  console.log('🚀 Starting profile update...');
+  console.log('User sub:', sub);
+  console.log('Form data:', form);
 
-   router.replace('/');
+  try {
+
+    // First, verify we can get the current user
+    const currentUser = await getCurrentUser();
+    console.log('Current user:', currentUser);
+    console.log('Current user ID:', currentUser.userId);
+
+    // Try to read the existing profile first
+    console.log('📖 Reading existing profile...');
+    const existingProfile = await client.models.UserProfile.get({ id: sub });
+    console.log('Existing profile:', existingProfile);
+
+    if (!existingProfile.data) {
+      console.error('❌ No existing profile found for user:', sub);
+      alert('Profile not found. Please contact support.');
+      return;
+    }
+
+        // Prepare update data - only include fields that exist in your schema
+    const updateData = {
+      id: sub,
+      userId: sub,
+      companyName: form.companyName,
+      jobTitle: form.jobTitle,
+      addressLine1: form.addressLine1,
+      city: form.city,
+      state: form.state,
+      zipCode: form.zipCode,
+      country: form.country,
+      subscriptionType: form.subscriptionType,
+      profileCompleted: true,
+    };
+    
+    console.log('📝 Attempting update with:', updateData);
+
+    const result = await client.models.UserProfile.update(updateData);
+    
+    console.log('📊 Update result:', JSON.stringify(result, null, 2));
+
+    if (result.data) {
+      console.log('✅ Profile updated successfully!');
+      console.log('Updated profile:', result.data);
+      router.replace('/');
+    } else if (result.errors) {
+      console.error('❌ Update failed with errors:', result.errors);
+      alert(`Update failed: ${result.errors[0]?.message || 'Unknown error'}`);
+    }
   } catch (err) {
-   console.error('Failed to save onboarding fields', err);
-   alert('Failed to save. Please try again.');
+    console.error('❌ Exception caught:', err);
+    console.error('Error details:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+    alert(`Failed to save: ${err instanceof Error ? err.message : 'Unknown error'}`);
   }
- };
+};
+
+
+
+  // await client.models.UserProfile.update({
+  //  id: sub,
+  //  userId: sub,
+  //  ...form,
+  //  profileCompleted: true,
+  //  });
+
+  // router.replace('/');
+  //} catch (err) {
+  // console.error('Failed to save onboarding fields', err);
+  // alert('Failed to save. Please try again.');
+ // }
+ // };
 
  if (loading) {
   return (

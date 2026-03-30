@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';  
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({
+  authMode: 'userPool'  // Make sure this is set correctly
+});
+
+
+// const client = generateClient<Schema>();
 
 export default function OnboardingPage() {
  const router = useRouter();
@@ -97,32 +102,25 @@ export default function OnboardingPage() {
     const existingProfile = await client.models.UserProfile.get({ id: sub });
     console.log('Existing profile:', existingProfile);
 
+    let result;
     if (!existingProfile.data) {
-      console.error('❌ No existing profile found for user:', sub);
-      alert('Profile not found. Please contact support.');
-      return;
+      // 2. If NOT exists (Lambda failed), CREATE it right here.
+      console.log('⚠️ No profile found. Creating fallback profile...');
+      result = await client.models.UserProfile.create({
+        id: sub,
+        ...form,
+        profileCompleted: true,
+      });
+    } else {
+      // 3. If exists, just update it.
+      result = await client.models.UserProfile.update({
+        id: sub,
+        ...form,
+        profileCompleted: true,
+      });
     }
 
-        // Prepare update data - only include fields that exist in your schema
-    const updateData = {
-      id: sub,
-      userId: sub,
-      companyName: form.companyName,
-      jobTitle: form.jobTitle,
-      addressLine1: form.addressLine1,
-      city: form.city,
-      state: form.state,
-      zipCode: form.zipCode,
-      country: form.country,
-      subscriptionType: form.subscriptionType,
-      profileCompleted: true,
-    };
     
-    console.log('📝 Attempting update with:', updateData);
-
-    const result = await client.models.UserProfile.update(updateData);
-    
-    console.log('📊 Update result:', JSON.stringify(result, null, 2));
 
     if (result.data) {
       console.log('✅ Profile updated successfully!');

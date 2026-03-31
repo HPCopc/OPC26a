@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { getCurrentUser, fetchUserAttributes  } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';  
 const client = generateClient<Schema>({
   authMode: 'userPool'  // Make sure this is set correctly
 });
+
 
 
 // const client = generateClient<Schema>();
@@ -16,6 +17,7 @@ export default function OnboardingPage() {
  const router = useRouter();
  const [loading, setLoading] = useState(true);
  const [sub, setSub] = useState<string | null>(null);
+const [saving, setSaving] = useState(false);  
 
  const [form, setForm] = useState({
   companyName: '',
@@ -72,7 +74,8 @@ export default function OnboardingPage() {
     router.replace('/login');
     return;
    } finally {
-    setLoading(false);
+      setLoading(false);
+     
    }
   })();
  }, [router]);
@@ -84,7 +87,9 @@ export default function OnboardingPage() {
 
  const onSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
-  if (!sub || !canSubmit) return;
+  
+  if (!sub || !canSubmit || saving) return; 
+  setSaving(true); 
 
   console.log('🚀 Starting profile update...');
   console.log('User sub:', sub);
@@ -96,6 +101,8 @@ export default function OnboardingPage() {
     const currentUser = await getCurrentUser();
     console.log('Current user:', currentUser);
     console.log('Current user ID:', currentUser.userId);
+
+     const userAttributes = await fetchUserAttributes();
 
     // Try to read the existing profile first
     console.log('📖 Reading existing profile...');
@@ -109,7 +116,7 @@ export default function OnboardingPage() {
       result = await client.models.UserProfile.create({
         id: sub,
         userId: sub,
-        email: userEmail,
+        email: userAttributes.email || '',
         givenName: userAttributes.given_name || '',  
         familyName: userAttributes.family_name || '', 
         phoneNumber: userAttributes.phone_number || '',
@@ -140,7 +147,10 @@ export default function OnboardingPage() {
     console.error('❌ Exception caught:', err);
     console.error('Error details:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     alert(`Failed to save: ${err instanceof Error ? err.message : 'Unknown error'}`);
-  }
+  } finally {
+      setSaving(false);   
+    }
+
 };
 
 
@@ -277,10 +287,11 @@ export default function OnboardingPage() {
 
     <button
      type="submit"
-     disabled={!canSubmit}
+     disabled={!canSubmit || saving} 
      className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
     >
-     Save & Continue
+     {saving ? 'Saving...' : 'Save & Continue'}
+
     </button>
    </form>
   </div>

@@ -183,7 +183,7 @@ return () => { unsubscribe(); document.removeEventListener('mousedown', handleCl
               </div>
 
             {/* Update Profile */}
-              <Link href="/profile" onClick={() => setDropdownOpen(false)}
+              <Link href="/profile/edit" onClick={() => setDropdownOpen(false)}
                 className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100"  >
                 <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/>

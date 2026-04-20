@@ -39,7 +39,42 @@ const schema = a.schema({
             
        
     ]),
+
+    // NEW: Page model for CMS content
+    Page: a.model({
+    // Basic page info
+    slug: a.string().required(),
+    title: a.string().required(),
+    sections: a.json().required(),
+    status: a.enum(['draft', 'published']).required(),
+    
+    // SEO metadata
+    seo: a.json(),
+    
+    // Optional: Featured page flag
+    featured: a.boolean().default(false),
+    
+    // Author tracking
+    authorId: a.string(),
+    
+    // Automatic timestamps
+    createdAt: a.datetime(),
+    updatedAt: a.datetime(),
+  })
+    .authorization(allow => [
+      // Anyone can read published pages
+      allow.guest().to(['read']),
+      
+      // Authenticated users can read all pages (including drafts)
+      allow.authenticated().to(['read']),
+      
+      // Only ADMINS group can create, update, delete
+      allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+    ]),
+
+// end of page model
 })
+
 .authorization((allow) => [
   allow.resource(postConfirmation).to(['mutate']), // ✅ fixed
 ]);

@@ -5,10 +5,10 @@ import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Hub } from 'aws-amplify/utils';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 
 const formFields = {
   signUp: {
-    // ❌ Remove username — loginMechanisms={['email']} handles this
     given_name: {
       order: 1,
       label: 'First Name',
@@ -22,7 +22,7 @@ const formFields = {
       isRequired: true,
     },
     email: {
-      order: 3,           // ✅ email field, not username
+      order: 3,
       label: 'Email',
       placeholder: 'Enter your email',
       isRequired: true,
@@ -53,13 +53,25 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = Hub.listen('auth', ({ payload }) => {
-      console.log('Auth event:', payload.event);
+    const unsubscribe = Hub.listen('auth', async ({ payload }) => {
       if (payload.event === 'signedIn') {
-        console.log('User signed in, redirecting...');
-        router.replace('/onboarding');
+        try {
+          const attributes = await fetchUserAttributes();
+          const role = attributes['custom:role'];
+
+          if (role === 'admin') {
+            router.replace('/admin/dashboard');
+          } else if (role === 'member') {
+            router.replace('/dashboard');
+          } else {
+            router.replace('/onboarding');
+          }
+        } catch {
+          router.replace('/onboarding');
+        }
       }
     });
+
     return () => unsubscribe();
   }, [router]);
 
@@ -69,23 +81,11 @@ export default function LoginPage() {
         formFields={formFields}
         initialState="signIn"
         loginMechanisms={['email']}
-        // ❌ Remove signUpAttributes — formFields handles ordering/labels
       >
-        {({ user, signOut }) => (
-          <div className="text-center">
-            {user && (
-              <>
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4" />
-                <h1 className="text-2xl font-bold mb-4">Welcome!</h1>
-                <p className="text-gray-600">Redirecting to your dashboard...</p>
-                <button
-                  onClick={signOut}
-                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                >
-                  Sign Out
-                </button>
-              </>
-            )}
+        {() => (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+            <p className="ml-3 text-gray-600">Signing you in...</p>
           </div>
         )}
       </Authenticator>

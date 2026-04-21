@@ -65,10 +65,13 @@ export default function LoginPage() {
           }
 
           if (role === 'ADMINS') {
+            console.log('Redirecting to /admin/dashboard');
             router.replace('/admin/dashboard');
           } else if (role === 'member') {
+            console.log('Redirecting to /dashboard');
             router.replace('/dashboard');
           } else {
+            console.log('Redirecting to /onboarding');
             router.replace('/onboarding');
           }
         } catch {

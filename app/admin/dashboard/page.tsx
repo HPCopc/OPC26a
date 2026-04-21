@@ -57,8 +57,8 @@ export default function AdminDashboard() {
       showMessage('❌ Slug and Title are required');
       return;
     }
-    const sections = parseJsonField(form.sections, 'Sections');
-    const seo = parseJsonField(form.seo, 'SEO');
+    const sections = parseJsonField(form.sections, 'Sections') as object[];
+    const seo = parseJsonField(form.seo, 'SEO') as object;
     if (sections === null || seo === null) return;
 
     setLoading(true);
@@ -88,8 +88,8 @@ export default function AdminDashboard() {
       showMessage('❌ Slug and Title are required');
       return;
     }
-    const sections = parseJsonField(form.sections, 'Sections');
-    const seo = parseJsonField(form.seo, 'SEO');
+    const sections = parseJsonField(form.sections, 'Sections') as object[];
+    const seo = parseJsonField(form.seo, 'SEO') as object;
     if (sections === null || seo === null) return;
 
     setLoading(true);

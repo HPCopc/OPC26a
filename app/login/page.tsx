@@ -57,7 +57,12 @@ export default function LoginPage() {
       if (payload.event === 'signedIn') {
         try {
           const attributes = await fetchUserAttributes();
+          console.log('All user attributes:', attributes); 
           const role = attributes['custom:role'];
+          console.log('Custom role value:', role);
+ if (!role) {
+            console.warn('custom:role attribute not found! Available keys:', Object.keys(attributes));
+          }
 
           if (role === 'ADMINS') {
             router.replace('/admin/dashboard');

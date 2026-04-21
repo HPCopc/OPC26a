@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         const attributes = await fetchUserAttributes(contextSpec);
 
-        if (attributes['custom:role'] !== 'admin') redirect('/');
+        if (attributes['custom:role'] !== 'ADMINS') redirect('/');
       },
     });
   } catch {

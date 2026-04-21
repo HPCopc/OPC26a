@@ -37,7 +37,7 @@ const primaryNav: NavItem[] = [
 
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<{ name?: string; email?: string } | null>(null);
+  const [userInfo, setUserInfo] = useState<{ name?: string; email?: string; role?: string } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -49,7 +49,8 @@ export default function Header() {
         const attrs = await fetchUserAttributes();
         setUserInfo({ 
           name: attrs.name || attrs.given_name || attrs.email?.split('@')[0], 
-           email: attrs.email 
+           email: attrs.email , 
+           role: attrs['custom:role'] 
         });
        setIsLoggedIn(true);
       } catch {
@@ -191,6 +192,20 @@ return () => { unsubscribe(); document.removeEventListener('mousedown', handleCl
                 </svg>
                 Update profile
               </Link>
+
+            {/* Dashboard Link - ONLY for admins */}
+            {userInfo?.role === 'ADMINS' && (
+              <Link href="/admin/dashboard" onClick={() => setDropdownOpen(false)}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">
+                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+                  <rect x="2" y="2" width="5" height="5" stroke="currentColor" strokeWidth="1.4"/>
+                  <rect x="9" y="2" width="5" height="5" stroke="currentColor" strokeWidth="1.4"/>
+                  <rect x="2" y="9" width="5" height="5" stroke="currentColor" strokeWidth="1.4"/>
+                  <rect x="9" y="9" width="5" height="5" stroke="currentColor" strokeWidth="1.4"/>
+                </svg>
+                Dashboard
+              </Link>
+            )}      
 
             {/* Sign Out */}
             <button onClick={() => { setDropdownOpen(false); handleSignOut(); }}

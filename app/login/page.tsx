@@ -59,7 +59,7 @@ export default function LoginPage() {
           const attributes = await fetchUserAttributes();
           const role = attributes['custom:role'];
 
-          if (role === 'admin') {
+          if (role === 'ADMINS') {
             router.replace('/admin/dashboard');
           } else if (role === 'member') {
             router.replace('/dashboard');

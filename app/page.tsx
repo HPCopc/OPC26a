@@ -11,7 +11,6 @@ import GrayCard from "@/app/components/MainGrayCard";
 
 Amplify.configure(outputs);
 
-const client = generateClient<Schema>();
 
 const cardData = [
   { title: "Shale Oil", description: "shale oil" },
@@ -35,19 +34,8 @@ const xcardData = [
   { title: "Energy Trilemma", description: "Insights on balancing security, affordability, and sustainability in crude operations." },
 ];
 
-export default function App() {
+export default function HomeClient() {
    
-// Fetch content directly in Server Component
-//  const content = await getAllContent();
-  
-  // Group content into 4 sets of 2 (8 items total)
- // const contentPairs = [
- //   content.slice(0, 2), // Set 1
- //   content.slice(2, 4), // Set 2
- //   content.slice(4, 6), // Set 3
- //   content.slice(6, 8)  // Set 4
- // ];
-
   const pairs = [];
   for (let i = 0; i < cardData.length; i += 2) {
     pairs.push(cardData.slice(i, i + 2));

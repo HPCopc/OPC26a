@@ -52,23 +52,12 @@ export default function AdminDashboard() {
   }
 
   useEffect(() => {
-    const initialize = async () => {
-      // Check if user is authenticated
-      try {
-        const { auth } = await import('aws-amplify/auth');
-        const user = await auth.getCurrentUser();
-        console.log('Authenticated user:', user);
-      } catch (error) {
-        console.error('Not authenticated:', error);
-        showMessage('❌ Please log in first');
-      }
-      
-      // Fetch pages once
-      await fetchPages();
-    };
-    
-    initialize();
-  }, []); 
+  const initialize = async () => {
+    // Skip auth check during build
+    await fetchPages();
+  };
+  initialize();
+}, []);
 
   async function handleCreate() {
     if (!form.slug.trim() || !form.title.trim()) {

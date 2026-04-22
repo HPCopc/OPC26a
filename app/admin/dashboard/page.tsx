@@ -81,7 +81,17 @@ export default function AdminDashboard() {
         featured: form.featured,
         authorId: form.authorId || undefined,
       });
+
+      console.log('Full result:', JSON.stringify(result, null, 2));
+    
+      if (result.errors && result.errors.length > 0) {
+        console.error('Error details:', result.errors[0]);
+       showMessage(`❌ Error: ${result.errors[0].message}`);
+       return;
+      }
+
       console.log('Create result:', result); 
+      console.log('Errors:', result.errors);
       showMessage('✅ Page created! DD');
       setForm(emptyForm);
       fetchPages();

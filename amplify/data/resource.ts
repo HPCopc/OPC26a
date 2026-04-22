@@ -30,7 +30,7 @@ const schema = a.schema({
     slug: a.string().required(),
     title: a.string().required(),
     sections: a.json().required(),
-    status: a.enum(['draft', 'published']),  // ← removed .required()
+    status: a.enum(['draft', 'published']),   
     seo: a.json(),
     featured: a.boolean().default(false),
     authorId: a.string(),

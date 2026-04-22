@@ -77,7 +77,7 @@ export default function AdminDashboard() {
         featured: form.featured,
         authorId: form.authorId || undefined,
       });
-      showMessage('✅ Page created!');
+      showMessage('✅ Page created! DD');
       setForm(emptyForm);
       fetchPages();
       setCurrentView('main'); // Return to main menu after create

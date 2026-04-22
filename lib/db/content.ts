@@ -1,7 +1,11 @@
 import { generateClient } from "aws-amplify/data"
 import type { Schema } from "@/amplify/data/resource"
+import { Amplify } from "aws-amplify"
+import outputs from "@/amplify_outputs.json"
 
-const client = generateClient<Schema>()
+Amplify.configure(outputs)
+
+const client = generateClient<Schema>({ authMode: 'apiKey' })
 
 export async function getPageBySlug(slug: string) {
   const { data } = await client.models.Page.list({

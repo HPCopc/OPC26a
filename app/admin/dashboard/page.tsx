@@ -75,9 +75,9 @@ export default function AdminDashboard() {
       const result = await client.models.Page.create({
         slug: form.slug,
         title: form.title,
-        sections,
+        sections: form.sections,   
         status: form.status,
-        seo,
+        seo: form.seo,
         featured: form.featured,
         authorId: form.authorId || undefined,
       });

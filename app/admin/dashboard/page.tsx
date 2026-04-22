@@ -32,10 +32,6 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchPages();
-  }, []);
-
   function showMessage(msg: string) {
     setMessage(msg);
     setTimeout(() => setMessage(''), 4000);
@@ -55,6 +51,25 @@ export default function AdminDashboard() {
     setPages(data);
   }
 
+  useEffect(() => {
+    const initialize = async () => {
+      // Check if user is authenticated
+      try {
+        const { auth } = await import('aws-amplify/auth');
+        const user = await auth.getCurrentUser();
+        console.log('Authenticated user:', user);
+      } catch (error) {
+        console.error('Not authenticated:', error);
+        showMessage('❌ Please log in first');
+      }
+      
+      // Fetch pages once
+      await fetchPages();
+    };
+    
+    initialize();
+  }, []); 
+
   async function handleCreate() {
     if (!form.slug.trim() || !form.title.trim()) {
       showMessage('❌ Slug and Title are required');
@@ -68,7 +83,7 @@ export default function AdminDashboard() {
    
     setLoading(true);
     try {
-      await client.models.Page.create({
+      const result = await client.models.Page.create({
         slug: form.slug,
         title: form.title,
         sections,
@@ -77,14 +92,17 @@ export default function AdminDashboard() {
         featured: form.featured,
         authorId: form.authorId || undefined,
       });
+      console.log('Create result:', result); 
       showMessage('✅ Page created! DD');
       setForm(emptyForm);
       fetchPages();
       setCurrentView('main'); // Return to main menu after create
-    } catch (e) {
-      showMessage('❌ Error: ' + (e as Error).message);
-    }
-    setLoading(false);
+    } catch (error) {
+      console.error('Full error:', error); 
+      showMessage('❌ Error: ' + (error as Error).message);
+    } finally {
+      setLoading(false);
+    }      
   }
 
   async function handleUpdate() {
@@ -114,8 +132,8 @@ export default function AdminDashboard() {
       setForm(emptyForm);
       fetchPages();
       setCurrentView('main'); // Return to main menu after update
-    } catch (e) {
-      showMessage('❌ Error: ' + (e as Error).message);
+    } catch (error ) {
+      showMessage('❌ Error: ' + (error  as Error).message);
     }
     setLoading(false);
   }
@@ -128,8 +146,8 @@ export default function AdminDashboard() {
       setDeleteConfirmId(null);
       fetchPages();
       setCurrentView('main'); // Return to main menu after delete
-    } catch (e) {
-      showMessage('❌ Error: ' + (e as Error).message);
+    } catch (error ) {
+      showMessage('❌ Error: ' + (error  as Error).message);
     }
     setLoading(false);
   }

@@ -28,8 +28,9 @@ export const auth = defineAuth({
         mutable: true,
   //  companyName: { required: false, mutable: true },
   //  phoneNumber: { required: false, mutable: true },
+      },
   },
-   
+  
   // senders: {
   //  email: {
   //  fromEmail: "no-reply@verificationemail.com",

@@ -1,3 +1,4 @@
+//This is the auth guard wrapper. every page come in (protected) has to run this
 'use client';
 
 import { useEffect } from 'react';

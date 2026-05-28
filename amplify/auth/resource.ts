@@ -23,6 +23,7 @@ export const auth = defineAuth({
   userAttributes: {
     givenName: { required: true, mutable: true },
     familyName: { required: true, mutable: true },
+    companyName: { required: false, mutable: true },
   //  phoneNumber: { required: false, mutable: true },
   },
    

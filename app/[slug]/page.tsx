@@ -1,3 +1,4 @@
+// This is to fetch a page content from db - dynammic web page
 import { getPageBySlug } from "@/lib/db/content"
 import ContentSection from "@/app/components/ContentSection"
 

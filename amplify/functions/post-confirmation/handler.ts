@@ -30,6 +30,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
  const givenName = s(event.request.userAttributes.given_name);
  const familyName = s(event.request.userAttributes.family_name);
  const phoneNumber = s(event.request.userAttributes.phone_number);
+const companyName = s(event.request.userAttributes['custom:companyName'] ?? event.request.userAttributes.companyName);
 
  console.log(`Post-confirmation triggered for user: ${sub}`);
 
@@ -55,6 +56,7 @@ console.log('📊 Get result:', JSON.stringify(existing, null, 2));
     givenName: givenName || existing.data.givenName || '',
     familyName: familyName || existing.data.familyName || '',
     phoneNumber: phoneNumber || existing.data.phoneNumber || '',
+     companyName: companyName || existing.data.companyName || '',
    });
    
    if (updateResult.data) {
@@ -76,7 +78,7 @@ console.log('📊 Get result:', JSON.stringify(existing, null, 2));
     phoneNumber,
 
     // Defaults for optional fields you’ll fill later
-    companyName: '',
+    companyName: companyName || '',
     jobTitle: '',
     addressLine1: '',
     city: '',

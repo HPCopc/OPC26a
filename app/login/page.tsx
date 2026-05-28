@@ -21,27 +21,33 @@ const formFields = {
       placeholder: 'Enter your last name',
       isRequired: true,
     },
-    email: {
+    'custom:companyName': {
       order: 3,
+      label: 'Company Name',
+      placeholder: 'Enter your company name',
+      isRequired: false,
+    },
+    email: {
+      order: 4,
       label: 'Email',
       placeholder: 'Enter your email',
       isRequired: true,
     },
     phone_number: {
-      order: 4,
+      order: 5,
       label: 'Phone Number (optional)',
       placeholder: '+1 610 555 1234',
       isRequired: false,
       dialCode: '+1',
     },
     password: {
-      order: 5,
+      order: 6,
       label: 'Password',
       placeholder: 'Enter your password',
       isRequired: true,
     },
     confirm_password: {
-      order: 6,
+      order: 7,
       label: 'Confirm Password',
       placeholder: 'Confirm your password',
       isRequired: true,

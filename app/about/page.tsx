@@ -1,3 +1,4 @@
+// this is for about page - static page, content is here
 import React from 'react';
 import Link from 'next/link';
 

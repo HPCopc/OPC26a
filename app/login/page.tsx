@@ -5,7 +5,7 @@ import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Hub } from 'aws-amplify/utils';
-import { fetchUserAttributes } from 'aws-amplify/auth';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 const formFields = {
   signUp: {
@@ -62,23 +62,17 @@ export default function LoginPage() {
     const unsubscribe = Hub.listen('auth', async ({ payload }) => {
       if (payload.event === 'signedIn') {
         try {
-          const attributes = await fetchUserAttributes();
-          console.log('All user attributes:', attributes); 
-          const role = attributes['custom:role'];
-          console.log('Custom role value:', role);
- if (!role) {
-            console.warn('custom:role attribute not found! Available keys:', Object.keys(attributes));
-          }
+          const session = await fetchAuthSession();
+          const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) ?? [];
+          
+          console.log('Cognito groups:', groups);
 
-          if (role === 'ADMINS') {
+          if (groups.includes('ADMINS')) {
             console.log('Redirecting to /admin/dashboard');
             router.replace('/admin/dashboard');
-          } else if (role === 'member') {
+          } else {
             console.log('Redirecting to /dashboard');
             router.replace('/dashboard');
-          } else {
-            console.log('Redirecting to /onboarding');
-            router.replace('/onboarding');
           }
         } catch {
           router.replace('/onboarding');

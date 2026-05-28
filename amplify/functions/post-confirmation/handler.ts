@@ -123,6 +123,7 @@ console.log('📊 Create result:', JSON.stringify(result, null, 2));
     givenName,
     familyName,
     phoneNumber,
+    companyName,
    });
   } else {
    console.error('❌ Error in post-confirmation handler:', error);

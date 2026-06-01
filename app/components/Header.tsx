@@ -32,7 +32,7 @@ const primaryNav: NavItem[] = [
   { label: 'Videos', href: '/videos' },
   { label: 'White Papers', href: '/white-papers' },
   { label: 'Resources', href: '/resources' },
-  { label: 'Events', href: '/?view=events' },
+  { label: 'Events', href: '/events' },
 ];
 
 export default function Header() {

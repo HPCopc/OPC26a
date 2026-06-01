@@ -1,5 +1,6 @@
 'use client';
-
+// <authentication trigger cognito .   
+// sign up form here
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
@@ -25,7 +26,7 @@ const formFields = {
       order: 3,
       label: 'Company Name',
       placeholder: 'Enter your company name',
-      isRequired: false,
+      isRequired: true,
     },
     email: {
       order: 4,
@@ -71,8 +72,8 @@ export default function LoginPage() {
             console.log('Redirecting to /admin/dashboard');
             router.replace('/admin/dashboard');
           } else {
-            console.log('Redirecting to /dashboard');
-            router.replace('/dashboard');
+            console.log('Redirecting to /');
+            router.replace('/');
           }
         } catch {
           router.replace('/onboarding');

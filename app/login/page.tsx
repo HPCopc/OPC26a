@@ -72,7 +72,7 @@ export default function LoginPage() {
             console.log('Redirecting to /admin/dashboard');
             router.replace('/admin/dashboard');
           } else {
-            console.log('Redirecting to /');
+            console.log('Redirecting to /dashboard');
             router.replace('/');
           }
         } catch {

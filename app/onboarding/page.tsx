@@ -166,7 +166,8 @@ export default function OnboardingPage() {
           <input
             name="companyName"
             value={form.companyName}
-            onChange={onChange}
+//            onChange={onChange}
+            disabled
             className="w-full px-3 py-2 border rounded-md"
             placeholder="Company LLC"
             required

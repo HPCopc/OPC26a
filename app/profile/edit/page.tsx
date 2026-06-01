@@ -82,6 +82,19 @@ export default function EditProfilePage() {
         updatedAt: new Date().toISOString(),
       });
 
+      const { data, errors } = await client.models.UserProfile.update({
+        id: sub,
+        userId: sub,
+        jobTitle: form.jobTitle,
+        addressLine1: form.addressLine1,
+        city: form.city,
+        state: form.state,
+        zipCode: form.zipCode,
+        country: form.country,
+        subscriptionType: form.subscriptionType,
+        updatedAt: new Date().toISOString(),
+});
+
       if (errors) {
         console.error('Update failed:', errors);
         alert(`Update failed: ${errors[0]?.message || 'Unknown error'}`);
@@ -124,8 +137,7 @@ export default function EditProfilePage() {
             type="text"
             name="companyName"
             value={form.companyName}
-            onChange={handleChange}
-            required
+            disabled            
             className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

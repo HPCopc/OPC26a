@@ -26,7 +26,7 @@ export const auth = defineAuth({
     "custom:companyName": { 
         dataType: "String",
         mutable: true,
-        required: true, 
+        required: false, 
   //  companyName: { required: false, mutable: true },
   //  phoneNumber: { required: false, mutable: true },
       },

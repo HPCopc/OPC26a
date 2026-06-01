@@ -78,13 +78,6 @@ export default function EditProfilePage() {
       const { data, errors } = await client.models.UserProfile.update({
         id: sub,
         userId: sub,
-        ...form,
-        updatedAt: new Date().toISOString(),
-      });
-
-      const { data, errors } = await client.models.UserProfile.update({
-        id: sub,
-        userId: sub,
         jobTitle: form.jobTitle,
         addressLine1: form.addressLine1,
         city: form.city,

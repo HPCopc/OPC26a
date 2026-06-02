@@ -13,6 +13,7 @@ export default function EditProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sub, setSub] = useState<string | null>(null);
+  const [subscriptionType, setSubscriptionType] = useState<string>('free');
   
   const [form, setForm] = useState({
     companyName: '',
@@ -22,7 +23,7 @@ export default function EditProfilePage() {
     state: '',
     zipCode: '',
     country: '',
-    subscriptionType: 'free',
+ //   subscriptionType: 'free',
   });
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function EditProfilePage() {
       }
 
       if (data) {
+        setSubscriptionType(data.subscriptionType || 'free');
         setForm({
           companyName: data.companyName || '',
           jobTitle: data.jobTitle || '',
@@ -52,7 +54,7 @@ export default function EditProfilePage() {
           state: data.state || '',
           zipCode: data.zipCode || '',
           country: data.country || '',
-          subscriptionType: data.subscriptionType || 'free',
+ //         subscriptionType: data.subscriptionType || 'free',
         });
       }
     } catch (error) {
@@ -84,7 +86,7 @@ export default function EditProfilePage() {
         state: form.state,
         zipCode: form.zipCode,
         country: form.country,
-        subscriptionType: form.subscriptionType,
+    //    subscriptionType: form.subscriptionType,
         updatedAt: new Date().toISOString(),
 });
 
@@ -208,20 +210,13 @@ export default function EditProfilePage() {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Subscription Type</label>
-          <select
-            name="subscriptionType"
-            value={form.subscriptionType}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="free">Free</option>
-            <option value="pro">Pro</option>
-            <option value="team">Team</option>
-            <option value="enterprise">Enterprise</option>
-          </select>
-        </div>
+<div>
+  <label className="block text-sm font-medium mb-1">Subscription Type</label>
+  <div className="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500 capitalize">
+    {subscriptionType}
+  </div>
+  <p className="text-xs text-gray-400 mt-1">Managed by admin only</p>
+</div>
 
         <div className="flex gap-3 pt-4">
           <button

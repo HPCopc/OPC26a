@@ -16,7 +16,7 @@ const schema = a.schema({
     state: a.string(),
     zipCode: a.string(),
     country: a.string(),
-    subscriptionType: a.string(),
+    subscriptionType: a.string().default("free"), 
     profileCompleted: a.boolean(),
     createdAt: a.datetime(),
     updatedAt: a.datetime(),

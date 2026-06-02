@@ -87,7 +87,7 @@ export default function EditProfilePage() {
         zipCode: form.zipCode,
         country: form.country,
     //    subscriptionType: form.subscriptionType,
-        updatedAt: new Date().toISOString(),
+    //    updatedAt: new Date().toISOString(),
 });
 
       if (errors) {

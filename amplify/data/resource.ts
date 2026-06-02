@@ -3,7 +3,7 @@ import { postConfirmation } from '../functions/post-confirmation/resource';
 
 const schema = a.schema({
   UserProfile: a.model({
-    id: a.id().required(),
+ //   id: a.id().required(),
     userId: a.string().required(),
     email: a.string().required(),
     givenName: a.string(),
@@ -18,8 +18,8 @@ const schema = a.schema({
     country: a.string(),
     subscriptionType: a.string().default("free"), 
     profileCompleted: a.boolean(),
-    createdAt: a.datetime(),
-    updatedAt: a.datetime(),
+ //   createdAt: a.datetime(),
+ //   updatedAt: a.datetime(),
   })
   .authorization(allow => [
     allow.ownerDefinedIn("userId").to(["create", "read", "update", "delete"]),
@@ -43,7 +43,29 @@ const schema = a.schema({
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),                        // ← closes Page here with a comma
 
+
+      Event: a.model({
+      title: a.string().required(),
+      description: a.string().required(),
+      date: a.datetime().required(),
+      location: a.string().required(),
+      slug: a.string().required(),
+      imageUrl: a.string(),
+      isPublished: a.boolean().default(true),
+      maxAttendees: a.integer(),
+    })
+    .authorization((allow) => [
+      allow.groups(["ADMINS"]).to(["create", "update", "delete", "read"]),
+      allow.authenticated().to(["read"]),
+      allow.guest().to(["read"]),
+    ]),
 })
+
+
+
+
+
+
 .authorization((allow) => [
   allow.resource(postConfirmation).to(['mutate']),
 ]);

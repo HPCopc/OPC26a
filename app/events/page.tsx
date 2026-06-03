@@ -1,19 +1,35 @@
+ 'use client';
+
+import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import EventCard from '@/app/components/EventCard';
 
 const client = generateClient<Schema>();
+type Event = Schema['Event']['type'];
 
-async function getEvents() {
-  const { data, errors } = await client.models.Event.list({
-    filter: { isPublished: { eq: true } },
-  });
-  if (errors) throw new Error('Failed to fetch events');
-  return data;
-}
+export default function EventsPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function EventsPage() {
-  const events = await getEvents();
+  useEffect(() => {
+    async function fetchEvents() {
+      const { data } = await client.models.Event.list({
+        filter: { isPublished: { eq: true } },
+      });
+      setEvents(data);
+      setLoading(false);
+    }
+    fetchEvents();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="max-w-5xl mx-auto px-4 py-10">
+        <p className="text-gray-400">Loading events...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-10">

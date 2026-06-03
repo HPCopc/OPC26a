@@ -1,9 +1,9 @@
-import type { Schema } from '@/amplify/data/resource';
+ import type { Schema } from '@/amplify/data/resource';
 
 type Event = Schema['Event']['type'];
 
 export default function EventCard({ event }: { event: Event }) {
-  const start = new Date(event.startDate).toLocaleDateString('en-US', {
+  const date = new Date(event.date).toLocaleDateString('en-US', {
     weekday: 'short', month: 'long', day: 'numeric', year: 'numeric',
   });
 
@@ -13,13 +13,13 @@ export default function EventCard({ event }: { event: Event }) {
         <img src={event.imageUrl} alt={event.title} className="w-full h-40 object-cover" />
       )}
       <div className="p-4">
-        {event.isFeatured && (
+        {event.isPublished && (
           <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
-            Featured
+            Published
           </span>
         )}
         <h2 className="text-lg font-semibold mt-1">{event.title}</h2>
-        <p className="text-sm text-gray-500 mt-1">{start}</p>
+        <p className="text-sm text-gray-500 mt-1">{date}</p>
         {event.location && (
           <p className="text-sm text-gray-400 mt-1">📍 {event.location}</p>
         )}

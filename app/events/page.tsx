@@ -6,7 +6,7 @@ const client = generateClient<Schema>();
 
 async function getEvents() {
   const { data, errors } = await client.models.Event.list({
-    filter: { status: { ne: 'PAST' } },
+    filter: { isPublished: { eq: true } },
   });
   if (errors) throw new Error('Failed to fetch events');
   return data;

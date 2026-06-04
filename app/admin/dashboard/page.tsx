@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import { useRouter } from 'next/navigation';
 // import { Amplify } from 'aws-amplify'; 
 // import outputs from '@/amplify_outputs.json';
 // Amplify.configure(outputs);
+
 
 const client = generateClient<Schema>({ authMode: 'userPool' });
 
@@ -24,6 +27,7 @@ const emptyForm = {
 };
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [currentView, setCurrentView] = useState<MenuView>('main');
   const [pages, setPages] = useState<PageRecord[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -32,7 +36,30 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  function showMessage(msg: string) {
+
+
+  async function fetchPages() {
+    const { data } = await client.models.Page.list();
+    setPages(data);
+  }
+useEffect(() => {   // 👈 inside component
+    const initialize = async () => {
+      try {
+        const session = await fetchAuthSession();
+        const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+        if (!groups.includes('ADMINS')) {
+          router.replace('/');
+          return;
+        }
+        await fetchPages();
+      } catch {
+        router.replace('/');
+      }
+    };
+    initialize();
+  }, []);
+
+   function showMessage(msg: string) {
     setMessage(msg);
     setTimeout(() => setMessage(''), 4000);
   }
@@ -45,19 +72,6 @@ export default function AdminDashboard() {
       return null;
     }
   }
-
-  async function fetchPages() {
-    const { data } = await client.models.Page.list();
-    setPages(data);
-  }
-
-  useEffect(() => {
-  const initialize = async () => {
-    // Skip auth check during build
-    await fetchPages();
-  };
-  initialize();
-}, []);
 
   async function handleCreate() {
     if (!form.slug.trim() || !form.title.trim()) {

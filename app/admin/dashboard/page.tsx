@@ -57,9 +57,9 @@ useEffect(() => {   // 👈 inside component
         }
         console.log('Dashboard: IS admin, loading pages');
         await fetchPages();
-      } catch {
+      } catch (error)  {
         console.log('Dashboard: ERROR, redirecting home', error);
-        router.replace('/');
+  //      router.replace('/');
       }
     };
     initialize();

@@ -10,6 +10,7 @@ export default function Navigation() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadUserInfo();
@@ -19,6 +20,12 @@ export default function Navigation() {
     try {
       const attributes = await fetchUserAttributes();
       setUserName(attributes.given_name || attributes.email?.split('@')[0] || 'User');
+      // 👇 Check if user belongs to "admin" Cognito group
+      const session = await fetchAuthSession();
+      const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+      setIsAdmin(groups.includes('admin'));
+
+
     } catch (error) {
       console.error('Error loading user info:', error);
     }
@@ -55,6 +62,16 @@ export default function Navigation() {
           <Link href="/events" className="text-gray-700 hover:text-blue-600">
             Events
           </Link>
+          {/* 👇 Admin link — only visible to admins */}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-md text-sm font-medium"
+            >
+              Admin
+            </Link>
+          )}
+
 
           {/* User Dropdown */}
           <div className="relative">
@@ -62,6 +79,13 @@ export default function Navigation() {
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100"
             >
+              {/* 👇 Optional: show a small badge if admin */}
+              <span className="text-gray-700">{userName}</span>
+              {isAdmin && (
+                <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+                  Admin
+                </span>
+              )}
               <span className="text-gray-700">{userName}</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -77,6 +101,18 @@ export default function Navigation() {
                 >
                   Edit Profile
                 </Link>
+                {/* 👇 Admin dashboard link inside dropdown too */}
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="block px-4 py-2 text-red-600 hover:bg-gray-100"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+
+
                 <button
                   onClick={handleSignOut}
                   className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"

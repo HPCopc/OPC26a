@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth/server';
+import { fetchAuthSession } from 'aws-amplify/auth/server';
 import { runWithAmplifyServerContext } from '@/utils/amplifyServerUtils';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -12,9 +12,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         if (!session.tokens) redirect('/');
 
-        const attributes = await fetchUserAttributes(contextSpec);
-
-        if (attributes['custom:role'] !== 'ADMINS') redirect('/');
+        const groups = (session.tokens.accessToken.payload['cognito:groups'] as string[]) ?? [];
+        
+        if (!groups.includes('ADMINS')) redirect('/');
       },
     });
   } catch {

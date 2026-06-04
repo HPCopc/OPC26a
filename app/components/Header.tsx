@@ -50,7 +50,7 @@ export default function Header() {
       await getCurrentUser();
       const attrs = await fetchUserAttributes();
       const session = await fetchAuthSession();
-      const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+      const groups = session.tokens?.accessToken?.payload['cognito:groups'] as string[] ?? [];
 
       setUserInfo({ 
         name: attrs.name || attrs.given_name || attrs.email?.split('@')[0], 

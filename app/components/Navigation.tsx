@@ -26,9 +26,9 @@ export default function Navigation() {
     const session = await fetchAuthSession();
     console.log('3. Session:', session);
     console.log('4. Tokens:', session.tokens);
-    console.log('5. ID Token payload:', session.tokens?.idToken?.payload);
+    console.log('5. ID Token payload:', session.tokens?.accessToken?.payload);
     
-    const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+    const groups = session.tokens?.accessToken?.payload['cognito:groups'] as string[] ?? [];
     console.log('6. Groups:', groups);
     
     setUserName(attributes.given_name || attributes.email?.split('@')[0] || 'User');

@@ -72,11 +72,11 @@ export default function LoginPage() {
             console.log('Redirecting to /admin/dashboard');
             router.replace('/admin/dashboard');
           } else {
-            console.log('Redirecting to /dashboard');
-            router.replace('/dashboard');
+            console.log('Redirecting to /');
+            router.replace('/');
           }
         } catch {
-          router.replace('/onboarding');
+          router.replace('/');
         }
       }
     });

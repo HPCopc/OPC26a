@@ -9,10 +9,11 @@ import Link from 'next/link';
 //'../../types/navigation' → Goes up 2 levels, then into types folder
 
 import { NavItem } from '../types/navigation';
-import { getCurrentUser, fetchUserAttributes, signOut } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Hub } from 'aws-amplify/utils'; // ✅ Add 
+// Change 1: add fetchAuthSession to import
+import { getCurrentUser, fetchUserAttributes, fetchAuthSession, signOut } from 'aws-amplify/auth';
 // Add this state at the top of the component alongside the others:
 
 
@@ -43,21 +44,26 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+
     const checkUser = async () => {
-      try {
-        await  getCurrentUser();
-        const attrs = await fetchUserAttributes();
-        setUserInfo({ 
-          name: attrs.name || attrs.given_name || attrs.email?.split('@')[0], 
-           email: attrs.email , 
-           role: attrs['custom:role'] 
-        });
-       setIsLoggedIn(true);
-      } catch {
-        setIsLoggedIn(false);
-        setUserInfo(null);
-      }
-    };
+    try {
+      await getCurrentUser();
+      const attrs = await fetchUserAttributes();
+      const session = await fetchAuthSession();
+      const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+
+      setUserInfo({ 
+        name: attrs.name || attrs.given_name || attrs.email?.split('@')[0], 
+        email: attrs.email, 
+        role: groups.includes('ADMINS') ? 'ADMINS' : undefined
+      });
+      setIsLoggedIn(true);
+    } catch {
+      setIsLoggedIn(false);
+      setUserInfo(null);
+    }
+ };
+    
     checkUser();
 
     // ✅ Listen for login/logout events in real time

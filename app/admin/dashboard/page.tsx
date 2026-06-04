@@ -43,25 +43,17 @@ export default function AdminDashboard() {
     setPages(data);
   }
 useEffect(() => {   // 👈 inside component
-   console.log('🔴 AdminDashboard mounted at:', window.location.href);
     const initialize = async () => {
       try {
-        console.log('Dashboard: checking auth...');
-        const session = await fetchAuthSession();
-        console.log('Dashboard: session:', session);
-  //      const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+         const session = await fetchAuthSession();
         const groups = session.tokens?.accessToken?.payload['cognito:groups'] as string[] ?? [];
-        console.log('Dashboard: groups:', groups);
         if (!groups.includes('ADMINS')) {
-          console.log('Dashboard: NOT admin, redirecting events');
-          router.replace('/events');
+           router.replace('/');
           return;
         }
-        console.log('Dashboard: IS admin, loading pages');
         await fetchPages();
       } catch (error)  {
-        console.log('Dashboard: ERROR, redirecting resources', error);
-  //      router.replace('/resources');
+        router.replace('/');
       }
     };
     initialize();

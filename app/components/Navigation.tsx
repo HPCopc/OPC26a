@@ -17,27 +17,29 @@ export default function Navigation() {
   }, []);
 
   const loadUserInfo = async () => {
-    try {
-      const attributes = await fetchUserAttributes();
-      setUserName(attributes.given_name || attributes.email?.split('@')[0] || 'User');
-      // 👇 Check if user belongs to "admin" Cognito group
-      const session = await fetchAuthSession();
-      const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
-      
-          // 👇 ADD THESE LOGS
-    console.log('Full payload:', session.tokens?.idToken?.payload);
-    console.log('Groups found:', groups);
-    console.log('Is ADMINS member:', groups.includes('ADMINS'));
-      
-      
-      
-      setIsAdmin(groups.includes('ADMINS'));
+  try {
+    console.log('1. Starting loadUserInfo');
+    
+    const attributes = await fetchUserAttributes();
+    console.log('2. Attributes:', attributes);
+    
+    const session = await fetchAuthSession();
+    console.log('3. Session:', session);
+    console.log('4. Tokens:', session.tokens);
+    console.log('5. ID Token payload:', session.tokens?.idToken?.payload);
+    
+    const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+    console.log('6. Groups:', groups);
+    
+    setUserName(attributes.given_name || attributes.email?.split('@')[0] || 'User');
+    setIsAdmin(groups.includes('ADMINS'));
+    
+  } catch (error) {
+    console.error('ERROR in loadUserInfo:', error);
+  }
+};
 
 
-    } catch (error) {
-      console.error('Error loading user info:', error);
-    }
-  };
 
   const handleSignOut = async () => {
     await signOut();

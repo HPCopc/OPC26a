@@ -52,15 +52,15 @@ useEffect(() => {   // 👈 inside component
         const groups = session.tokens?.accessToken?.payload['cognito:groups'] as string[] ?? [];
         console.log('Dashboard: groups:', groups);
         if (!groups.includes('ADMINS')) {
-          console.log('Dashboard: NOT admin, redirecting home');
-          router.replace('/');
+          console.log('Dashboard: NOT admin, redirecting events');
+          router.replace('/events');
           return;
         }
         console.log('Dashboard: IS admin, loading pages');
         await fetchPages();
       } catch (error)  {
-        console.log('Dashboard: ERROR, redirecting home', error);
-  //      router.replace('/');
+        console.log('Dashboard: ERROR, redirecting resources', error);
+  //      router.replace('/resources');
       }
     };
     initialize();

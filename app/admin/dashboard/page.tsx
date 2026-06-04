@@ -48,7 +48,8 @@ useEffect(() => {   // 👈 inside component
         console.log('Dashboard: checking auth...');
         const session = await fetchAuthSession();
         console.log('Dashboard: session:', session);
-        const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+  //      const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+        const groups = session.tokens?.accessToken?.payload['cognito:groups'] as string[] ?? [];
         console.log('Dashboard: groups:', groups);
         if (!groups.includes('ADMINS')) {
           console.log('Dashboard: NOT admin, redirecting home');

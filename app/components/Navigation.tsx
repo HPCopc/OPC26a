@@ -23,7 +23,7 @@ export default function Navigation() {
       // 👇 Check if user belongs to "admin" Cognito group
       const session = await fetchAuthSession();
       const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
-      setIsAdmin(groups.includes('admin'));
+      setIsAdmin(groups.includes('ADMINS'));
 
 
     } catch (error) {

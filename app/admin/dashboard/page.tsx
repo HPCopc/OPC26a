@@ -43,6 +43,7 @@ export default function AdminDashboard() {
     setPages(data);
   }
 useEffect(() => {   // 👈 inside component
+   console.log('🔴 AdminDashboard mounted at:', window.location.href);
     const initialize = async () => {
       try {
         console.log('Dashboard: checking auth...');

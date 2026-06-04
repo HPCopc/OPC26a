@@ -45,14 +45,20 @@ export default function AdminDashboard() {
 useEffect(() => {   // 👈 inside component
     const initialize = async () => {
       try {
+        console.log('Dashboard: checking auth...');
         const session = await fetchAuthSession();
+        console.log('Dashboard: session:', session);
         const groups = session.tokens?.idToken?.payload['cognito:groups'] as string[] ?? [];
+        console.log('Dashboard: groups:', groups);
         if (!groups.includes('ADMINS')) {
+          console.log('Dashboard: NOT admin, redirecting home');
           router.replace('/');
           return;
         }
+        console.log('Dashboard: IS admin, loading pages');
         await fetchPages();
       } catch {
+        console.log('Dashboard: ERROR, redirecting home', error);
         router.replace('/');
       }
     };

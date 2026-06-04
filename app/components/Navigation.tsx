@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signOut, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { signOut, getCurrentUser, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 
 export default function Navigation() {
   const router = useRouter();
@@ -86,10 +86,6 @@ export default function Navigation() {
                   Admin
                 </span>
               )}
-              <span className="text-gray-700">{userName}</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
             </button>
 
             {isOpen && (

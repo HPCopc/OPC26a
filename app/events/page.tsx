@@ -15,6 +15,7 @@ export default function EventsPage() {
   useEffect(() => {
     async function fetchEvents() {
       const { data } = await client.models.Event.list({
+        authMode: 'apiKey',
         filter: { isPublished: { eq: true } },
       });
       setEvents(data);

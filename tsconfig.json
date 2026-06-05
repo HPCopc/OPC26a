@@ -27,7 +27,6 @@
     "paths": {
        "@/*": ["./*"],
        "$amplify/*": [".amplify/generated/*"],
-       "@/components/*": ["app/components/*"]
 }
   },
   "include": [

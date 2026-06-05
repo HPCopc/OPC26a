@@ -24,15 +24,12 @@
       }
     ],
     "baseUrl": ".",
+ 
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "$amplify/*": [
-        ".amplify/generated/*"
-      ] // ✅ add this mapping
-      //      "@/components/*": ["components/*"]
-    }
+       "@/*": ["./*"],
+       "$amplify/*": [".amplify/generated/*"],
+       "@/components/*": ["app/components/*"]
+}
   },
   "include": [
     "next-env.d.ts",

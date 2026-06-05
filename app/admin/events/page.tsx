@@ -5,6 +5,12 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 
 const client = generateClient<Schema>();
+// Public reads → apiKey
+const { data } = await client.models.Event.list({ authMode: 'apiKey' });
+
+// Admin writes → userPool (default, no change needed)
+await client.models.Event.create(form);
+
 type Event = Schema['Event']['type'];
 
 const emptyForm = {
@@ -26,11 +32,11 @@ export default function AdminEventsPage() {
 
   useEffect(() => { fetchEvents(); }, []);
 
+   
   async function fetchEvents() {
-    const { data } = await client.models.Event.list();
-    setEvents(data.sort((a, b) => a.date.localeCompare(b.date)));
-  }
-
+  const { data } = await client.models.Event.list({ authMode: 'apiKey' });
+  setEvents(data);
+}
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);

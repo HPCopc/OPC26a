@@ -5,12 +5,6 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 
 const client = generateClient<Schema>();
-// Public reads → apiKey
-const { data } = await client.models.Event.list({ authMode: 'apiKey' });
-
-// Admin writes → userPool (default, no change needed)
-await client.models.Event.create(form);
-
 type Event = Schema['Event']['type'];
 
 const emptyForm = {
@@ -32,27 +26,32 @@ export default function AdminEventsPage() {
 
   useEffect(() => { fetchEvents(); }, []);
 
-   
   async function fetchEvents() {
-  const { data } = await client.models.Event.list({ authMode: 'apiKey' });
-  setEvents(data);
-}
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (editingId) {
-        await client.models.Event.update({ id: editingId, ...form });
-      } else {
-        await client.models.Event.create(form);
-      }
-      setForm(emptyForm);
-      setEditingId(null);
-      await fetchEvents();
-    } finally {
-      setLoading(false);
-    }
+    const { data } = await client.models.Event.list({ authMode: 'apiKey' });
+    setEvents(data.sort((a, b) => a.date.localeCompare(b.date)));
   }
+
+ async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const payload = {
+      ...form,
+      date: new Date(form.date).toISOString(),
+    };
+    if (editingId) {
+      await client.models.Event.update({ id: editingId, ...payload });
+    } else {
+      await client.models.Event.create(payload);
+    }
+    setForm(emptyForm);
+    setEditingId(null);
+    await fetchEvents();
+  } finally {
+    setLoading(false);
+  }
+}  
+  
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this event?')) return;
@@ -66,7 +65,7 @@ export default function AdminEventsPage() {
       title: event.title,
       description: event.description,
       location: event.location,
-      date: event.date,                        // ✅ was startDate
+      date: event.date ? event.date.slice(0, 16) : '',  
       slug: event.slug,                        // ✅ added
       imageUrl: event.imageUrl ?? '',
       isPublished: event.isPublished ?? true,  // ✅ was isFeatured

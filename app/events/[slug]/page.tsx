@@ -1,26 +1,22 @@
-import { getCurrentUser } from "aws-amplify/auth/server";
-import { redirect } from "next/navigation";
-import { getSignedVideoUrl } from "@/lib/getSignedVideoUrl";
+import { getContentBySlug } from '@/lib/getContent';
+import { notFound } from 'next/navigation';
+import EventDetail from '@/components/content/detail/EventDetail';
 
-export default async function VideoPage({ params }: { params: { id: string } }) {
+// ── Next.js 15: params is a Promise ──────────────────────────────────────────
+type Props = {
+  params: Promise<{ slug: string }>;
+};
 
-  const client = generateServerClientUsingCookies<Schema>({ config, cookies });
+export default async function EventDetailPage({ params }: Props) {
+  const { slug } = await params;
 
-  // 1. Fetch the video
-  const { data: video } = await client.models.Video.get({ id: params.id });
-  if (!video || !video.isPublished) redirect("/topics/videos");
+  const item = await getContentBySlug(slug, false); // false = public, no login required
 
-  // 2. If not public — check login
-  if (!video.isPublic) {
-    try {
-      await getCurrentUser({ serverContext: { cookies } });
-    } catch {
-      redirect("/login?redirect=/videos/" + params.id);
-    }
-  }
+  if (!item || !item.isPublished) notFound();
 
-  // 3. Generate signed S3 URL (works for both public and protected)
-  const videoUrl = await getSignedVideoUrl(video.s3Key);
-
-  return <VideoPlayer video={video} url={videoUrl} />;
+  return (
+    <main className="max-w-4xl mx-auto px-4 py-10">
+      <EventDetail item={item} />
+    </main>
+  );
 }

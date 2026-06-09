@@ -5,30 +5,23 @@ import ContentCard, { ContentCardItem, ContentType } from "./ContentCard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface FetchPageResult {
+  items:     ContentCardItem[];
+  nextToken: string | null;
+}
+
 export interface ContentListProps {
-  /** Initial page of items (SSR-hydrated) */
-  initialItems:    ContentCardItem[];
-  /** Total number of items across all pages */
-  totalItems:      number;
-  /** Items per page — default 10 */
-  pageSize?:       number;
-  /** topic value — used only for auth-gate copy */
-  contentType?:    ContentType;
-  /**
-   * If true, a login gate is shown after the first page for unauthenticated users.
-   * Matches schema: isPublic=false items require login.
-   */
-  requiresAuth?:   boolean;
-  isAuthenticated?: boolean;
-  /**
-   * Async function to fetch the next page.
-   * Receives 1-based page number; should return items for that page.
-   */
-  fetchPage?:      (page: number) => Promise<ContentCardItem[]>;
-  /** Suppress thumbnails (compact row layout) */
-  compact?:        boolean;
-  emptyMessage?:   string;
-  className?:      string;
+  initialItems:      ContentCardItem[];
+  initialNextToken:  string | null;
+  contentType?:      ContentType;
+  /** true = show login gate instead of Load More for unauthenticated users */
+  requiresAuth?:     boolean;
+  isAuthenticated?:  boolean;
+  /** Called with the current nextToken; returns next batch + new token */
+  fetchPage?:        (nextToken: string) => Promise<FetchPageResult>;
+  compact?:          boolean;
+  emptyMessage?:     string;
+  className?:        string;
 }
 
 // ─── Login Gate ───────────────────────────────────────────────────────────────
@@ -91,37 +84,32 @@ function CardSkeleton({ compact }: { compact?: boolean }) {
 
 export default function ContentList({
   initialItems,
-  totalItems,
-  pageSize       = 10,
+  initialNextToken,
   contentType,
-  requiresAuth   = false,
+  requiresAuth    = false,
   isAuthenticated = false,
   fetchPage,
-  compact        = false,
+  compact         = false,
   emptyMessage,
-  className      = "",
+  className       = "",
 }: ContentListProps) {
-  const [items, setItems]           = useState<ContentCardItem[]>(initialItems);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isPending, startTransition]  = useTransition();
-  const [error, setError]             = useState<string | null>(null);
+  const [items, setItems]         = useState<ContentCardItem[]>(initialItems);
+  const [nextToken, setNextToken] = useState<string | null>(initialNextToken);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError]         = useState<string | null>(null);
 
-  const totalPages  = Math.ceil(totalItems / pageSize);
-  const hasMore     = currentPage < totalPages;
-
-  // Auth gate replaces Load More for non-authed users on protected content
+  const hasMore       = nextToken !== null;
   const showLoginGate = requiresAuth && !isAuthenticated && items.length > 0;
   const showLoadMore  = hasMore && fetchPage && (!requiresAuth || isAuthenticated);
 
   function handleLoadMore() {
-    if (!fetchPage) return;
-    const nextPage = currentPage + 1;
+    if (!fetchPage || !nextToken) return;
     startTransition(async () => {
       setError(null);
       try {
-        const next = await fetchPage(nextPage);
-        setItems((prev) => [...prev, ...next]);
-        setCurrentPage(nextPage);
+        const result = await fetchPage(nextToken);
+        setItems((prev) => [...prev, ...result.items]);
+        setNextToken(result.nextToken);
       } catch {
         setError("Failed to load more items. Please try again.");
       }
@@ -144,11 +132,6 @@ export default function ContentList({
   return (
     <div className={`flex flex-col gap-6 ${className}`}>
 
-      {/* Count summary */}
-      <p className="text-xs text-slate-400 font-medium">
-        Showing {items.length} of {totalItems} result{totalItems !== 1 ? "s" : ""}
-      </p>
-
       {/* Grid / list */}
       <div className={
         compact
@@ -163,7 +146,6 @@ export default function ContentList({
             className={compact ? "border-none shadow-none rounded-none py-3" : ""}
           />
         ))}
-
         {isPending && Array.from({ length: 3 }).map((_, i) => (
           <CardSkeleton key={`sk-${i}`} compact={compact} />
         ))}
@@ -176,7 +158,7 @@ export default function ContentList({
       {showLoginGate && <LoginGate contentType={contentType} />}
 
       {showLoadMore && (
-        <div className="flex flex-col items-center gap-2 pt-2">
+        <div className="flex justify-center pt-2">
           <button
             onClick={handleLoadMore}
             disabled={isPending}
@@ -193,15 +175,9 @@ export default function ContentList({
                 Loading…
               </>
             ) : (
-              <>
-                Load more
-                <span className="text-xs text-slate-400 font-normal">
-                  ({totalItems - items.length} remaining)
-                </span>
-              </>
+              "Load more"
             )}
           </button>
-          <p className="text-[11px] text-slate-400">Page {currentPage} of {totalPages}</p>
         </div>
       )}
     </div>

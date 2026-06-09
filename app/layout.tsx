@@ -3,8 +3,8 @@ import { Inter } from "next/font/google";
 // import "./app.css";
 import "./globals.css";
 
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import AmplifyInit from './AmplifyInit';
 import '@aws-amplify/ui-react/styles.css';
  

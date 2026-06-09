@@ -7,7 +7,7 @@ import type { Schema } from "@/amplify/data/resource";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
-import GrayCard from "@/app/components/MainGrayCard";
+import GrayCard from "@/components/MainGrayCard";
 
 Amplify.configure(outputs);
 

@@ -42,19 +42,19 @@ const schema = a.schema({
   // Slug naming convention:
   //   "home"                    → / (home page)
   //   "news"                    → /news
-  //   "news-markets"            → /news/markets
-  //   "news-shale"              → /news/shale
   //   "news-opc"                → /news/opc
+  //   "news-markets"                        → /news/markets (subcat1)
+  //   "news-markets-feature-of-the-week"    → /news/markets/feature-of-the-week (subcat2)
+  //   "news-shale"                          → /news/shale (subcat1)
+  //   "news-shale-[subcat2]"                → /news/shale/[subcat2] 
   //   "videos"                  → /videos
   //   "videos-presentations"    → /videos/presentations
   //   "videos-markets"          → /videos/markets
   //   "whitepapers"             → /whitepapers
   //   "whitepapers-[subtopic]"  → /whitepapers/[subtopic]
   //   "resources"               → /resources
-  //   "resources-[subtopic]"    → /resources/[subtopic]
   //   "events"                  → /events
-  //   "events-seminars"         → /events/seminars
-  //   "events-webinars"         → /events/webinars
+  
   // ─────────────────────────────────────────────────────────────
   Page: a.model({
     slug:     a.string().required(), // unique — see convention above
@@ -86,8 +86,8 @@ const schema = a.schema({
   //   "news"         → /news and /news/[subtopic]
   //   "videos"       → /videos and /videos/[subtopic]
   //   "whitepapers"  → /whitepapers and /whitepapers/[subtopic]
-  //   "resources"    → /resources and /resources/[subtopic]
-  //   "events"       → /events and /events/[subtopic]
+  //   "resources"    → /resources  
+  //   "events"       → /events  
   //
   // Listing pages show: title + date + extractFirstParagraph(body)
   // Detail pages show:  full TipTap HTML body + type-specific extras
@@ -102,7 +102,8 @@ const schema = a.schema({
     slug:        a.string().required(),  // e.g. "crude-markets-june-2026"
     body:        a.string(),             // TipTap HTML — full content
     topic:       a.string().required(),  // "news" | "videos" | "whitepapers" | "resources" | "events"
-    subtopic:    a.string(),             // e.g. "markets", "shale", "opc", "presentations"
+    subcat1:    a.string(),             // e.g. "markets", "shale", "opc", "presentations"
+    subcat2:    a.string(),            
     date:        a.date().required(),    // YYYY-MM-DD — used for sorting
     isPublished: a.boolean().default(true),
     isPublic:    a.boolean().default(false), // false = login required to view
@@ -111,8 +112,7 @@ const schema = a.schema({
 
     // ── Video specific ───────────────────────────────────────
     s3Key:       a.string(),             // "videos/modcon-cdu.mp4" — signed URL generated at runtime
-    seminar:     a.string(),             // e.g. "SEMINAR 17", "PRESENTATIONS"
-
+    
     // ── Whitepaper / Resource specific ──────────────────────
     fileKey:     a.string(),             // "whitepapers/report-2026.pdf" — S3 key for download
 
@@ -128,7 +128,8 @@ const schema = a.schema({
   .secondaryIndexes((index) => [
     index("slug"),                        // fetch single item by slug
     index("topic").sortKeys(["date"]),    // list all items for a topic sorted by date
-    index("subtopic").sortKeys(["date"]), // list items by subtopic sorted by date
+    index("subcat1").sortKeys(["date"]), // list items by subcat1 sorted by date
+    index("subcat2").sortKeys(["date"]), // list items by subcat2 sorted by date
   ])
   .authorization((allow) => [
     allow.guest().to(["read"]),           // guests see public content metadata

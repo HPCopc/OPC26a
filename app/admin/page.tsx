@@ -2,5 +2,5 @@
 import { redirect } from 'next/navigation';
 
 export default function AdminRoot() {
-  redirect('/admin/dashboard');   // 👈 auto-redirect to dashboard
+  redirect('/admin/pages');   // 👈 auto-redirect to pages
 }

@@ -12,7 +12,7 @@ export default async function EventDetailPage({ params }: Props) {
 
   const item = await getContentBySlug(slug, false); // false = public, no login required
 
-  if (!item || !item.isPublished) notFound();
+  if (!item) notFound();
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">

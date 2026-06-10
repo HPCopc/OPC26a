@@ -1,6 +1,6 @@
  import type { Schema } from '@/amplify/data/resource';
 
-type Event = Schema['Event']['type'];
+type Event = Schema['Content']['type'];
 
 export default function EventCard({ event }: { event: Event }) {
   const date = new Date(event.date).toLocaleDateString('en-US', {

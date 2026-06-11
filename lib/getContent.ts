@@ -76,7 +76,7 @@ export const getContentByTopic = cache(
     try {
       const client = getClient();
       const { data, nextToken: next, errors } =
-        await client.models.Content.listContentByTopic(
+        await client.models.Content.listContentByTopicAndDate(
           { topic },
           {
             authMode:      'identityPool',
@@ -108,7 +108,7 @@ export const getContentBySubcat1 = cache(
     try {
       const client = getClient();
       const { data, nextToken: next, errors } =
-        await client.models.Content.listContentBySubcat1(
+        await client.models.Content.listContentBySubcat1AndDate(
           { subcat1 },
           {
             authMode:      'identityPool',

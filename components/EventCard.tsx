@@ -23,7 +23,7 @@ export default function EventCard({ event }: { event: Event }) {
         {event.location && (
           <p className="text-sm text-gray-400 mt-1">📍 {event.location}</p>
         )}
-        {event.description && (
+        {event.body && (
           <p className="text-sm text-gray-600 mt-2 line-clamp-2">{event.body}</p>
         )}
       </div>

@@ -69,8 +69,7 @@ export default function LoginPage() {
           console.log('Cognito groups:', groups);
 
           if (groups.includes('ADMINS')) {
-            console.log('Redirecting to /admin/dashboard');
-            router.replace('/admin/dashboard');
+            router.replace('/admin');
           } else {
             console.log('Redirecting to /');
             router.replace('/');

@@ -1,113 +1,72 @@
-// 'use client';   ✅ Add this if you want to be safe
-// left and right padding p-4/m-4
+const Topics = [
+  'Markets', 'Technology', 'Crude Processing Studies', 'Shale Oil', 'Opportunity Crudes',
+];
 
- import { View, Flex, Text } from "@aws-amplify/ui-react";
- import Link from 'next/link';
- import { NavItem } from '../types/navigation';
+const More = [
+  'Videos', 'White Papers', 'Resources', 'Events', 'Terms & Conditions',
+];
 
- 
- 
-   const footerleft: NavItem[] = [
-    { label: 'Home', href: '/about' },
-    { label: 'About Us', href: '/about' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Advertise', href: '/about' },
-  ];
+const Services = [
+  'Advertise with OpportunityCrudes.com',
+  'Register with OpportunityCrudes.com',
+];
 
-     const Topics: NavItem[] = [
-    { label: 'Markets', href: '/about' },
-    { label: 'Technology', href: '/about' },
-    { label: 'Crude Processing Studies', href: '/CRstudies' },
-    { label: 'Shale Oil', href: '/ShaleOil' },
-    { label: 'Opportunity Crudes', href: '/' },
-  ];
-
-    const More: NavItem[] = [
-    { label: 'Videos', href: '/Videos' },
-    { label: 'White Papers', href: '/WhitePapers' },
-    { label: 'Resources', href: '/Resources' },
-    { label: 'Events', href: '/Events' },
-    { label: 'Terms & Conditions', href: '/Terms' },
-  ];
-
-    const Services: NavItem[] = [
-    { label: 'Advertise with OpportunityCrudes.com', href: '/Advertise' },
-    { label: 'Register with OpportunityCrudes.com', href: '/Register' },
-  ];
+const BottomLinks = ['Home', 'About', 'Contact', 'Advertise'];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  
+
   return (
-    <div className="flex flex-col ">
-      {/* First container - Gray background with Topics */}
-      <div className="flex flex-row justify-between bg-gray-100  text-center p-4">
+    <footer className="flex flex-col">
+
+      {/* Top section */}
+      <div className="bg-gray-100 px-10 py-8 grid grid-cols-3 gap-8">
         <div>
-          <h1>Topics</h1>
-            <ul  className="flex flex-col items-start  ">
-            {Topics
-              .filter(item => !item.children)  
-              .map((item) => (
-               <li key={item.label} className="my-0 py-0"  >
-               <Link href={item.href || '#'}  >
-                {item.label}
-               </Link>
-               </li>
-              ))}
+          <h2 className="font-bold uppercase text-sm tracking-wide mb-4">Topic</h2>
+          <ul className="space-y-2">
+            {Topics.map(label => (
+              <li key={label} className="text-sm text-gray-700 cursor-pointer hover:text-black">
+                {label}
+              </li>
+            ))}
           </ul>
         </div>
+
         <div>
-          <h2>More</h2>
-          <ul  className="flex flex-col items-start my-0 py-0 ">
-            {More
-              .filter(item => !item.children)  
-              .map((item) => (
-               <li key={item.label} className="my-0 py-0"  >
-               <Link href={item.href || '#'}  >
-                {item.label}
-               </Link>
-               </li>
-              ))}
+          <h2 className="font-bold uppercase text-sm tracking-wide mb-4">More</h2>
+          <ul className="space-y-2">
+            {More.map(label => (
+              <li key={label} className="text-sm text-gray-700 cursor-pointer hover:text-black">
+                {label}
+              </li>
+            ))}
           </ul>
-          </div>
+        </div>
+
         <div>
-         <h1>Services</h1>
-         <ul  className="flex flex-col items-start  ">
-            {Services
-              .filter(item => !item.children)  
-              .map((item) => (
-               <li key={item.label} className="my-0 py-0"  >
-               <Link href={item.href || '#'}  >
-                {item.label}
-               </Link>
-               </li>
-              ))}
-          </ul>          
-          </div>
+          <h2 className="font-bold uppercase text-sm tracking-wide mb-4">Services</h2>
+          <ul className="space-y-2">
+            {Services.map(label => (
+              <li key={label} className="text-sm text-gray-700 cursor-pointer hover:text-black">
+                {label}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-  
 
+      {/* Bottom bar */}
+      <div className="bg-black text-white px-10 py-4 flex items-center justify-between">
+        <ul className="flex gap-10">
+          {BottomLinks.map(label => (
+            <li key={label} className="text-sm cursor-pointer hover:text-gray-300">
+              {label}
+            </li>
+          ))}
+        </ul>
+        <p className="text-sm">Copyright © {currentYear} OpportunityCrudes.com</p>
+      </div>
 
-      {/* Second container - Black background with Copyright */}
-       <div className="flex flex-row justify-between items-center bg-black text-white p-4 ">
-           
-          <ul  className="flex space-x-4 ">
-            {footerleft
-              .filter(item => !item.children)  
-              .map((item) => (
-               <li key={item.label}    >
-               <Link href={item.href || '#'}  >
-                {item.label}
-               </Link>
-               </li>
-              ))}
-          </ul>
-           
-            <p className="text-sm text-white m-4">© {currentYear} OpportunityCrudes.com</p>
-          
-        </div>
-        
-      
-    </div>
+    </footer>
   );
 }

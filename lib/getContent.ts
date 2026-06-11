@@ -86,7 +86,6 @@ export const getContentByTopic = cache(
           }
         );
       if (errors?.length) {
-        console.error('[getContentByTopic] Errors:', errors);
         return { items: [], nextToken: null };
       }
       return {
@@ -94,7 +93,6 @@ export const getContentByTopic = cache(
         nextToken: next ?? null,
       };
     } catch (err) {
-      console.error(`[getContentByTopic] Failed for topic "${topic}":`, err);
       return { items: [], nextToken: null };
     }
   }
@@ -118,7 +116,6 @@ export const getContentBySubcat1 = cache(
           }
         );
       if (errors?.length) {
-        console.error('[getContentBySubcat1] Errors:', errors);
         return { items: [], nextToken: null };
       }
       return {
@@ -126,7 +123,6 @@ export const getContentBySubcat1 = cache(
         nextToken: next ?? null,
       };
     } catch (err) {
-      console.error(`[getContentBySubcat1] Failed for subcat1 "${subcat1}":`, err);
       return { items: [], nextToken: null };
     }
   }
@@ -140,7 +136,7 @@ export const getContentBySubcat2 = cache(
     try {
       const client = getClient();
       const { data, nextToken: next, errors } =
-        await client.models.Content.listContentBySubcat2(
+        await client.models.Content.listContentBySubcat2AndDate(
           { subcat2 },
           {
             authMode:      'identityPool',
@@ -150,7 +146,6 @@ export const getContentBySubcat2 = cache(
           }
         );
       if (errors?.length) {
-        console.error('[getContentBySubcat2] Errors:', errors);
         return { items: [], nextToken: null };
       }
       return {
@@ -158,7 +153,6 @@ export const getContentBySubcat2 = cache(
         nextToken: next ?? null,
       };
     } catch (err) {
-      console.error(`[getContentBySubcat2] Failed for subcat2 "${subcat2}":`, err);
       return { items: [], nextToken: null };
     }
   }

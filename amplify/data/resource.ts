@@ -68,7 +68,7 @@ const schema = a.schema({
     allow.authenticated().to(["read"]),
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
-),
+
 
 
   // ─────────────────────────────────────────────────────────────

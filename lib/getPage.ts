@@ -26,7 +26,6 @@ const getClient = () =>
   generateServerClientUsingCookies<Schema>({ config, cookies });
 
 export type PageRecord = {
-  id: string;
   slug: string;
   title: string;
   intro: string | null;
@@ -44,28 +43,27 @@ export const getPage = cache(async (slug: string): Promise<PageRecord | null> =>
   try {
     const client = getClient();
 
-    const { data, errors } = await client.models.Page.listPageBySlug(
-      { slug },
-      {
-        authMode: 'identityPool', // public — guests can read Page records
-        limit: 1,
-      }
-    );
+   const { data, errors } = await client.models.Page.get(
+  { slug },
+  {
+    authMode: 'identityPool',
+  }
+);
 
-    if (errors?.length || !data?.length) return null;
+if (errors?.length || !data) return null;
 
-    const page = data[0];
+const page = data;
 
-    // Only return published pages (admins can create draft pages safely)
-    if (page.status === 'draft') return null;
+if (page.status === 'draft') return null;
 
-    return {
-      id: page.id,
-      slug: page.slug,
-      title: page.title,
-      intro: page.intro ?? null,
-      status: page.status ?? null,
-    };
+return {
+   
+  slug: page.slug,
+  title: page.title,
+  intro: page.intro ?? null,
+  status: page.status ?? null,
+};
+ 
   } catch (err) {
     console.error(`[getPage] Failed to fetch page with slug "${slug}":`, err);
     return null;
@@ -98,7 +96,7 @@ export const getPagesByPrefix = cache(async (prefix: string): Promise<PageRecord
           p.status !== 'draft'
       )
       .map((p) => ({
-        id: p.id,
+         
         slug: p.slug,
         title: p.title,
         intro: p.intro ?? null,

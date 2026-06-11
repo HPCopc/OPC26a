@@ -44,7 +44,7 @@ export const getPage = cache(async (slug: string): Promise<PageRecord | null> =>
   try {
     const client = getClient();
 
-    const { data, errors } = await client.models.Page.listBySlug(
+    const { data, errors } = await client.models.Page.listPageBySlug(
       { slug },
       {
         authMode: 'identityPool', // public — guests can read Page records

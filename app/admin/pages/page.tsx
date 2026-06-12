@@ -368,18 +368,22 @@ export default function AdminPagesPage() {
   }
 
   // ── Delete ──
-  async function handleDelete(id: string) {
-    startTransition(async () => {
-      try {
-        await client.models.Page.delete({ slug: deleteId  });
-        showMessage('✅ Page deleted!');
-        setDeleteId(null);
-        loadPages();
-      } catch (e) {
-        showMessage('❌ ' + (e as Error).message);
-      }
-    });
-  }
+  async function handleDelete() {
+  startTransition(async () => {
+    try {
+      if (!deleteId) return;  // ensures it's a string
+
+      await client.models.Page.delete({ slug: deleteId });
+
+      showMessage('✅ Page deleted!');
+      setDeleteId(null);
+      loadPages();
+    } catch (e) {
+      showMessage('❌ ' + (e as Error).message);
+    }
+  });
+}
+  
 
   function startEdit(page: PageRecord) {
     // Reverse-engineer topic/subcat1/subcat2 from slug

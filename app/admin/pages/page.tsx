@@ -349,7 +349,7 @@ export default function AdminPagesPage() {
     startTransition(async () => {
       try {
         await client.models.Page.update({
-          id:       editingId,
+          slug: editingId,
           title:    form.title,
           intro:    form.intro || undefined,
           status:   form.status,

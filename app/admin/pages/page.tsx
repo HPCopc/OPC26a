@@ -202,14 +202,10 @@ function PageForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
 
         <div>
           <label className="block text-sm font-medium mb-1">Intro</label>
-          <textarea
-            className="w-full border rounded px-3 py-2 text-sm"
-            rows={4}
-            placeholder="Introductory paragraph shown above the content listing (HTML supported)"
+          <RichEditor
             value={form.intro}
-            onChange={e => setForm({ ...form, intro: e.target.value })}
+            onChange={(html) => setForm({ ...form, intro: html })}
           />
-          <p className="text-xs text-slate-400 mt-1">TipTap editor coming soon — plain text or HTML for now.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

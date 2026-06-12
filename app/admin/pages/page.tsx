@@ -312,6 +312,19 @@ export default function AdminPagesPage() {
     return;
   }
 
+  const trimmed = form.seo.trim();
+  let seoValue: string | undefined;
+
+  if (trimmed && trimmed !== '{}') {
+    try {
+      JSON.parse(trimmed); // just validate it's valid JSON, don't use the result
+      seoValue = trimmed;  // pass the raw string
+    } catch {
+      showMessage('❌ Invalid JSON in SEO');
+      return;
+    }
+  }
+
   const slug = buildPageSlug(
     form.topic,
     form.subcat1 || undefined,
@@ -320,14 +333,15 @@ export default function AdminPagesPage() {
 
   startTransition(async () => {
     try {
-      const result = await client.models.Page.create({
+       const result = await client.models.Page.create({
         slug,
-        title: form.title,
-        intro: form.intro || undefined,
-        status: form.status,
-        seo: form.seo.trim() ? JSON.parse(form.seo) : undefined,
+        title:    form.title,
+        intro:    form.intro || undefined,
+        status:   form.status,
         featured: form.featured,
+        seo:      seoValue,   // raw string or undefined
       });
+
 
       if (result.errors?.length) {
         console.log(result.errors);
@@ -348,33 +362,43 @@ export default function AdminPagesPage() {
 
   // ── Update ──
   async function handleUpdate() {
-    if (!editingId || !form.title.trim()) {
-      showMessage('❌ Title is required');
+  if (!editingId || !form.title.trim()) {
+    showMessage('❌ Title is required');
+    return;
+  }
+
+  const trimmed = form.seo.trim();
+  let seoValue: string | undefined;
+  if (trimmed && trimmed !== '{}') {
+    try {
+      JSON.parse(trimmed);
+      seoValue = trimmed;
+    } catch {
+      showMessage('❌ Invalid JSON in SEO');
       return;
     }
-    let seo: object = {};
-    try { seo = JSON.parse(form.seo); } catch { showMessage('❌ Invalid JSON in SEO'); return; }
-
-    startTransition(async () => {
-      try {
-        await client.models.Page.update({
-          slug: editingId,
-          title:    form.title,
-          intro:    form.intro || undefined,
-          status:   form.status,
-          seo,
-          featured: form.featured,
-        });
-        showMessage('✅ Page updated!');
-        setEditingId(null);
-        setForm(emptyForm);
-        setView('list');
-        loadPages();
-      } catch (e) {
-        showMessage('❌ ' + (e as Error).message);
-      }
-    });
   }
+
+  startTransition(async () => {
+    try {
+      await client.models.Page.update({
+        slug:     editingId,
+        title:    form.title,
+        intro:    form.intro || undefined,
+        status:   form.status,
+        featured: form.featured,
+        seo:      seoValue,   // raw string or undefined, same as create
+      });
+      showMessage('✅ Page updated!');
+      setEditingId(null);
+      setForm(emptyForm);
+      setView('list');
+      loadPages();
+    } catch (e) {
+      showMessage('❌ ' + (e as Error).message);
+    }
+  });
+}
 
   // ── Delete ──
   async function handleDelete() {

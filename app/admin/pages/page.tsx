@@ -323,7 +323,7 @@ export default function AdminPagesPage() {
           title:    form.title,
           intro:    form.intro || undefined,
           status:   form.status,
-          seo,
+          seo: form.seo.trim() ? JSON.parse(form.seo) : undefined,
           featured: form.featured,
         });
         if (result.errors?.length) { showMessage(`❌ ${result.errors[0].message}`); return; }

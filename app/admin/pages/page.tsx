@@ -371,7 +371,7 @@ export default function AdminPagesPage() {
   async function handleDelete(id: string) {
     startTransition(async () => {
       try {
-        await client.models.Page.delete({ id });
+        await client.models.Page.delete({ slug: deleteId  });
         showMessage('✅ Page deleted!');
         setDeleteId(null);
         loadPages();
@@ -450,7 +450,7 @@ export default function AdminPagesPage() {
                         Edit
                       </button>
                       <button
-                        onClick={() => setDeleteId(page.id)}
+                        onClick={() => setDeleteId(page.slug)}
                         className="px-3 py-1 bg-red-50 text-red-700 rounded text-xs font-medium hover:bg-red-100"
                       >
                         Delete

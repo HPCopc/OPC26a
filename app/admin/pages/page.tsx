@@ -307,35 +307,44 @@ export default function AdminPagesPage() {
 
   // ── Create ──
   async function handleCreate() {
-    if (!form.topic || !form.title.trim()) {
-      showMessage('❌ Topic and Title are required');
-      return;
-    }
-    let seo: object = {};
-    try { seo = JSON.parse(form.seo); } catch { showMessage('❌ Invalid JSON in SEO'); return; }
-
-    const slug = buildPageSlug(form.topic, form.subcat1 || undefined, form.subcat2 || undefined);
-
-    startTransition(async () => {
-      try {
-        const result = await client.models.Page.create({
-          slug,
-          title:    form.title,
-          intro:    form.intro || undefined,
-          status:   form.status,
-          seo: form.seo.trim() ? JSON.parse(form.seo) : undefined,
-          featured: form.featured,
-        });
-        if (result.errors?.length) { showMessage(`❌ ${result.errors[0].message}`); return; }
-        showMessage('✅ Page created!');
-        setForm(emptyForm);
-        setView('list');
-        loadPages();
-      } catch (e) {
-        showMessage('❌ ' + (e as Error).message);
-      }
-    });
+  if (!form.topic || !form.title.trim()) {
+    showMessage('❌ Topic and Title are required');
+    return;
   }
+
+  const slug = buildPageSlug(
+    form.topic,
+    form.subcat1 || undefined,
+    form.subcat2 || undefined
+  );
+
+  startTransition(async () => {
+    try {
+      const result = await client.models.Page.create({
+        slug,
+        title: form.title,
+        intro: form.intro || undefined,
+        status: form.status,
+        seo: form.seo.trim() ? JSON.parse(form.seo) : undefined,
+        featured: form.featured,
+      });
+
+      if (result.errors?.length) {
+        console.log(result.errors);
+        showMessage(`❌ ${result.errors[0].message}`);
+        return;
+      }
+
+      showMessage('✅ Page created!');
+      setForm(emptyForm);
+      setView('list');
+      loadPages();
+    } catch (e) {
+      showMessage('❌ ' + (e as Error).message);
+    }
+  });
+}
+
 
   // ── Update ──
   async function handleUpdate() {

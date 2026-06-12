@@ -403,7 +403,7 @@ export default function AdminPagesPage() {
       seo:      JSON.stringify(page.seo ?? {}, null, 2),
       featured: page.featured ?? false,
     });
-    setEditingId(page.id);
+    setEditingId(page.slug);
     setView('edit');
   }
 
@@ -440,7 +440,7 @@ export default function AdminPagesPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredPages.map(page => (
-                <tr key={page.id} className="hover:bg-slate-50">
+                <tr key={page.slug} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-mono text-xs text-slate-500">{page.slug}</td>
                   <td className="px-4 py-3 font-medium text-slate-800">{page.title}</td>
                   <td className="px-4 py-3"><StatusBadge status={page.status} /></td>

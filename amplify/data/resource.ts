@@ -65,6 +65,7 @@ const schema = a.schema({
   })
   .identifier(["slug"])
   .authorization((allow) => [
+    allow.publicApiKey().to(["read"]),
     allow.guest().to(["read"]),
     allow.authenticated().to(["read"]),
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),

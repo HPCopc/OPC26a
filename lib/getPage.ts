@@ -43,7 +43,10 @@ export const getPage = cache(async (slug: string): Promise<PageRecord | null> =>
   try {
     const client = getClient();
 
-   const { data, errors } = await client.models.Page.get(  { slug });
+    const { data, errors } = await client.models.Page.get(
+      { slug },
+      { authMode: 'apiKey' }
+   );
 
 if (errors?.length || !data) return null;
 
@@ -79,6 +82,7 @@ export const getPagesByPrefix = cache(async (prefix: string): Promise<PageRecord
     // List all pages — Page table will be small (< 100 records total)
     const { data, errors } = await client.models.Page.list({
         limit: 100,
+        authMode: 'apiKey',
     });
 
     if (errors?.length || !data?.length) return [];

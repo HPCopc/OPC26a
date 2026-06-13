@@ -1,5 +1,5 @@
 'use client';
-
+import RichEditor from '@/components/RichEditor';
 import { useState, useEffect, useTransition } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';

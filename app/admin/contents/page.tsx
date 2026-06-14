@@ -176,6 +176,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
             value={form.slug}
             onChange={e => setForm({ ...form, slug: slugify(e.target.value) })}
           />
+        </Field>
         <Field
           label="Body"
           hint="Use the rich text editor to format article content."

@@ -176,17 +176,21 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
             value={form.slug}
             onChange={e => setForm({ ...form, slug: slugify(e.target.value) })}
           />
-        </Field>
-
-        <Field label="Body" hint="TipTap editor coming soon — plain text or HTML for now.">
-          <textarea
-            className="w-full border rounded px-3 py-2 text-sm"
-            rows={8}
-            placeholder="Full article content (HTML supported)"
+        <Field
+          label="Body"
+          hint="Use the rich text editor to format article content."
+        >
+          <RichEditor
             value={form.body}
-            onChange={e => setForm({ ...form, body: e.target.value })}
+            onChange={(html) =>
+              setForm({
+                ...form,
+                body: html,
+              })
+            }
           />
         </Field>
+        
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Date *">

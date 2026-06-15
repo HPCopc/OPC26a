@@ -8,7 +8,7 @@ import type { Schema } from '../../data/resource';
 console.log('🔧 Loading Lambda function...');
 
 // ---- Configure Amplify Data client at module load (ESM supports top-level await)
-const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env);
+const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env as any);
 
 console.log('📡 GraphQL Endpoint:', resourceConfig.API?.GraphQL?.endpoint);
 console.log('🌍 Region:', resourceConfig.API?.GraphQL?.region);

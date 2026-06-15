@@ -9,7 +9,7 @@ const client = generateClient<Schema>({ authMode: 'userPool' });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ContentRecord = Schema['Content']['type'];
+type MetaRecord = Schema['ContentMeta']['type'];
 type View = 'list' | 'create' | 'edit';
 
 function slugify(text: string): string {
@@ -22,9 +22,10 @@ function slugify(text: string): string {
 }
 
 const emptyForm = {
+  // ── ContentMeta fields ──
   title:           '',
   slug:            '',
-  body:            '',
+  intro:           '',
   topic:           '',
   subcat1:         '',
   subcat2:         '',
@@ -33,15 +34,14 @@ const emptyForm = {
   isPublic:        false,
   imageUrl:        '',
   seo:             '{}',
-  // video
-  s3Key:           '',
-  // whitepaper / resource
-  fileKey:         '',
-  // event
   location:        '',
   eventDate:       '',
   maxAttendees:    '',
   registrationUrl: '',
+  // ── ContentBody fields ──
+  body:    '',
+  s3Key:   '',
+  fileKey: '',
 };
 
 // ─── Small components ─────────────────────────────────────────────────────────
@@ -92,11 +92,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
   const subcat2Items = form.topic && form.subcat1 ? getSubcat2(form.topic, form.subcat1) : [];
 
   function handleTitleChange(title: string) {
-    setForm({
-      ...form,
-      title,
-      slug: isEdit ? form.slug : slugify(title),
-    });
+    setForm({ ...form, title, slug: isEdit ? form.slug : slugify(title) });
   }
 
   return (
@@ -105,9 +101,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
       {/* ── Classification ── */}
       <section className="border rounded-xl p-5 bg-white shadow-sm space-y-4">
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Classification</h2>
-
         <div className="grid grid-cols-3 gap-4">
-          {/* Topic */}
           <Field label="Topic *">
             <select
               disabled={isEdit}
@@ -119,8 +113,6 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
               {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </Field>
-
-          {/* Subcat1 */}
           <Field label="Subcat1">
             <select
               disabled={isEdit || subcat1Items.length === 0}
@@ -134,8 +126,6 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
               ))}
             </select>
           </Field>
-
-          {/* Subcat2 — news only */}
           <Field label="Subcat2">
             <select
               disabled={isEdit || subcat2Items.length === 0}
@@ -150,15 +140,14 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
             </select>
           </Field>
         </div>
-
         {isEdit && (
           <p className="text-xs text-slate-400">Topic and subcategories cannot be changed after creation.</p>
         )}
       </section>
 
-      {/* ── Core fields ── */}
+      {/* ── Core meta fields ── */}
       <section className="border rounded-xl p-5 bg-white shadow-sm space-y-4">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Content</h2>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Details</h2>
 
         <Field label="Title *">
           <input
@@ -169,7 +158,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
           />
         </Field>
 
-        <Field label="Slug" hint={isEdit ? "Slug cannot be changed after creation." : "Auto-generated from title — edit if needed."}>
+        <Field label="Slug" hint={isEdit ? 'Slug cannot be changed after creation.' : 'Auto-generated from title — edit if needed.'}>
           <input
             className="w-full border rounded px-3 py-2 text-sm font-mono disabled:bg-slate-50"
             disabled={isEdit}
@@ -177,21 +166,13 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
             onChange={e => setForm({ ...form, slug: slugify(e.target.value) })}
           />
         </Field>
-        <Field
-          label="Body"
-          hint="Use the rich text editor to format article content."
-        >
+
+        <Field label="Intro" hint="First paragraph — visible to all visitors without login.">
           <RichEditor
-            value={form.body}
-            onChange={(html) =>
-              setForm({
-                ...form,
-                body: html,
-              })
-            }
+            value={form.intro}
+            onChange={html => setForm({ ...form, intro: html })}
           />
         </Field>
-        
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Date *">
@@ -213,17 +194,22 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
         </div>
 
         <div className="flex gap-6">
-          <Toggle
-            label="Published"
-            checked={form.isPublished}
-            onChange={v => setForm({ ...form, isPublished: v })}
-          />
-          <Toggle
-            label="Public (no login required)"
-            checked={form.isPublic}
-            onChange={v => setForm({ ...form, isPublic: v })}
-          />
+          <Toggle label="Published" checked={form.isPublished} onChange={v => setForm({ ...form, isPublished: v })} />
+          <Toggle label="Public (no login required)" checked={form.isPublic} onChange={v => setForm({ ...form, isPublic: v })} />
         </div>
+      </section>
+
+      {/* ── Full body (protected) ── */}
+      <section className="border rounded-xl p-5 bg-white shadow-sm space-y-4">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+          Full Content <span className="normal-case font-normal text-slate-400 ml-1">(login required to view)</span>
+        </h2>
+        <Field label="Body" hint="Full article — only visible to logged-in users.">
+          <RichEditor
+            value={form.body}
+            onChange={html => setForm({ ...form, body: html })}
+          />
+        </Field>
       </section>
 
       {/* ── Video fields ── */}
@@ -335,20 +321,20 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminContentPage() {
-  const [view, setView]                 = useState<View>('list');
-  const [items, setItems]               = useState<ContentRecord[]>([]);
-  const [topicFilter, setTopicFilter]   = useState<string>('all');
-  const [form, setForm]                 = useState(emptyForm);
-  const [editingId, setEditingId]       = useState<string | null>(null);
-  const [deleteId, setDeleteId]         = useState<string | null>(null);
-  const [message, setMessage]           = useState('');
-  const [isPending, startTransition]    = useTransition();
+  const [view, setView]               = useState<View>('list');
+  const [items, setItems]             = useState<MetaRecord[]>([]);
+  const [topicFilter, setTopicFilter] = useState<string>('all');
+  const [form, setForm]               = useState(emptyForm);
+  const [editingMetaId, setEditingMetaId]   = useState<string | null>(null);
+  const [editingBodyId, setEditingBodyId]   = useState<string | null>(null);
+  const [deleteId, setDeleteId]       = useState<string | null>(null);
+  const [message, setMessage]         = useState('');
+  const [isPending, startTransition]  = useTransition();
 
   useEffect(() => { loadItems(); }, []);
 
   async function loadItems() {
-    const { data } = await client.models.Content.list();
-    // Sort by date descending
+    const { data } = await client.models.ContentMeta.list();
     setItems([...data].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '')));
   }
 
@@ -361,21 +347,34 @@ export default function AdminContentPage() {
     ? items
     : items.filter(i => i.topic === topicFilter);
 
-  // ── Create ──
+  // ── SEO helper (same pattern as admin/page/page.tsx) ──
+  function parseSeo(raw: string): { value: string | undefined; error: boolean } {
+    const trimmed = raw.trim();
+    if (!trimmed || trimmed === '{}') return { value: undefined, error: false };
+    try {
+      JSON.parse(trimmed); // validate only
+      return { value: trimmed, error: false };
+    } catch {
+      return { value: undefined, error: true };
+    }
+  }
+
+  // ── Create: two sequential writes ──
   async function handleCreate() {
     if (!form.topic || !form.title.trim() || !form.slug.trim() || !form.date) {
       showMessage('❌ Topic, Title, Slug and Date are required');
       return;
     }
-    let seo: object = {};
-    try { seo = JSON.parse(form.seo); } catch { showMessage('❌ Invalid JSON in SEO'); return; }
+    const seo = parseSeo(form.seo);
+    if (seo.error) { showMessage('❌ Invalid JSON in SEO'); return; }
 
     startTransition(async () => {
       try {
-        const result = await client.models.Content.create({
+        // 1️⃣ Create ContentMeta
+        const metaResult = await client.models.ContentMeta.create({
           title:           form.title,
           slug:            form.slug,
-          body:            form.body || undefined,
+          intro:           form.intro || undefined,
           topic:           form.topic,
           subcat1:         form.subcat1 || undefined,
           subcat2:         form.subcat2 || undefined,
@@ -383,15 +382,34 @@ export default function AdminContentPage() {
           isPublished:     form.isPublished,
           isPublic:        form.isPublic,
           imageUrl:        form.imageUrl || undefined,
-          seo,
-          s3Key:           form.s3Key || undefined,
-          fileKey:         form.fileKey || undefined,
+          seo:             seo.value,
           location:        form.location || undefined,
           eventDate:       form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
           maxAttendees:    form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
           registrationUrl: form.registrationUrl || undefined,
         });
-        if (result.errors?.length) { showMessage(`❌ ${result.errors[0].message}`); return; }
+
+        if (metaResult.errors?.length) {
+          showMessage(`❌ ${metaResult.errors[0].message}`);
+          return;
+        }
+
+        const metaId = metaResult.data?.id;
+        if (!metaId) { showMessage('❌ Failed to get meta ID'); return; }
+
+        // 2️⃣ Create ContentBody (always create even if empty, so update works cleanly)
+        const bodyResult = await client.models.ContentBody.create({
+          metaId,
+          body:    form.body || undefined,
+          s3Key:   form.s3Key || undefined,
+          fileKey: form.fileKey || undefined,
+        });
+
+        if (bodyResult.errors?.length) {
+          showMessage(`❌ ${bodyResult.errors[0].message}`);
+          return;
+        }
+
         showMessage('✅ Content created!');
         setForm(emptyForm);
         setView('list');
@@ -402,35 +420,46 @@ export default function AdminContentPage() {
     });
   }
 
-  // ── Update ──
+  // ── Update: two parallel updates ──
   async function handleUpdate() {
-    if (!editingId || !form.title.trim() || !form.date) {
+    if (!editingMetaId || !form.title.trim() || !form.date) {
       showMessage('❌ Title and Date are required');
       return;
     }
-    let seo: object = {};
-    try { seo = JSON.parse(form.seo); } catch { showMessage('❌ Invalid JSON in SEO'); return; }
+    const seo = parseSeo(form.seo);
+    if (seo.error) { showMessage('❌ Invalid JSON in SEO'); return; }
 
     startTransition(async () => {
       try {
-        await client.models.Content.update({
-          id:              editingId,
+        // 1️⃣ Update ContentMeta
+        await client.models.ContentMeta.update({
+          id:              editingMetaId,
           title:           form.title,
-          body:            form.body || undefined,
+          intro:           form.intro || undefined,
           date:            form.date,
           isPublished:     form.isPublished,
           isPublic:        form.isPublic,
           imageUrl:        form.imageUrl || undefined,
-          seo,
-          s3Key:           form.s3Key || undefined,
-          fileKey:         form.fileKey || undefined,
+          seo:             seo.value,
           location:        form.location || undefined,
           eventDate:       form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
           maxAttendees:    form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
           registrationUrl: form.registrationUrl || undefined,
         });
+
+        // 2️⃣ Update ContentBody if we have its id
+        if (editingBodyId) {
+          await client.models.ContentBody.update({
+            id:      editingBodyId,
+            body:    form.body || undefined,
+            s3Key:   form.s3Key || undefined,
+            fileKey: form.fileKey || undefined,
+          });
+        }
+
         showMessage('✅ Content updated!');
-        setEditingId(null);
+        setEditingMetaId(null);
+        setEditingBodyId(null);
         setForm(emptyForm);
         setView('list');
         loadItems();
@@ -440,11 +469,21 @@ export default function AdminContentPage() {
     });
   }
 
-  // ── Delete ──
-  async function handleDelete(id: string) {
+  // ── Delete: remove body first, then meta ──
+  async function handleDelete() {
+    if (!deleteId) return;
     startTransition(async () => {
       try {
-        await client.models.Content.delete({ id });
+        // Find and delete the ContentBody record linked to this meta
+        const { data: bodyRecords } = await client.models.ContentBody.list({
+          filter: { metaId: { eq: deleteId } },
+        });
+        for (const body of bodyRecords) {
+          await client.models.ContentBody.delete({ id: body.id });
+        }
+        // Then delete ContentMeta
+        await client.models.ContentMeta.delete({ id: deleteId });
+
         showMessage('✅ Deleted!');
         setDeleteId(null);
         loadItems();
@@ -454,11 +493,18 @@ export default function AdminContentPage() {
     });
   }
 
-  function startEdit(item: ContentRecord) {
+  // ── Start edit: load meta + fetch body ──
+  async function startEdit(item: MetaRecord) {
+    // Load the linked ContentBody
+    const { data: bodyRecords } = await client.models.ContentBody.list({
+      filter: { metaId: { eq: item.id } },
+    });
+    const body = bodyRecords[0] ?? null;
+
     setForm({
       title:           item.title,
       slug:            item.slug,
-      body:            item.body ?? '',
+      intro:           item.intro ?? '',
       topic:           item.topic,
       subcat1:         item.subcat1 ?? '',
       subcat2:         item.subcat2 ?? '',
@@ -466,21 +512,24 @@ export default function AdminContentPage() {
       isPublished:     item.isPublished ?? true,
       isPublic:        item.isPublic ?? false,
       imageUrl:        item.imageUrl ?? '',
-      seo:             JSON.stringify(item.seo ?? {}, null, 2),
-      s3Key:           item.s3Key ?? '',
-      fileKey:         item.fileKey ?? '',
+      seo:             item.seo ? item.seo : '{}',
       location:        item.location ?? '',
       eventDate:       item.eventDate
                          ? new Date(item.eventDate).toISOString().slice(0, 16)
                          : '',
       maxAttendees:    item.maxAttendees?.toString() ?? '',
       registrationUrl: item.registrationUrl ?? '',
+      body:    body?.body ?? '',
+      s3Key:   body?.s3Key ?? '',
+      fileKey: body?.fileKey ?? '',
     });
-    setEditingId(item.id);
+
+    setEditingMetaId(item.id);
+    setEditingBodyId(body?.id ?? null);
     setView('edit');
   }
 
-  // ─── List view ────────────────────────────────────────────────────────────
+  // ─── List view ──────────────────────────────────────────────────────────────
   if (view === 'list') {
     return (
       <div className="p-6 space-y-5">
@@ -577,7 +626,7 @@ export default function AdminContentPage() {
               <p className="text-sm text-slate-500">This cannot be undone.</p>
               <div className="flex gap-3">
                 <button
-                  onClick={() => handleDelete(deleteId)}
+                  onClick={handleDelete}
                   disabled={isPending}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 disabled:opacity-50"
                 >
@@ -597,12 +646,12 @@ export default function AdminContentPage() {
     );
   }
 
-  // ─── Create / Edit view ───────────────────────────────────────────────────
+  // ─── Create / Edit view ─────────────────────────────────────────────────────
   return (
     <div className="p-6 space-y-5 max-w-3xl">
       <div className="flex items-center gap-3">
         <button
-          onClick={() => { setView('list'); setEditingId(null); setForm(emptyForm); }}
+          onClick={() => { setView('list'); setEditingMetaId(null); setEditingBodyId(null); setForm(emptyForm); }}
           className="text-sm text-slate-500 hover:text-slate-800"
         >
           ← Back
@@ -620,7 +669,7 @@ export default function AdminContentPage() {
         form={form}
         setForm={setForm}
         onSave={view === 'create' ? handleCreate : handleUpdate}
-        onCancel={() => { setView('list'); setEditingId(null); setForm(emptyForm); }}
+        onCancel={() => { setView('list'); setEditingMetaId(null); setEditingBodyId(null); setForm(emptyForm); }}
         loading={isPending}
         isEdit={view === 'edit'}
       />

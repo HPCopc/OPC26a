@@ -94,51 +94,55 @@ const schema = a.schema({
   //   true  = anyone can view (no login required)
   //   false = must be logged in to view
   // ─────────────────────────────────────────────────────────────
-  Content: a.model({
-    // ── Core fields (all types) ──────────────────────────────
-    title:       a.string().required(),
-    slug:        a.string().required(),  // e.g. "crude-markets-june-2026"
-    body:        a.string(),             // TipTap HTML — full content
-    topic:       a.string().required(),  // "news" | "videos" | "whitepapers" | "resources" | "events"
-    subcat1:    a.string(),             // e.g. "markets", "shale", "opc", "presentations"
-    subcat2:    a.string(),            
-    date:        a.date().required(),    // YYYY-MM-DD — used for sorting
-    isPublished: a.boolean().default(true),
-    isPublic:    a.boolean().default(false), // false = login required to view
-    authorId:    a.string(),
-    seo:         a.json(),               // { metaTitle, metaDescription, keywords }
 
-    // ── Video specific ───────────────────────────────────────
-    s3Key:       a.string(),             // "videos/modcon-cdu.mp4" — signed URL generated at runtime
-    
-    // ── Whitepaper / Resource specific ──────────────────────
-    fileKey:     a.string(),             // "whitepapers/report-2026.pdf" — S3 key for download
-
-    // ── Event specific ───────────────────────────────────────
-    location:        a.string(),         // physical or virtual location
-    eventDate:       a.datetime(),       // full datetime for events (date field = day only)
+const ContentMeta = a
+  .model({
+    title:           a.string().required(),
+    slug:            a.string().required(),
+    intro:           a.string(),           // PUBLIC teaser paragraph
+    topic:           a.string().required(),
+    subcat1:         a.string(),
+    subcat2:         a.string(),
+    date:            a.date().required(),
+    isPublished:     a.boolean().default(true),
+    isPublic:        a.boolean().default(false),
+    authorId:        a.string(),
+    imageUrl:        a.string(),
+    seo:             a.string(),           // raw JSON string (validated on save)
+    // event-specific metadata (public)
+    location:        a.string(),
+    eventDate:       a.datetime(),
     maxAttendees:    a.integer(),
-    registrationUrl: a.string(),         // external registration link
-
-    // ── Media ────────────────────────────────────────────────
-    imageUrl:    a.string(),             // optional hero/thumbnail image
+    registrationUrl: a.string(),
   })
   .secondaryIndexes((index) => [
-    index("slug"),                        // fetch single item by slug
-    index("topic").sortKeys(["date"]),    // list all items for a topic sorted by date
-    index("subcat1").sortKeys(["date"]), // list items by subcat1 sorted by date
-    index("subcat2").sortKeys(["date"]), // list items by subcat2 sorted by date
+    index("slug"),
+    index("topic").sortKeys(["date"]),
+    index("subcat1").sortKeys(["date"]),
+    index("subcat2").sortKeys(["date"]),
   ])
   .authorization((allow) => [
-    allow.guest().to(["read"]),           // guests see public content metadata
-    allow.authenticated().to(["read"]),   // logged-in users see protected content
+    allow.publicApiKey().to(["read", "list"]),
+    allow.guest().to(["read", "list"]),
+    allow.authenticated().to(["read", "list"]),
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
-  ]),
+  ]);
 
-})
-.authorization((allow) => [
-  allow.resource(postConfirmation).to(["mutate"]),
-]);
+const ContentBody = a
+  .model({
+    metaId:  a.id().required(),   // FK → ContentMeta.id
+    body:    a.string(),          // full article HTML (protected)
+    s3Key:   a.string(),          // video S3 key
+    fileKey: a.string(),          // whitepaper / resource S3 key
+  })
+  .authorization((allow) => [
+    allow.authenticated().to(["read", "list"]),
+    allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+  ]);
+
+
+  // ─────────────────────────────────────────────────────────────
+  
 
 export type Schema = ClientSchema<typeof schema>;
 

@@ -79,12 +79,13 @@ const schema = a.schema({
     index("subcat1").sortKeys(["date"]),
     index("subcat2").sortKeys(["date"]),
   ])
+ 
   .authorization((allow) => [
-    allow.publicApiKey().to(["read", "list"]),
-    allow.guest().to(["read", "list"]),
-    allow.authenticated().to(["read", "list"]),
-    allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
-  ]),
+  allow.publicApiKey().to(["read"]),
+  allow.guest().to(["read"]),
+  allow.authenticated().to(["read"]),
+  allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+]),
 
   // ─────────────────────────────────────────────────────────────
   // CONTENT BODY (protected full content)
@@ -95,9 +96,10 @@ const schema = a.schema({
     s3Key:   a.string(),
     fileKey: a.string(),
   })
+ 
   .authorization((allow) => [
-    allow.authenticated().to(["read", "list"]),
-    allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+  allow.authenticated().to(["read"]),
+  allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
 
 });

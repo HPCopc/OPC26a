@@ -1,4 +1,4 @@
-ContentCardItemimport { getPage } from '@/lib/getPage';
+import { getPage } from '@/lib/getPage';
 import { getContentByTopic } from '@/lib/getContent';
 import ContentList from '@/components/content/ContentList';
 import type { ContentCardItem } from '@/components/content/ContentCard';

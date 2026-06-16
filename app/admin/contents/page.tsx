@@ -36,12 +36,12 @@ const emptyForm = {
   seo:             '{}',
   location:        '',
   eventDate:       '',
+  // ── ContentBody fields ──
+  body:            '',
+  s3Key:           '',
+  fileKey:         '',
   maxAttendees:    '',
   registrationUrl: '',
-  // ── ContentBody fields ──
-  body:    '',
-  s3Key:   '',
-  fileKey: '',
 };
 
 // ─── Small components ─────────────────────────────────────────────────────────
@@ -385,8 +385,6 @@ export default function AdminContentPage() {
           seo:             seo.value,
           location:        form.location || undefined,
           eventDate:       form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
-          maxAttendees:    form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
-          registrationUrl: form.registrationUrl || undefined,
         });
 
         if (metaResult.errors?.length) {
@@ -400,9 +398,11 @@ export default function AdminContentPage() {
         // 2️⃣ Create ContentBody (always create even if empty, so update works cleanly)
         const bodyResult = await client.models.ContentBody.create({
           metaId,
-          body:    form.body || undefined,
-          s3Key:   form.s3Key || undefined,
-          fileKey: form.fileKey || undefined,
+          body:            form.body || undefined,
+          s3Key:           form.s3Key || undefined,
+          fileKey:         form.fileKey || undefined,
+          maxAttendees:    form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
+          registrationUrl: form.registrationUrl || undefined,
         });
 
         if (bodyResult.errors?.length) {
@@ -443,17 +443,17 @@ export default function AdminContentPage() {
           seo:             seo.value,
           location:        form.location || undefined,
           eventDate:       form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
-          maxAttendees:    form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
-          registrationUrl: form.registrationUrl || undefined,
         });
 
         // 2️⃣ Update ContentBody if we have its id
         if (editingBodyId) {
           await client.models.ContentBody.update({
-            id:      editingBodyId,
-            body:    form.body || undefined,
-            s3Key:   form.s3Key || undefined,
-            fileKey: form.fileKey || undefined,
+            id:              editingBodyId,
+            body:            form.body || undefined,
+            s3Key:           form.s3Key || undefined,
+            fileKey:         form.fileKey || undefined,
+            maxAttendees:    form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
+            registrationUrl: form.registrationUrl || undefined,
           });
         }
 
@@ -517,11 +517,11 @@ export default function AdminContentPage() {
       eventDate:       item.eventDate
                          ? new Date(item.eventDate).toISOString().slice(0, 16)
                          : '',
-      maxAttendees:    item.maxAttendees?.toString() ?? '',
-      registrationUrl: item.registrationUrl ?? '',
-      body:    body?.body ?? '',
-      s3Key:   body?.s3Key ?? '',
-      fileKey: body?.fileKey ?? '',
+      body:            body?.body ?? '',
+      s3Key:           body?.s3Key ?? '',
+      fileKey:         body?.fileKey ?? '',
+      maxAttendees:    body?.maxAttendees?.toString() ?? '',
+      registrationUrl: body?.registrationUrl ?? '',
     });
 
     setEditingMetaId(item.id);

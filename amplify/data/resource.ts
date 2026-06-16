@@ -70,8 +70,6 @@ const schema = a.schema({
     seo:             a.string(),
     location:        a.string(),
     eventDate:       a.datetime(),
-    maxAttendees:    a.integer(),
-    registrationUrl: a.string(),
   })
   .secondaryIndexes((index) => [
     index("slug"),

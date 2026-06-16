@@ -1,8 +1,9 @@
- import type { Schema } from '@/amplify/data/resource';
+import type { Schema } from '@/amplify/data/resource';
 
-type Event = Schema['Content']['type'];
+type EventMeta = Schema['ContentMeta']['type'];
+type EventBody = Schema['ContentBody']['type'];
 
-export default function EventCard({ event }: { event: Event }) {
+export default function EventCard({ event, body }: { event: EventMeta; body?: EventBody }) {
   const date = new Date(event.date).toLocaleDateString('en-US', {
     weekday: 'short', month: 'long', day: 'numeric', year: 'numeric',
   });
@@ -23,8 +24,8 @@ export default function EventCard({ event }: { event: Event }) {
         {event.location && (
           <p className="text-sm text-gray-400 mt-1">📍 {event.location}</p>
         )}
-        {event.body && (
-          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{event.body}</p>
+        {body?.body && (
+          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{body.body}</p>
         )}
       </div>
     </div>

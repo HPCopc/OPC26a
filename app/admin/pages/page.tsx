@@ -326,7 +326,13 @@ export default function AdminPagesPage() {
     form.subcat1 || undefined,
     form.subcat2 || undefined
   );
-
+ // ── Check for duplicate slug ──
+  const { data: existing } = await client.models.Page.get({ slug });
+  if (existing) {
+    showMessage(`❌ A page with slug "${slug}" already exists.`);
+    return;
+  }
+  
   startTransition(async () => {
     try {
        const result = await client.models.Page.create({

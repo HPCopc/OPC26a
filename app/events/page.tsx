@@ -1,6 +1,5 @@
-import { getPage } from '@/lib/getPage';
+ContentCardItemimport { getPage } from '@/lib/getPage';
 import { getContentByTopic } from '@/lib/getContent';
-import { extractFirstParagraph } from '@/lib/htmlUtils';
 import ContentList from '@/components/content/ContentList';
 import type { ContentCardItem } from '@/components/content/ContentCard';
 
@@ -9,16 +8,15 @@ export default async function EventsPage() {
   const { items, nextToken } = await getContentByTopic('events');
 
   const cardItems: ContentCardItem[] = items.map((item) => ({
-    id:              item.id,
-    slug:            item.slug,
-    title:           item.title,
-    topic:           'events' as const,
-    date:            item.date,
-    excerpt:         extractFirstParagraph(item.body ?? ''),
-    imageUrl:        item.imageUrl ?? undefined,
-    location:        item.location ?? undefined,
-    eventDate:       item.eventDate ?? undefined,
-    registrationUrl: item.registrationUrl ?? undefined,
+    id:        item.id,
+    slug:      item.slug,
+    title:     item.title,
+    topic:     'events' as const,
+    date:      item.date,
+    excerpt:   item.intro ?? undefined,
+    imageUrl:  item.imageUrl ?? undefined,
+    location:  item.location ?? undefined,
+    eventDate: item.eventDate ?? undefined,
   }));
 
   return (
@@ -44,16 +42,15 @@ export default async function EventsPage() {
             await getContentByTopic('events', token);
           return {
             items: next.map((item) => ({
-              id:              item.id,
-              slug:            item.slug,
-              title:           item.title,
-              topic:           'events' as const,
-              date:            item.date,
-              excerpt:         extractFirstParagraph(item.body ?? ''),
-              imageUrl:        item.imageUrl ?? undefined,
-              location:        item.location ?? undefined,
-              eventDate:       item.eventDate ?? undefined,
-              registrationUrl: item.registrationUrl ?? undefined,
+              id:        item.id,
+              slug:      item.slug,
+              title:     item.title,
+              topic:     'events' as const,
+              date:      item.date,
+              excerpt:   item.intro ?? undefined,
+              imageUrl:  item.imageUrl ?? undefined,
+              location:  item.location ?? undefined,
+              eventDate: item.eventDate ?? undefined,
             })),
             nextToken: nextNext,
           };

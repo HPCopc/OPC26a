@@ -40,8 +40,6 @@ const emptyForm = {
   body:            '',
   s3Key:           '',
   fileKey:         '',
-  maxAttendees:    '',
-  registrationUrl: '',
 };
 
 // ─── Small components ─────────────────────────────────────────────────────────
@@ -263,23 +261,6 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
                 onChange={e => setForm({ ...form, location: e.target.value })}
               />
             </Field>
-            <Field label="Max Attendees">
-              <input
-                type="number"
-                className="w-full border rounded px-3 py-2 text-sm"
-                placeholder="e.g. 200"
-                value={form.maxAttendees}
-                onChange={e => setForm({ ...form, maxAttendees: e.target.value })}
-              />
-            </Field>
-            <Field label="Registration URL">
-              <input
-                className="w-full border rounded px-3 py-2 text-sm"
-                placeholder="https://..."
-                value={form.registrationUrl}
-                onChange={e => setForm({ ...form, registrationUrl: e.target.value })}
-              />
-            </Field>
           </div>
         </section>
       )}
@@ -398,11 +379,9 @@ export default function AdminContentPage() {
         // 2️⃣ Create ContentBody (always create even if empty, so update works cleanly)
         const bodyResult = await client.models.ContentBody.create({
           metaId,
-          body:            form.body || undefined,
-          s3Key:           form.s3Key || undefined,
-          fileKey:         form.fileKey || undefined,
-          maxAttendees:    form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
-          registrationUrl: form.registrationUrl || undefined,
+          body:    form.body || undefined,
+          s3Key:   form.s3Key || undefined,
+          fileKey: form.fileKey || undefined,
         });
 
         if (bodyResult.errors?.length) {
@@ -448,12 +427,10 @@ export default function AdminContentPage() {
         // 2️⃣ Update ContentBody if we have its id
         if (editingBodyId) {
           await client.models.ContentBody.update({
-            id:              editingBodyId,
-            body:            form.body || undefined,
-            s3Key:           form.s3Key || undefined,
-            fileKey:         form.fileKey || undefined,
-            maxAttendees:    form.maxAttendees ? parseInt(form.maxAttendees) : undefined,
-            registrationUrl: form.registrationUrl || undefined,
+            id:      editingBodyId,
+            body:    form.body || undefined,
+            s3Key:   form.s3Key || undefined,
+            fileKey: form.fileKey || undefined,
           });
         }
 
@@ -517,11 +494,9 @@ export default function AdminContentPage() {
       eventDate:       item.eventDate
                          ? new Date(item.eventDate).toISOString().slice(0, 16)
                          : '',
-      body:            body?.body ?? '',
-      s3Key:           body?.s3Key ?? '',
-      fileKey:         body?.fileKey ?? '',
-      maxAttendees:    body?.maxAttendees?.toString() ?? '',
-      registrationUrl: body?.registrationUrl ?? '',
+      body:    body?.body ?? '',
+      s3Key:   body?.s3Key ?? '',
+      fileKey: body?.fileKey ?? '',
     });
 
     setEditingMetaId(item.id);

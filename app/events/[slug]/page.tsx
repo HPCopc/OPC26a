@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import EventDetail from '@/components/content/detail/EventDetail';
 
 // ── Next.js 15: params is a Promise ──────────────────────────────────────────
+// app/events/[slug]/page → EventDetail → lib/getContent
 type Props = {
   params: Promise<{ slug: string }>;
 };
@@ -10,7 +11,7 @@ type Props = {
 export default async function EventDetailPage({ params }: Props) {
   const { slug } = await params;
 
-  const item = await getContentBySlug(slug, false); // false = public, no login required
+  const item = await getContentBySlug(slug, true); // false = public, no login required
 
   if (!item) notFound();
 

@@ -26,7 +26,6 @@ export interface ContentCardItem {
   // event-specific
   eventDate?:    string | null; // schema: eventDate (ISO datetime)
   location?:     string | null; // schema: location
-  registrationUrl?: string | null;
   // video — no durationSeconds in schema; omit
 }
 
@@ -58,7 +57,7 @@ function buildHref(item: ContentCardItem): string {
       return `/videos/${item.subcat1 ?? "_"}/${item.slug}`;
     case "whitepapers":
       // /whitepapers/[subcat1]/[slug]
-      return `/whitepapers/${item.subcat1 ?? "_"}/${item.slug}`;
+      return `/whitepapers/${item.slug}`;
     case "resources":
       return `/resources/${item.slug}`;
     case "events":
@@ -238,10 +237,7 @@ export default function ContentCard({ item, compact = false, className = "" }: C
                 {item.location}
               </span>
             )}
-            {item.registrationUrl && (
-              <span className="mt-1 text-[12px] text-amber-600 font-medium">Register →</span>
-            )}
-          </div>
+         </div>
         )}
 
         {/* Whitepaper download hint */}

@@ -12,7 +12,7 @@ import type { Schema } from '@/amplify/data/resource';
 
 
 const getClient = async () =>
-  generateServerClientUsingCookies<Schema>({ config, cookies: await cookies() });
+  generateServerClientUsingCookies<Schema>({ config, cookies });
 
 const PAGE_SIZE = 10;
 

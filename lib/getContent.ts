@@ -11,7 +11,7 @@ import config from '@/amplify_outputs.json';
 import type { Schema } from '@/amplify/data/resource';
 
 const getClient = () =>
-  generateServerClientUsingCookies<Schema>({ config, cookies });
+  generateServerClientUsingCookies<Schema>({ config,  cookies: await cookies() });
 
 const PAGE_SIZE = 10;
 
@@ -73,7 +73,7 @@ export const getContentByTopic = cache(
     nextToken: string | null = null
   ): Promise<ContentListResult> => {
     try {
-      const client = getClient();
+      const client = await  getClient();
       const { data, nextToken: next, errors } =
         await client.models.ContentMeta.listContentMetaByTopicAndDate(
           { topic },
@@ -101,7 +101,7 @@ export const getContentBySubcat1 = cache(
     nextToken: string | null = null
   ): Promise<ContentListResult> => {
     try {
-      const client = getClient();
+      const client = await getClient();
       const { data, nextToken: next, errors } =
         await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
           { subcat1 },
@@ -129,7 +129,7 @@ export const getContentBySubcat2 = cache(
     nextToken: string | null = null
   ): Promise<ContentListResult> => {
     try {
-      const client = getClient();
+      const client = await getClient();
       const { data, nextToken: next, errors } =
         await client.models.ContentMeta.listContentMetaBySubcat2AndDate(
           { subcat2 },
@@ -158,7 +158,7 @@ export async function getContentBySlug(
   requiresLogin: boolean
 ): Promise<ContentItem | null> {
   try {
-    const client = getClient();
+    const client = await getClient();
 
     // 1. Fetch ContentMeta (always public)
     const { data, errors } = await client.models.ContentMeta.listContentMetaBySlug(

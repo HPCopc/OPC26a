@@ -18,9 +18,8 @@ export default async function EventDetailPage({ params }: Props) {
   // ── Check if user is logged in ──────────────────────────────
   let isLoggedIn = false;
   try {
-    const cookieStore = await cookies();
-    await runWithAmplifyServerContext({
-      nextServerContext: { cookies: () => cookieStore },
+       await runWithAmplifyServerContext({
+      nextServerContext: { cookies },
       async operation(contextSpec) {
         const session = await fetchAuthSession(contextSpec);
         isLoggedIn = !!session?.tokens?.accessToken;

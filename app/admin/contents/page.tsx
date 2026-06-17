@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { TOPICS, getSubcat1, getSubcat2, type TaxonomyItem } from '@/lib/taxonomy';
+import { useMessage } from '@/lib/utils';
 
 const client = generateClient<Schema>({ authMode: 'userPool' });
 
@@ -309,7 +310,8 @@ export default function AdminContentPage() {
   const [editingMetaId, setEditingMetaId]   = useState<string | null>(null);
   const [editingBodyId, setEditingBodyId]   = useState<string | null>(null);
   const [deleteId, setDeleteId]       = useState<string | null>(null);
-  const [message, setMessage]         = useState('');
+  // const [message, setMessage]         = useState('');
+  const { message, showMessage } = useMessage();
   const [isPending, startTransition]  = useTransition();
 
   useEffect(() => { loadItems(); }, []);
@@ -317,11 +319,6 @@ export default function AdminContentPage() {
   async function loadItems() {
     const { data } = await client.models.ContentMeta.list();
     setItems([...data].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '')));
-  }
-
-  function showMessage(msg: string) {
-    setMessage(msg);
-    setTimeout(() => setMessage(''), 4000);
   }
 
   const filteredItems = topicFilter === 'all'

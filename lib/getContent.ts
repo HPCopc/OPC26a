@@ -10,8 +10,9 @@ import { cache } from 'react';
 import config from '@/amplify_outputs.json';
 import type { Schema } from '@/amplify/data/resource';
 
-const getClient = () =>
-  generateServerClientUsingCookies<Schema>({ config,  cookies: await cookies() });
+
+const getClient = async () =>
+  generateServerClientUsingCookies<Schema>({ config, cookies: await cookies() });
 
 const PAGE_SIZE = 10;
 

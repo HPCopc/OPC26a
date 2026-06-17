@@ -168,17 +168,35 @@ export async function getContentBySlug(
         limit:    1,
       }
     );
+     // ✅ ADD LOG 1 — did meta fetch work?
+    console.log('🔍 [getContentBySlug] slug:', slug);
+    console.log('🔍 [getContentBySlug] meta data:', JSON.stringify(data));
+    console.log('❌ [getContentBySlug] meta errors:', JSON.stringify(errors));
+
     if (errors?.length || !data?.length) return null;
     const meta = data[0];
+
+    // ✅ ADD LOG 2 — is it published?
+    console.log('📋 [getContentBySlug] meta.isPublished:', meta.isPublished);
+    
     if (!meta.isPublished) return null;
 
     // 2. Fetch ContentBody (logged-in users only)
     let bodyData = undefined;
     if (requiresLogin) {
+
+      // ✅ ADD LOG 3 — about to fetch body
+      console.log('🔐 [getContentBySlug] fetching body for id:', meta.id);
+
       const { data: bodyItems } = await client.models.ContentBody.get(
         { id: meta.id },
         { authMode: 'userPool' }
       );
+
+           // ✅ ADD LOG 4 — did body fetch work?
+      console.log('📦 [getContentBySlug] bodyItems:', JSON.stringify(bodyItems));
+      console.log('❌ [getContentBySlug] bodyErrors:', JSON.stringify(bodyErrors));
+
       if (bodyItems) {
         bodyData = {
           body:    bodyItems.body    ?? null,

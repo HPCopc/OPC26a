@@ -165,7 +165,7 @@ export async function getContentBySlug(
     const { data, errors } = await client.models.ContentMeta.listContentMetaBySlug(
       { slug },
       {
-        authMode: 'identityPool',
+        authMode: 'userPool',
         limit:    1,
       }
     );

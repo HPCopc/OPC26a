@@ -283,11 +283,13 @@ export default function AdminPagesPage() {
     setPages(data);
   }
 
+  
   function showMessage(msg: string) {
     setMessage(msg);
-    setTimeout(() => setMessage(''), 4000);
+    if (msg.startsWith('✅')) {
+      setTimeout(() => setMessage(''), 4000);
+    }
   }
-
   // ── Filtered pages ──
   const filteredPages = pages.filter(p => {
     if (filter === 'all') return true;

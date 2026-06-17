@@ -7,6 +7,7 @@ import {
   TOPICS, getSubcat1, getSubcat2, buildPageSlug,
   type TaxonomyItem,
 } from '@/lib/taxonomy';
+import { useMessage } from '@/lib/utils';
 
 const client = generateClient<Schema>({ authMode: 'userPool' });
 
@@ -273,7 +274,8 @@ export default function AdminPagesPage() {
   const [form, setForm]               = useState(emptyForm);
   const [editingId, setEditingId]     = useState<string | null>(null);
   const [deleteId, setDeleteId]       = useState<string | null>(null);
-  const [message, setMessage]         = useState('');
+//  const [message, setMessage]         = useState('');
+  const { message, showMessage } = useMessage();
   const [isPending, startTransition]  = useTransition();
 
   useEffect(() => { loadPages(); }, []);
@@ -284,12 +286,7 @@ export default function AdminPagesPage() {
   }
 
   
-  function showMessage(msg: string) {
-    setMessage(msg);
-    if (msg.startsWith('✅')) {
-      setTimeout(() => setMessage(''), 4000);
-    }
-  }
+ 
   // ── Filtered pages ──
   const filteredPages = pages.filter(p => {
     if (filter === 'all') return true;

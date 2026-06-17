@@ -188,10 +188,11 @@ export async function getContentBySlug(
       // ✅ ADD LOG 3 — about to fetch body
       console.log('🔐 [getContentBySlug] fetching body for id:', meta.id);
 
-      const { data: bodyItems } = await client.models.ContentBody.get(
+      const { data: bodyItems, errors: bodyErrors } = await client.models.ContentBody.get(
         { id: meta.id },
         { authMode: 'userPool' }
       );
+      
 
            // ✅ ADD LOG 4 — did body fetch work?
       console.log('📦 [getContentBySlug] bodyItems:', JSON.stringify(bodyItems));

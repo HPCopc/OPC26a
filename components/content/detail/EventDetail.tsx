@@ -93,6 +93,17 @@ export default function EventDetail({ item }: Props) {
 
       </div>
 
+    {/* Intro — always visible when logged in */}
+      {item.intro && (
+        <div
+          className="prose prose-gray max-w-none mb-6
+            prose-headings:font-bold prose-headings:text-gray-900
+            prose-p:text-gray-700 prose-p:leading-relaxed
+            prose-a:text-[#00a86b] prose-a:no-underline hover:prose-a:underline"
+          dangerouslySetInnerHTML={{ __html: item.intro }}
+        />
+      )}
+
       {/* Body — TipTap HTML */}
       {item.body && (
         <div

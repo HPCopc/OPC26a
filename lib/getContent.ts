@@ -75,16 +75,34 @@ export const getContentByTopic = cache(
   ): Promise<ContentListResult> => {
     try {
       const client = await  getClient();
-      const { data, nextToken: next, errors } =
-        await client.models.ContentMeta.listContentMetaByTopicAndDate(
-          { topic },
-          {
-            authMode:      'identityPool',
-            limit:         PAGE_SIZE,
-            nextToken:     nextToken ?? undefined,
-            sortDirection: 'DESC',
-          }
-        );
+      let data, next, errors;
+
+      try {
+        ({ data, nextToken: next, errors } =
+          await client.models.ContentMeta.listContentMetaByTopicAndDate(
+            { topic },
+            {
+              authMode:      'userPool',      // ← try logged-in first
+              limit:         PAGE_SIZE,
+              nextToken:     nextToken ?? undefined,
+              sortDirection: 'DESC',
+            }
+          ));
+      } catch {
+        // not logged in — fall back to guest access
+        ({ data, nextToken: next, errors } =
+          await client.models.ContentMeta.listContentMetaByTopicAndDate(
+            { topic },
+            {
+              authMode:      'identityPool',  // ← guest fallback
+              limit:         PAGE_SIZE,
+              nextToken:     nextToken ?? undefined,
+              sortDirection: 'DESC',
+            }
+          ));
+      }
+
+
       if (errors?.length) return { items: [], nextToken: null };
       return {
         items:     (data ?? []).filter(i => i.isPublished).map(i => mapMeta(i)),
@@ -103,16 +121,32 @@ export const getContentBySubcat1 = cache(
   ): Promise<ContentListResult> => {
     try {
       const client = await getClient();
-      const { data, nextToken: next, errors } =
-        await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
-          { subcat1 },
-          {
-            authMode:      'identityPool',
-            limit:         PAGE_SIZE,
-            nextToken:     nextToken ?? undefined,
-            sortDirection: 'DESC',
-          }
-        );
+      let data, next, errors;
+
+      try {
+        ({ data, nextToken: next, errors } =
+          await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
+            { subcat1 },
+            {
+              authMode:      'userPool',
+              limit:         PAGE_SIZE,
+              nextToken:     nextToken ?? undefined,
+              sortDirection: 'DESC',
+            }
+          ));
+      } catch {
+        ({ data, nextToken: next, errors } =
+          await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
+            { subcat1 },
+            {
+              authMode:      'identityPool',
+              limit:         PAGE_SIZE,
+              nextToken:     nextToken ?? undefined,
+              sortDirection: 'DESC',
+            }
+          ));
+      }
+
       if (errors?.length) return { items: [], nextToken: null };
       return {
         items:     (data ?? []).filter(i => i.isPublished).map(i => mapMeta(i)),
@@ -131,16 +165,32 @@ export const getContentBySubcat2 = cache(
   ): Promise<ContentListResult> => {
     try {
       const client = await getClient();
-      const { data, nextToken: next, errors } =
-        await client.models.ContentMeta.listContentMetaBySubcat2AndDate(
-          { subcat2 },
-          {
-            authMode:      'identityPool',
-            limit:         PAGE_SIZE,
-            nextToken:     nextToken ?? undefined,
-            sortDirection: 'DESC',
-          }
-        );
+      let data, next, errors;
+
+      try {
+        ({ data, nextToken: next, errors } =
+          await client.models.ContentMeta.listContentMetaBySubcat2AndDate(
+            { subcat2 },
+            {
+              authMode:      'userPool',
+              limit:         PAGE_SIZE,
+              nextToken:     nextToken ?? undefined,
+              sortDirection: 'DESC',
+            }
+          ));
+      } catch {
+        ({ data, nextToken: next, errors } =
+          await client.models.ContentMeta.listContentMetaBySubcat2AndDate(
+            { subcat2 },
+            {
+              authMode:      'identityPool',
+              limit:         PAGE_SIZE,
+              nextToken:     nextToken ?? undefined,
+              sortDirection: 'DESC',
+            }
+          ));
+      }
+
       if (errors?.length) return { items: [], nextToken: null };
       return {
         items:     (data ?? []).filter(i => i.isPublished).map(i => mapMeta(i)),

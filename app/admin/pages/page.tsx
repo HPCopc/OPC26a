@@ -39,7 +39,13 @@ const emptyForm = {
   title:   '',
   intro:   '',
   status:  'draft' as PageStatus,
-  seo:     '{}',
+  seo:     '{
+  "metaTitle": "",
+  "metaDescription": "",
+  "keywords": "",
+  "ogTitle": "",
+  "ogDescription": ""
+  }',
   featured: false,
 };
 
@@ -435,6 +441,7 @@ export default function AdminPagesPage() {
       intro:    page.intro ?? '',
       status:   (page.status as PageStatus) ?? 'draft',
       seo:      JSON.stringify(page.seo ?? {}, null, 2),
+      seo: typeof page.seo === 'string' ? page.seo : JSON.stringify(page.seo ?? {}, null, 2),
       featured: page.featured ?? false,
     });
     setEditingId(page.slug);

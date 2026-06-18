@@ -39,13 +39,7 @@ const emptyForm = {
   title:   '',
   intro:   '',
   status:  'draft' as PageStatus,
-  seo:     '{
-  "metaTitle": "",
-  "metaDescription": "",
-  "keywords": "",
-  "ogTitle": "",
-  "ogDescription": ""
-  }',
+  seo: '{"metaTitle": "", "metaDescription": "", "keywords": "", "ogTitle": "", "ogDescription": ""}',
   featured: false,
 };
 

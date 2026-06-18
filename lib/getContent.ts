@@ -75,7 +75,9 @@ export const getContentByTopic = cache(
   ): Promise<ContentListResult> => {
     try {
       const client = await  getClient();
-      let data, next, errors;
+      let data: any[] | undefined;
+      let next: string | undefined;
+      let errors: any[] | undefined = undefined;
 
       try {
         ({ data, nextToken: next, errors } =
@@ -121,7 +123,9 @@ export const getContentBySubcat1 = cache(
   ): Promise<ContentListResult> => {
     try {
       const client = await getClient();
-      let data, next, errors;
+      let data: any[] | undefined;
+      let next: string | undefined;
+      let errors: any[] | undefined = undefined;
 
       try {
         ({ data, nextToken: next, errors } =
@@ -165,7 +169,9 @@ export const getContentBySubcat2 = cache(
   ): Promise<ContentListResult> => {
     try {
       const client = await getClient();
-      let data, next, errors;
+      let data: any[] | undefined;
+      let next: string | undefined;
+      let errors: any[] | undefined = undefined;
 
       try {
         ({ data, nextToken: next, errors } =

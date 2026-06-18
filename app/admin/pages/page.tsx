@@ -434,7 +434,6 @@ export default function AdminPagesPage() {
       title:    page.title,
       intro:    page.intro ?? '',
       status:   (page.status as PageStatus) ?? 'draft',
-      seo:      JSON.stringify(page.seo ?? {}, null, 2),
       seo: typeof page.seo === 'string' ? page.seo : JSON.stringify(page.seo ?? {}, null, 2),
       featured: page.featured ?? false,
     });

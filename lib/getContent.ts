@@ -76,7 +76,7 @@ export const getContentByTopic = cache(
     try {
       const client = await  getClient();
       let data: any[] | undefined;
-      let next: string | undefined;
+      let next: string | null | undefined;
       let errors: any[] | undefined = undefined;
 
       try {
@@ -124,7 +124,7 @@ export const getContentBySubcat1 = cache(
     try {
       const client = await getClient();
       let data: any[] | undefined;
-      let next: string | undefined;
+      let next: string | null | undefined;
       let errors: any[] | undefined = undefined;
 
       try {
@@ -170,7 +170,7 @@ export const getContentBySubcat2 = cache(
     try {
       const client = await getClient();
       let data: any[] | undefined;
-      let next: string | undefined;
+      let next: string | null | undefined;
       let errors: any[] | undefined = undefined;
 
       try {

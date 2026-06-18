@@ -34,7 +34,7 @@ const emptyForm = {
   isPublished:     true,
   isPublic:        false,
   imageUrl:        '',
-  seo:             '{}',
+  seo: '{"metaTitle": "", "metaDescription": "", "ogTitle": "", "ogDescription": ""}',
   location:        '',
   eventDate:       '',
   // ── ContentBody fields ──
@@ -42,6 +42,21 @@ const emptyForm = {
   s3Key:           '',
   fileKey:         '',
 };
+
+function normalizeSeo(value: unknown): string {
+  let parsed: unknown = value;
+  while (typeof parsed === 'string') {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch {
+      break;
+    }
+  }
+  if (typeof parsed === 'object' && parsed !== null) {
+    return JSON.stringify(parsed, null, 2);
+  }
+  return '{"metaTitle": "", "metaDescription": "", "ogTitle": "", "ogDescription": ""}';
+}
 
 // ─── Small components ─────────────────────────────────────────────────────────
 
@@ -327,15 +342,15 @@ export default function AdminContentPage() {
 
   // ── SEO helper (same pattern as admin/page/page.tsx) ──
   function parseSeo(raw: string): { value: string | undefined; error: boolean } {
-    const trimmed = raw.trim();
-    if (!trimmed || trimmed === '{}') return { value: undefined, error: false };
-    try {
-      JSON.parse(trimmed); // validate only
-      return { value: trimmed, error: false };
-    } catch {
-      return { value: undefined, error: true };
-    }
+  const trimmed = raw.trim();
+  if (!trimmed) return { value: undefined, error: false };
+  try {
+    JSON.parse(trimmed);
+    return { value: trimmed, error: false };
+  } catch {
+    return { value: undefined, error: true };
   }
+}
 
   // ── Create: two sequential writes ──
   async function handleCreate() {
@@ -486,7 +501,7 @@ export default function AdminContentPage() {
       isPublished:     item.isPublished ?? true,
       isPublic:        item.isPublic ?? false,
       imageUrl:        item.imageUrl ?? '',
-      seo:             item.seo ? item.seo : '{}',
+      seo:             normalizeSeo(item.seo),
       location:        item.location ?? '',
       eventDate:       item.eventDate
                          ? new Date(item.eventDate).toISOString().slice(0, 16)

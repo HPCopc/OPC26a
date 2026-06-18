@@ -43,6 +43,21 @@ const emptyForm = {
   featured: false,
 };
 
+function normalizeSeo(value: unknown): string {
+  let parsed: unknown = value;
+  while (typeof parsed === 'string') {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch {
+      break;
+    }
+  }
+  if (typeof parsed === 'object' && parsed !== null) {
+    return JSON.stringify(parsed, null, 2);
+  }
+  return '{"metaTitle": "", "metaDescription": "", "keywords": "", "ogTitle": "", "ogDescription": ""}';
+}
+
 // ─── Small components ─────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string | null | undefined }) {
@@ -310,7 +325,7 @@ export default function AdminPagesPage() {
   const trimmed = form.seo.trim();
   let seoValue: string | undefined;
 
-  if (trimmed && trimmed !== '{}') {
+  if (trimmed ) {
     try {
       JSON.parse(trimmed); // just validate it's valid JSON, don't use the result
       seoValue = trimmed;  // pass the raw string
@@ -370,7 +385,7 @@ export default function AdminPagesPage() {
 
   const trimmed = form.seo.trim();
   let seoValue: string | undefined;
-  if (trimmed && trimmed !== '{}') {
+  if (trimmed) {
     try {
       JSON.parse(trimmed);
       seoValue = trimmed;
@@ -434,7 +449,7 @@ export default function AdminPagesPage() {
       title:    page.title,
       intro:    page.intro ?? '',
       status:   (page.status as PageStatus) ?? 'draft',
-      seo: typeof page.seo === 'string' ? page.seo : JSON.stringify(page.seo ?? {}, null, 2),
+      seo: normalizeSeo(page.seo),
       featured: page.featured ?? false,
     });
     setEditingId(page.slug);

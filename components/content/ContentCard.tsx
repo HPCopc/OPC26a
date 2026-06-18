@@ -186,8 +186,9 @@ export default function ContentCard({ item, compact = false, className = "" }: C
         shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 ${className}`}
     >
       {/* Thumbnail */}
+  
       {!compact && (
-        <Thumbnail url={item.imageUrl} title={item.title} topic={item.topic} />
+        <Thumbnail url={item.imageUrl} title={item.title.replace(/<[^>]*>/g, "")} topic={item.topic} />
       )}
 
       {/* Body */}
@@ -201,18 +202,19 @@ export default function ContentCard({ item, compact = false, className = "" }: C
           </span>
         </div>
 
-        {/* Title */}
-        <h3 className="text-[15px] font-semibold text-slate-800 leading-snug
-          group-hover:text-amber-700 transition-colors duration-150 line-clamp-3">
-          {item.title}
-        </h3>
+         <h3
+          className="text-[15px] font-semibold text-slate-800 leading-snug
+            group-hover:text-amber-700 transition-colors duration-150 line-clamp-3"
+          dangerouslySetInnerHTML={{ __html: item.title }}
+        />
 
         {/* Excerpt */}
         {item.excerpt && (
-          <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-2 flex-1">
-            {item.excerpt}
-          </p>
-        )}
+        <div
+          className="text-[13px] text-slate-500 leading-relaxed line-clamp-2 flex-1"
+          dangerouslySetInnerHTML={{ __html: item.excerpt }}
+        />
+)}
 
         {/* Event meta */}
         {item.topic === "events" && (item.eventDate || item.location) && (

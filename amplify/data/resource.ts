@@ -88,7 +88,7 @@ const schema = a.schema({
   // CONTENT BODY (protected full content)
   // ─────────────────────────────────────────────────────────────
   ContentBody: a.model({
-    metaId: a.id().required().belongsTo('ContentMeta'),
+    metaId: a.id().required(),
     contentType: a.enum(['NEWS','VIDEO','WHITEPAPER','RESOURCE','EVENT']).required(),
     body:    a.string(),
     s3Key:   a.string(),

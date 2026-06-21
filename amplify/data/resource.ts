@@ -64,7 +64,6 @@ const schema = a.schema({
     subcat2:         a.string(),
     date:            a.date().required(),
     isPublished:     a.boolean().default(true),
-    isPublic:        a.boolean().default(false),
     authorId:        a.string(),
     imageUrl:        a.string(),
     seo:             a.string(),
@@ -89,13 +88,19 @@ const schema = a.schema({
   // CONTENT BODY (protected full content)
   // ─────────────────────────────────────────────────────────────
   ContentBody: a.model({
-    metaId:  a.id().required(),
+    metaId: a.id().required().belongsTo('ContentMeta'),
+    contentType: a.enum(['NEWS','VIDEO','WHITEPAPER','RESOURCE','EVENT']).required(),
     body:    a.string(),
     s3Key:   a.string(),
     fileKey: a.string(),
   })
  
   .authorization((allow) => [
+  // Public read ONLY when parent Content is RESOURCE or EVENT
+  allow.publicApiKey().to(["read"]).when((ctx) =>
+    ctx.object.contentType.eq("RESOURCE")
+      .or(ctx.object.contentType.eq("EVENT"))
+  ),
   allow.authenticated().to(["read"]),
   allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),

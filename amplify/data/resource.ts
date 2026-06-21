@@ -89,11 +89,17 @@ const schema = a.schema({
   // ─────────────────────────────────────────────────────────────
   ContentBody: a.model({
     metaId: a.id().required(),
-    contentType: a.enum(['NEWS','VIDEO','WHITEPAPER','RESOURCE','EVENT']).required(),
+    contentType: a.enum(['NEWS','VIDEO','WHITEPAPER','RESOURCE','EVENT']),
     body:    a.string(),
     s3Key:   a.string(),
     fileKey: a.string(),
   })
+
+  .secondaryIndexes((index) => [
+  index("metaId"),
+  index("contentType"),     
+])
+
  
   .authorization((allow) => [
   // Public read ONLY when parent Content is RESOURCE or EVENT

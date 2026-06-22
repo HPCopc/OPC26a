@@ -10,7 +10,7 @@ const client = generateClient<Schema>({ authMode: 'userPool' });
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PUBLIC_TOPICS = ['events', 'resource'];
+const PUBLIC_TOPICS = ['events', 'resources'];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

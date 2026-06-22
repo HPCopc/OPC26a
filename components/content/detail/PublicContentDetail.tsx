@@ -34,7 +34,7 @@ function formatDateTime(dateStr: string | null | undefined): string {
 
 export default function PublicContentDetail({ item }: Props) {
   const isEvent    = item.topic === 'events';
-  const isResource = item.topic === 'resource';
+  const isResource = item.topic === 'resources';
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-10">

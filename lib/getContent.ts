@@ -2,7 +2,7 @@
  * getContent.ts
  * Fetches ContentMeta + PublicContentBody or ProtectedContentBody from DynamoDB.
  * Topic drives which body table is queried:
- *   "events" | "resource"  → PublicContentBody  (no login)
+ *   "events" | "resources"  → PublicContentBody  (no login)
  *   everything else         → ProtectedContentBody (login required)
  */
 
@@ -19,7 +19,7 @@ const PAGE_SIZE = 10;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PUBLIC_TOPICS = ['events', 'resource'];
+const PUBLIC_TOPICS = ['events', 'resources'];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

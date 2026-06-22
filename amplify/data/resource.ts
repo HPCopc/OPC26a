@@ -90,7 +90,7 @@ const schema = a.schema({
   // ─────────────────────────────────────────────────────────────
   PublicContentBody: a.model({
     metaId:      a.id().required(),
-    contentType: a.enum(["EVENT", "RESOURCE"]),
+    contentType: a.enum(["EVENTS", "RESOURCES"]),
     body:        a.string(),
     s3Key:       a.string(),
     fileKey:     a.string(),
@@ -112,7 +112,7 @@ const schema = a.schema({
   // ─────────────────────────────────────────────────────────────
   ProtectedContentBody: a.model({
     metaId:      a.id().required(),
-    contentType: a.enum(["NEWS", "VIDEO", "WHITEPAPER"]),
+    contentType: a.enum(["NEWS", "VIDEOS", "WHITEPAPERS"]),
     body:        a.string(),
     s3Key:       a.string(),
     fileKey:     a.string(),

@@ -85,30 +85,45 @@ const schema = a.schema({
 ]),
 
   // ─────────────────────────────────────────────────────────────
-  // CONTENT BODY (protected full content)
+  // PUBLIC CONTENT BODY
+  // For topic = "events" or "resource" — no login required
   // ─────────────────────────────────────────────────────────────
-  ContentBody: a.model({
-    metaId: a.id().required(),
-    contentType: a.enum(['NEWS','VIDEO','WHITEPAPER','RESOURCE','EVENT']),
-    body:    a.string(),
-    s3Key:   a.string(),
-    fileKey: a.string(),
+  PublicContentBody: a.model({
+    metaId:      a.id().required(),
+    contentType: a.enum(["EVENT", "RESOURCE"]),
+    body:        a.string(),
+    s3Key:       a.string(),
+    fileKey:     a.string(),
   })
-
   .secondaryIndexes((index) => [
-  index("metaId"),
-  index("contentType"),     
-])
-
- 
+    index("metaId"),
+    index("contentType"),
+  ])
   .authorization((allow) => [
-  // Public read ONLY when parent Content is RESOURCE or EVENT
-  allow.publicApiKey().to(["read"]).when((ctx) =>
-    ctx.object.contentType.eq("RESOURCE")
-      .or(ctx.object.contentType.eq("EVENT"))
-  ),
-  allow.authenticated().to(["read"]),
-  allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+    allow.publicApiKey().to(["read"]),
+    allow.guest().to(["read"]),
+    allow.authenticated().to(["read"]),
+    allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+  ]),
+
+  // ─────────────────────────────────────────────────────────────
+  // PROTECTED CONTENT BODY
+  // For topic = "news", "video", "whitepaper" — login required
+  // ─────────────────────────────────────────────────────────────
+  ProtectedContentBody: a.model({
+    metaId:      a.id().required(),
+    contentType: a.enum(["NEWS", "VIDEO", "WHITEPAPER"]),
+    body:        a.string(),
+    s3Key:       a.string(),
+    fileKey:     a.string(),
+  })
+  .secondaryIndexes((index) => [
+    index("metaId"),
+    index("contentType"),
+  ])
+  .authorization((allow) => [
+    allow.authenticated().to(["read"]),
+    allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
 
 });

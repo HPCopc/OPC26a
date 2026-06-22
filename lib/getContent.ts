@@ -1,7 +1,9 @@
 /**
  * getContent.ts
- * app/events/[slug]/page → EventDetail → lib/getContent
- * Fetches ContentMeta and ContentBody from DynamoDB.
+ * Fetches ContentMeta + PublicContentBody or ProtectedContentBody from DynamoDB.
+ * Topic drives which body table is queried:
+ *   "events" | "resource"  → PublicContentBody  (no login)
+ *   everything else         → ProtectedContentBody (login required)
  */
 
 import { generateServerClientUsingCookies } from '@aws-amplify/adapter-nextjs/data';
@@ -10,11 +12,14 @@ import { cache } from 'react';
 import config from '@/amplify_outputs.json';
 import type { Schema } from '@/amplify/data/resource';
 
-
 const getClient = async () =>
   generateServerClientUsingCookies<Schema>({ config, cookies });
 
 const PAGE_SIZE = 10;
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const PUBLIC_TOPICS = ['events', 'resource'];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,17 +27,17 @@ export type ContentItem = {
   id:          string;
   title:       string;
   slug:        string;
-  intro:       string | null;  // ContentMeta — public
-  body:        string | null;  // ContentBody — logged-in only
+  intro:       string | null;
+  body:        string | null;
   topic:       string;
   subcat1:     string | null;
   subcat2:     string | null;
   date:        string;
   isPublished: boolean;
-  isPublic:    boolean;
+  isPublic:    boolean;  // derived from topic — true if events or resource
   imageUrl:    string | null;
-  s3Key:       string | null;  // ContentBody
-  fileKey:     string | null;  // ContentBody
+  s3Key:       string | null;
+  fileKey:     string | null;
   location:    string | null;
   eventDate:   string | null;
 };
@@ -50,23 +55,23 @@ function mapMeta(raw: any, bodyData?: { body?: string | null; s3Key?: string | n
     id:          raw.id,
     title:       raw.title,
     slug:        raw.slug,
-    intro:       raw.intro       ?? null,
-    body:        bodyData?.body  ?? null,
+    intro:       raw.intro      ?? null,
+    body:        bodyData?.body ?? null,
     topic:       raw.topic,
-    subcat1:     raw.subcat1     ?? null,
-    subcat2:     raw.subcat2     ?? null,
+    subcat1:     raw.subcat1    ?? null,
+    subcat2:     raw.subcat2    ?? null,
     date:        raw.date,
     isPublished: raw.isPublished ?? true,
-    isPublic:    raw.isPublic    ?? false,
-    imageUrl:    raw.imageUrl    ?? null,
+    isPublic:    PUBLIC_TOPICS.includes(raw.topic),  // ← derived, not from DB
+    imageUrl:    raw.imageUrl   ?? null,
     s3Key:       bodyData?.s3Key   ?? null,
     fileKey:     bodyData?.fileKey ?? null,
-    location:    raw.location    ?? null,
-    eventDate:   raw.eventDate   ?? null,
+    location:    raw.location   ?? null,
+    eventDate:   raw.eventDate  ?? null,
   };
 }
 
-// ─── Listing Functions ────────────────────────────────────────────────────────
+// ─── Listing Functions (unchanged) ───────────────────────────────────────────
 
 export const getContentByTopic = cache(
   async (
@@ -74,7 +79,7 @@ export const getContentByTopic = cache(
     nextToken: string | null = null
   ): Promise<ContentListResult> => {
     try {
-      const client = await  getClient();
+      const client = await getClient();
       let data: any[] | undefined;
       let next: string | null | undefined;
       let errors: any[] | undefined = undefined;
@@ -84,26 +89,24 @@ export const getContentByTopic = cache(
           await client.models.ContentMeta.listContentMetaByTopicAndDate(
             { topic },
             {
-              authMode:      'userPool',      // ← try logged-in first
+              authMode:      'userPool',
               limit:         PAGE_SIZE,
               nextToken:     nextToken ?? undefined,
               sortDirection: 'DESC',
             }
           ));
       } catch {
-        // not logged in — fall back to guest access
         ({ data, nextToken: next, errors } =
           await client.models.ContentMeta.listContentMetaByTopicAndDate(
             { topic },
             {
-              authMode:      'identityPool',  // ← guest fallback
+              authMode:      'identityPool',
               limit:         PAGE_SIZE,
               nextToken:     nextToken ?? undefined,
               sortDirection: 'DESC',
             }
           ));
       }
-
 
       if (errors?.length) return { items: [], nextToken: null };
       return {
@@ -211,21 +214,18 @@ export const getContentBySubcat2 = cache(
 // ─── Detail Function ──────────────────────────────────────────────────────────
 
 export async function getContentBySlug(
-  slug:          string,
-  requiresLogin: boolean
+  slug: string
+  // requiresLogin removed — topic drives the decision now
 ): Promise<ContentItem | null> {
   try {
     const client = await getClient();
 
-    // 1. Fetch ContentMeta (always public)
+    // 1. Fetch ContentMeta — always public
     const { data, errors } = await client.models.ContentMeta.listContentMetaBySlug(
       { slug },
-      {
-        authMode: 'userPool',
-        limit:    1,
-      }
+      { authMode: 'apiKey', limit: 1 }
     );
-     // ✅ ADD LOG 1 — did meta fetch work?
+
     console.log('🔍 [getContentBySlug] slug:', slug);
     console.log('🔍 [getContentBySlug] meta data:', JSON.stringify(data));
     console.log('❌ [getContentBySlug] meta errors:', JSON.stringify(errors));
@@ -233,38 +233,56 @@ export async function getContentBySlug(
     if (errors?.length || !data?.length) return null;
     const meta = data[0];
 
-    // ✅ ADD LOG 2 — is it published?
-    console.log('📋 [getContentBySlug] meta.isPublished:', meta.isPublished);
-    
+    console.log('📋 [getContentBySlug] meta.topic:', meta.topic);
+
     if (!meta.isPublished) return null;
 
-    // 2. Fetch ContentBody (logged-in users only)
-    let bodyData = undefined;
-    if (requiresLogin) {
+    const isPublic = PUBLIC_TOPICS.includes(meta.topic);
 
-      // ✅ ADD LOG 3 — about to fetch body
-      console.log('🔐 [getContentBySlug] fetching body for id:', meta.id);
+    // 2a. Public topic → query PublicContentBody with apiKey (no login needed)
+    if (isPublic) {
+      const { data: bodyItems, errors: bodyErrors } =
+        await client.models.PublicContentBody.listPublicContentBodyByMetaId(
+          { metaId: meta.id },
+          { authMode: 'apiKey', limit: 1 }
+        );
 
-      const { data: bodyItems, errors: bodyErrors } = await client.models.ContentBody.get(
-        { id: meta.id },
-        { authMode: 'userPool' }
-      );
-      
-
-           // ✅ ADD LOG 4 — did body fetch work?
-      console.log('📦 [getContentBySlug] bodyItems:', JSON.stringify(bodyItems));
+      console.log('📦 [getContentBySlug] PublicContentBody:', JSON.stringify(bodyItems));
       console.log('❌ [getContentBySlug] bodyErrors:', JSON.stringify(bodyErrors));
 
-      if (bodyItems) {
-        bodyData = {
-          body:    bodyItems.body    ?? null,
-          s3Key:   bodyItems.s3Key   ?? null,
-          fileKey: bodyItems.fileKey ?? null,
-        };
-      }
+      const body = bodyItems?.[0];
+      return mapMeta(meta, body ? {
+        body:    body.body    ?? null,
+        s3Key:   body.s3Key   ?? null,
+        fileKey: body.fileKey ?? null,
+      } : undefined);
     }
 
-    return mapMeta(meta, bodyData);
+    // 2b. Protected topic → query ProtectedContentBody, requires login
+    try {
+      const { data: bodyItems, errors: bodyErrors } =
+        await client.models.ProtectedContentBody.listProtectedContentBodyByMetaId(
+          { metaId: meta.id },
+          { authMode: 'userPool', limit: 1 }
+        );
+
+      console.log('🔐 [getContentBySlug] ProtectedContentBody:', JSON.stringify(bodyItems));
+      console.log('❌ [getContentBySlug] bodyErrors:', JSON.stringify(bodyErrors));
+
+      const body = bodyItems?.[0];
+      return mapMeta(meta, body ? {
+        body:    body.body    ?? null,
+        s3Key:   body.s3Key   ?? null,
+        fileKey: body.fileKey ?? null,
+      } : undefined);
+
+    } catch {
+      // Not logged in — return meta only, body will be null
+      // Page/component should show a login gate
+      console.log('🔒 [getContentBySlug] user not logged in, returning meta only');
+      return mapMeta(meta, undefined);
+    }
+
   } catch (err) {
     console.error(`[getContentBySlug] Failed for slug "${slug}":`, err);
     return null;

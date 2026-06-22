@@ -6,7 +6,7 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export default async function EventDetailPage({ params }: Props) {
+export default async function ResourceDetailPage({ params }: Props) {
   const { slug } = await params;
   const item = await getContentBySlug(slug);
   if (!item) notFound();

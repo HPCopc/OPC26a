@@ -8,6 +8,10 @@ import { useMessage } from '@/lib/utils';
 
 const client = generateClient<Schema>({ authMode: 'userPool' });
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const PUBLIC_TOPICS = ['events', 'resource'];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type MetaRecord = Schema['ContentMeta']['type'];
@@ -103,6 +107,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
 }) {
   const subcat1Items = form.topic ? getSubcat1(form.topic) : [];
   const subcat2Items = form.topic && form.subcat1 ? getSubcat2(form.topic, form.subcat1) : [];
+  const isPublicTopic = PUBLIC_TOPICS.includes(form.topic);
 
   function handleTitleChange(title: string) {
     setForm({ ...form, title, slug: isEdit ? form.slug : slugify(title) });
@@ -156,6 +161,15 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
         {isEdit && (
           <p className="text-xs text-slate-400">Topic and subcategories cannot be changed after creation.</p>
         )}
+        {/* Show which body table will be used */}
+        {form.topic && (
+          <p className="text-xs text-slate-400">
+            Body will be stored in{' '}
+            <span className={`font-semibold ${isPublicTopic ? 'text-green-600' : 'text-amber-600'}`}>
+              {isPublicTopic ? 'PublicContentBody (no login required)' : 'ProtectedContentBody (login required)'}
+            </span>
+          </p>
+        )}
       </section>
 
       {/* ── Core meta fields ── */}
@@ -207,16 +221,19 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
         </div>
 
         <div className="flex gap-6">
-          <Toggle label="Published" checked={form.isPublished} onChange={v => setForm({ ...form, isPublished: v })} />          
+          <Toggle label="Published" checked={form.isPublished} onChange={v => setForm({ ...form, isPublished: v })} />
         </div>
       </section>
 
-      {/* ── Full body (protected) ── */}
+      {/* ── Full body ── */}
       <section className="border rounded-xl p-5 bg-white shadow-sm space-y-4">
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">
-          Full Content <span className="normal-case font-normal text-slate-400 ml-1">(login required to view)</span>
+          Full Content{' '}
+          <span className="normal-case font-normal text-slate-400 ml-1">
+            {isPublicTopic ? '(publicly visible)' : '(login required to view)'}
+          </span>
         </h2>
-        <Field label="Body" hint="Full article — only visible to logged-in users.">
+        <Field label="Body" hint={isPublicTopic ? 'Visible to all visitors.' : 'Only visible to logged-in users.'}>
           <RichEditor
             value={form.body}
             onChange={html => setForm({ ...form, body: html })}
@@ -316,16 +333,15 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminContentPage() {
-  const [view, setView]               = useState<View>('list');
-  const [items, setItems]             = useState<MetaRecord[]>([]);
-  const [topicFilter, setTopicFilter] = useState<string>('all');
-  const [form, setForm]               = useState(emptyForm);
+  const [view, setView]                     = useState<View>('list');
+  const [items, setItems]                   = useState<MetaRecord[]>([]);
+  const [topicFilter, setTopicFilter]       = useState<string>('all');
+  const [form, setForm]                     = useState(emptyForm);
   const [editingMetaId, setEditingMetaId]   = useState<string | null>(null);
   const [editingBodyId, setEditingBodyId]   = useState<string | null>(null);
-  const [deleteId, setDeleteId]       = useState<string | null>(null);
-  // const [message, setMessage]         = useState('');
-  const { message, showMessage } = useMessage();
-  const [isPending, startTransition]  = useTransition();
+  const [deleteId, setDeleteId]             = useState<string | null>(null);
+  const { message, showMessage }            = useMessage();
+  const [isPending, startTransition]        = useTransition();
 
   useEffect(() => { loadItems(); }, []);
 
@@ -338,19 +354,18 @@ export default function AdminContentPage() {
     ? items
     : items.filter(i => i.topic === topicFilter);
 
-  // ── SEO helper (same pattern as admin/page/page.tsx) ──
   function parseSeo(raw: string): { value: string | undefined; error: boolean } {
-  const trimmed = raw.trim();
-  if (!trimmed) return { value: undefined, error: false };
-  try {
-    JSON.parse(trimmed);
-    return { value: trimmed, error: false };
-  } catch {
-    return { value: undefined, error: true };
+    const trimmed = raw.trim();
+    if (!trimmed) return { value: undefined, error: false };
+    try {
+      JSON.parse(trimmed);
+      return { value: trimmed, error: false };
+    } catch {
+      return { value: undefined, error: true };
+    }
   }
-}
 
-  // ── Create: two sequential writes ──
+  // ── Create: write meta then correct body table ──
   async function handleCreate() {
     if (!form.topic || !form.title.trim() || !form.slug.trim() || !form.date) {
       showMessage('❌ Topic, Title, Slug and Date are required');
@@ -363,18 +378,18 @@ export default function AdminContentPage() {
       try {
         // 1️⃣ Create ContentMeta
         const metaResult = await client.models.ContentMeta.create({
-          title:           form.title,
-          slug:            form.slug,
-          intro:           form.intro || undefined,
-          topic:           form.topic,
-          subcat1:         form.subcat1 || undefined,
-          subcat2:         form.subcat2 || undefined,
-          date:            form.date,
-          isPublished:     form.isPublished,          
-          imageUrl:        form.imageUrl || undefined,
-          seo:             seo.value,
-          location:        form.location || undefined,
-          eventDate:       form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
+          title:       form.title,
+          slug:        form.slug,
+          intro:       form.intro || undefined,
+          topic:       form.topic,
+          subcat1:     form.subcat1 || undefined,
+          subcat2:     form.subcat2 || undefined,
+          date:        form.date,
+          isPublished: form.isPublished,
+          imageUrl:    form.imageUrl || undefined,
+          seo:         seo.value,
+          location:    form.location || undefined,
+          eventDate:   form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
         });
 
         if (metaResult.errors?.length) {
@@ -385,17 +400,38 @@ export default function AdminContentPage() {
         const metaId = metaResult.data?.id;
         if (!metaId) { showMessage('❌ Failed to get meta ID'); return; }
 
-        // 2️⃣ Create ContentBody (always create even if empty, so update works cleanly)
-        const bodyResult = await client.models.ContentBody.create({
-          metaId,
-          body:    form.body || undefined,
-          s3Key:   form.s3Key || undefined,
-          fileKey: form.fileKey || undefined,
-        });
+        // 2️⃣ Write to PublicContentBody or ProtectedContentBody based on topic
+        const isPublic = PUBLIC_TOPICS.includes(form.topic);
 
-        if (bodyResult.errors?.length) {
-          showMessage(`❌ ${bodyResult.errors[0].message}`);
-          return;
+        if (isPublic) {
+          const bodyResult = await client.models.PublicContentBody.create({
+            metaId,
+            contentType: form.topic === 'events' ? 'EVENT' : 'RESOURCE',
+            body:        form.body || undefined,
+            s3Key:       form.s3Key || undefined,
+            fileKey:     form.fileKey || undefined,
+          });
+          if (bodyResult.errors?.length) {
+            showMessage(`❌ ${bodyResult.errors[0].message}`);
+            return;
+          }
+        } else {
+          const contentTypeMap: Record<string, 'NEWS' | 'VIDEO' | 'WHITEPAPER'> = {
+            news:        'NEWS',
+            videos:      'VIDEO',
+            whitepapers: 'WHITEPAPER',
+          };
+          const bodyResult = await client.models.ProtectedContentBody.create({
+            metaId,
+            contentType: contentTypeMap[form.topic],
+            body:        form.body || undefined,
+            s3Key:       form.s3Key || undefined,
+            fileKey:     form.fileKey || undefined,
+          });
+          if (bodyResult.errors?.length) {
+            showMessage(`❌ ${bodyResult.errors[0].message}`);
+            return;
+          }
         }
 
         showMessage('✅ Content created!');
@@ -408,7 +444,7 @@ export default function AdminContentPage() {
     });
   }
 
-  // ── Update: two parallel updates ──
+  // ── Update: meta + correct body table ──
   async function handleUpdate() {
     if (!editingMetaId || !form.title.trim() || !form.date) {
       showMessage('❌ Title and Date are required');
@@ -421,25 +457,36 @@ export default function AdminContentPage() {
       try {
         // 1️⃣ Update ContentMeta
         await client.models.ContentMeta.update({
-          id:              editingMetaId,
-          title:           form.title,
-          intro:           form.intro || undefined,
-          date:            form.date,
-          isPublished:     form.isPublished,          
-          imageUrl:        form.imageUrl || undefined,
-          seo:             seo.value,
-          location:        form.location || undefined,
-          eventDate:       form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
+          id:          editingMetaId,
+          title:       form.title,
+          intro:       form.intro || undefined,
+          date:        form.date,
+          isPublished: form.isPublished,
+          imageUrl:    form.imageUrl || undefined,
+          seo:         seo.value,
+          location:    form.location || undefined,
+          eventDate:   form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
         });
 
-        // 2️⃣ Update ContentBody if we have its id
+        // 2️⃣ Update the correct body table
         if (editingBodyId) {
-          await client.models.ContentBody.update({
-            id:      editingBodyId,
-            body:    form.body || undefined,
-            s3Key:   form.s3Key || undefined,
-            fileKey: form.fileKey || undefined,
-          });
+          const isPublic = PUBLIC_TOPICS.includes(form.topic);
+
+          if (isPublic) {
+            await client.models.PublicContentBody.update({
+              id:      editingBodyId,
+              body:    form.body || undefined,
+              s3Key:   form.s3Key || undefined,
+              fileKey: form.fileKey || undefined,
+            });
+          } else {
+            await client.models.ProtectedContentBody.update({
+              id:      editingBodyId,
+              body:    form.body || undefined,
+              s3Key:   form.s3Key || undefined,
+              fileKey: form.fileKey || undefined,
+            });
+          }
         }
 
         showMessage('✅ Content updated!');
@@ -459,14 +506,26 @@ export default function AdminContentPage() {
     if (!deleteId) return;
     startTransition(async () => {
       try {
-        // Find and delete the ContentBody record linked to this meta
-        const { data: bodyRecords } = await client.models.ContentBody.list({
-          filter: { metaId: { eq: deleteId } },
-        });
-        for (const body of bodyRecords) {
-          await client.models.ContentBody.delete({ id: body.id });
+        // Find the meta to know which body table to clean up
+        const deletingItem = items.find(i => i.id === deleteId);
+        const isPublic = deletingItem ? PUBLIC_TOPICS.includes(deletingItem.topic) : false;
+
+        if (isPublic) {
+          const { data: bodyRecords } = await client.models.PublicContentBody.list({
+            filter: { metaId: { eq: deleteId } },
+          });
+          for (const body of bodyRecords) {
+            await client.models.PublicContentBody.delete({ id: body.id });
+          }
+        } else {
+          const { data: bodyRecords } = await client.models.ProtectedContentBody.list({
+            filter: { metaId: { eq: deleteId } },
+          });
+          for (const body of bodyRecords) {
+            await client.models.ProtectedContentBody.delete({ id: body.id });
+          }
         }
-        // Then delete ContentMeta
+
         await client.models.ContentMeta.delete({ id: deleteId });
 
         showMessage('✅ Deleted!');
@@ -478,29 +537,38 @@ export default function AdminContentPage() {
     });
   }
 
-  // ── Start edit: load meta + fetch body ──
+  // ── Start edit: load meta + fetch from correct body table ──
   async function startEdit(item: MetaRecord) {
-    // Load the linked ContentBody
-    const { data: bodyRecords } = await client.models.ContentBody.list({
-      filter: { metaId: { eq: item.id } },
-    });
-    const body = bodyRecords[0] ?? null;
+    const isPublic = PUBLIC_TOPICS.includes(item.topic);
+    let body = null;
+
+    if (isPublic) {
+      const { data: bodyRecords } = await client.models.PublicContentBody.list({
+        filter: { metaId: { eq: item.id } },
+      });
+      body = bodyRecords[0] ?? null;
+    } else {
+      const { data: bodyRecords } = await client.models.ProtectedContentBody.list({
+        filter: { metaId: { eq: item.id } },
+      });
+      body = bodyRecords[0] ?? null;
+    }
 
     setForm({
-      title:           item.title,
-      slug:            item.slug,
-      intro:           item.intro ?? '',
-      topic:           item.topic,
-      subcat1:         item.subcat1 ?? '',
-      subcat2:         item.subcat2 ?? '',
-      date:            item.date,
-      isPublished:     item.isPublished ?? true,
-      imageUrl:        item.imageUrl ?? '',
-      seo:             normalizeSeo(item.seo),
-      location:        item.location ?? '',
-      eventDate:       item.eventDate
-                         ? new Date(item.eventDate).toISOString().slice(0, 16)
-                         : '',
+      title:       item.title,
+      slug:        item.slug,
+      intro:       item.intro ?? '',
+      topic:       item.topic,
+      subcat1:     item.subcat1 ?? '',
+      subcat2:     item.subcat2 ?? '',
+      date:        item.date,
+      isPublished: item.isPublished ?? true,
+      imageUrl:    item.imageUrl ?? '',
+      seo:         normalizeSeo(item.seo),
+      location:    item.location ?? '',
+      eventDate:   item.eventDate
+                     ? new Date(item.eventDate).toISOString().slice(0, 16)
+                     : '',
       body:    body?.body ?? '',
       s3Key:   body?.s3Key ?? '',
       fileKey: body?.fileKey ?? '',
@@ -558,7 +626,7 @@ export default function AdminContentPage() {
                 <th className="text-left px-4 py-3 font-medium text-slate-600">Subcat1</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-600">Date</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-600">Published</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-600">Public</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-600">Access</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-600">Actions</th>
               </tr>
             </thead>
@@ -570,6 +638,12 @@ export default function AdminContentPage() {
                   <td className="px-4 py-3 text-slate-500">{item.subcat1 ?? '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{item.date}</td>
                   <td className="px-4 py-3">{item.isPublished ? '✅' : '⬜'}</td>
+                  <td className="px-4 py-3">
+                    {PUBLIC_TOPICS.includes(item.topic)
+                      ? <span className="text-xs text-green-600 font-medium">Public</span>
+                      : <span className="text-xs text-amber-600 font-medium">Login</span>
+                    }
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button

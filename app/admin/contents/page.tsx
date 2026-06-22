@@ -32,7 +32,6 @@ const emptyForm = {
   subcat2:         '',
   date:            new Date().toISOString().split('T')[0],
   isPublished:     true,
-  isPublic:        false,
   imageUrl:        '',
   seo: '{"metaTitle": "", "metaDescription": "", "ogTitle": "", "ogDescription": ""}',
   location:        '',
@@ -208,8 +207,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
         </div>
 
         <div className="flex gap-6">
-          <Toggle label="Published" checked={form.isPublished} onChange={v => setForm({ ...form, isPublished: v })} />
-          <Toggle label="Public (no login required)" checked={form.isPublic} onChange={v => setForm({ ...form, isPublic: v })} />
+          <Toggle label="Published" checked={form.isPublished} onChange={v => setForm({ ...form, isPublished: v })} />          
         </div>
       </section>
 
@@ -372,8 +370,7 @@ export default function AdminContentPage() {
           subcat1:         form.subcat1 || undefined,
           subcat2:         form.subcat2 || undefined,
           date:            form.date,
-          isPublished:     form.isPublished,
-          isPublic:        form.isPublic,
+          isPublished:     form.isPublished,          
           imageUrl:        form.imageUrl || undefined,
           seo:             seo.value,
           location:        form.location || undefined,
@@ -428,8 +425,7 @@ export default function AdminContentPage() {
           title:           form.title,
           intro:           form.intro || undefined,
           date:            form.date,
-          isPublished:     form.isPublished,
-          isPublic:        form.isPublic,
+          isPublished:     form.isPublished,          
           imageUrl:        form.imageUrl || undefined,
           seo:             seo.value,
           location:        form.location || undefined,
@@ -499,7 +495,6 @@ export default function AdminContentPage() {
       subcat2:         item.subcat2 ?? '',
       date:            item.date,
       isPublished:     item.isPublished ?? true,
-      isPublic:        item.isPublic ?? false,
       imageUrl:        item.imageUrl ?? '',
       seo:             normalizeSeo(item.seo),
       location:        item.location ?? '',
@@ -575,7 +570,6 @@ export default function AdminContentPage() {
                   <td className="px-4 py-3 text-slate-500">{item.subcat1 ?? '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{item.date}</td>
                   <td className="px-4 py-3">{item.isPublished ? '✅' : '⬜'}</td>
-                  <td className="px-4 py-3">{item.isPublic ? '🌐' : '🔒'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button

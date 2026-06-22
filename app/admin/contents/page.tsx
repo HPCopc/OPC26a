@@ -406,7 +406,7 @@ export default function AdminContentPage() {
         if (isPublic) {
           const bodyResult = await client.models.PublicContentBody.create({
             metaId,
-            contentType: form.topic === 'events' ? 'EVENT' : 'RESOURCE',
+            contentType: form.topic === 'events' ? 'EVENTS' : 'RESOURCES',
             body:        form.body || undefined,
             s3Key:       form.s3Key || undefined,
             fileKey:     form.fileKey || undefined,
@@ -419,7 +419,7 @@ export default function AdminContentPage() {
           const contentTypeMap: Record<string, 'NEWS' | 'VIDEOS' | 'WHITEPAPERS'> = {
             news:        'NEWS',
             videos:      'VIDEOS',
-            whitepapers: 'WHITEPAPER',
+            whitepapers: 'WHITEPAPERS',
           };
           const bodyResult = await client.models.ProtectedContentBody.create({
             metaId,

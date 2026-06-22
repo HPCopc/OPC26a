@@ -416,9 +416,9 @@ export default function AdminContentPage() {
             return;
           }
         } else {
-          const contentTypeMap: Record<string, 'NEWS' | 'VIDEO' | 'WHITEPAPER'> = {
+          const contentTypeMap: Record<string, 'NEWS' | 'VIDEOS' | 'WHITEPAPERS'> = {
             news:        'NEWS',
-            videos:      'VIDEO',
+            videos:      'VIDEOS',
             whitepapers: 'WHITEPAPER',
           };
           const bodyResult = await client.models.ProtectedContentBody.create({

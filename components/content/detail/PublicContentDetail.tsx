@@ -91,22 +91,23 @@ export default function PublicContentDetail({ item }: Props) {
         </div>
       )}
 
-      {/* Resource download button */}
-      {isResource && item.fileKey && (
-        <div className="mb-8">
-          
-            href={`/api/resource-download?key=${encodeURIComponent(item.fileKey)}`}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00a86b] text-white text-sm font-semibold rounded-lg hover:bg-[#008f5a] transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download Resource
-          </a>
-        </div>
-      )}
+     {/* Resource download button */} 
 
+    {isResource && item.fileKey != null && (
+      <div className="mb-8">
+        <a href={`/api/resource-download?key=${encodeURIComponent(item.fileKey as string)}`} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00a86b] text-white text-sm font-semibold rounded-lg hover:bg-[#008f5a] transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+            />
+          </svg>
+          Download Resource
+        </a>
+      </div>
+    )}
       {/* Intro — always visible */}
       {item.intro && (
         <div

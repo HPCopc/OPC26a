@@ -15,10 +15,8 @@ type Props = {
 export default async function VideosDetailPage({ params }: Props) {
   const { subcat1, slug } = params;
 
-  // Build full slug
   const fullSlug = `videos-${subcat1}-${slug}`;
 
-  // ── Check if user is logged in ──────────────────────────────
   let isLoggedIn = false;
   try {
     await runWithAmplifyServerContext({
@@ -32,12 +30,10 @@ export default async function VideosDetailPage({ params }: Props) {
     isLoggedIn = false;
   }
 
-  // ── Redirect to login if not logged in ──────────────────────
   if (!isLoggedIn) {
     redirect(`/login?next=/videos/${subcat1}/${slug}`);
   }
 
-  // ── Fetch content ───────────────────────────────────────────
   const item = await getContentBySlug(fullSlug);
   if (!item) notFound();
 

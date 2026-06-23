@@ -9,11 +9,11 @@ import config from '@/amplify_outputs.json';
 const { runWithAmplifyServerContext } = createServerRunner({ config });
 
 type Props = {
-  params: { subcat1: string; slug: string };
+  params: Promise<{ subcat1: string; slug: string }>;
 };
 
 export default async function VideosDetailPage({ params }: Props) {
-  const { subcat1, slug } = params;
+  const { subcat1, slug } = await params;
 
   const fullSlug = `videos-${subcat1}-${slug}`;
 

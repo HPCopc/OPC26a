@@ -33,7 +33,7 @@ export default async function WhitepapersPage() {
         initialItems={cardItems}
         initialNextToken={nextToken}
         contentType="whitepapers"
-        requiresAuth={true}
+        requiresAuth={false}
         isAuthenticated={false}
         fetchPage={async (token) => {
           'use server';

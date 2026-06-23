@@ -1,4 +1,4 @@
-import { getContentBySlug } from '@/lib/getContent';
+ import { getContentBySlug } from '@/lib/getContent';
 import { notFound, redirect } from 'next/navigation';
 import ProtectedContentDetail from '@/components/content/detail/ProtectedContentDetail';
 import { cookies } from 'next/headers';
@@ -12,11 +12,10 @@ type Props = {
   params: Promise<{ subcat1: string; slug: string }>;
 };
 
-export default async function VideosDetailPage({ params }: Props) {
+export default async function VideoDetailPage({ params }: Props) {
   const { subcat1, slug } = await params;
 
-  const fullSlug = `videos-${subcat1}-${slug}`;
-
+  // ── Check if user is logged in ──────────────────────────────
   let isLoggedIn = false;
   try {
     await runWithAmplifyServerContext({
@@ -34,7 +33,7 @@ export default async function VideosDetailPage({ params }: Props) {
     redirect(`/login?next=/videos/${subcat1}/${slug}`);
   }
 
-  const item = await getContentBySlug(fullSlug);
+  const item = await getContentBySlug(slug);
   if (!item) notFound();
 
   return (

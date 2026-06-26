@@ -16,19 +16,29 @@ function label(slug: string) {
   return slug.replace(/-/g, " ");
 }
 
-function ArticleCard({ item }: { item: ContentMeta }) {
-  // All news articles live at /news/[subcat1]/[subcat2]/[slug]
-  const href = `/news/${item.subcat1}/${item.subcat2}/${item.slug}`;
+// subcat1 → subcat2[] map
+type SubcatMap = { subcat1: string; subcat2s: string[] }[];
 
+function buildSubcatMap(items: ContentMeta[]): SubcatMap {
+  const map = new Map<string, Set<string>>();
+  for (const item of items) {
+    if (!item.subcat1) continue;
+    if (!map.has(item.subcat1)) map.set(item.subcat1, new Set());
+    if (item.subcat2) map.get(item.subcat1)!.add(item.subcat2);
+  }
+  return Array.from(map.entries()).map(([subcat1, subcat2s]) => ({
+    subcat1,
+    subcat2s: Array.from(subcat2s),
+  }));
+}
+
+function ArticleCard({ item }: { item: ContentMeta }) {
+  const href = `/news/${item.subcat1}/${item.subcat2}/${item.slug}`;
   return (
     <article className="group flex gap-4 border-b border-zinc-200 dark:border-zinc-800 py-6 first:pt-0">
       {item.imageUrl && (
         <Link href={href} className="shrink-0">
-          <img
-            src={item.imageUrl}
-            alt=""
-            className="w-28 h-20 object-cover rounded-md bg-zinc-100 dark:bg-zinc-800"
-          />
+          <img src={item.imageUrl} alt="" className="w-28 h-20 object-cover rounded-md bg-zinc-100 dark:bg-zinc-800" />
         </Link>
       )}
       <div className="flex flex-col gap-1.5 min-w-0">
@@ -48,9 +58,7 @@ function ArticleCard({ item }: { item: ContentMeta }) {
           </h2>
         </Link>
         {item.intro && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">
-            {item.intro}
-          </p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">{item.intro}</p>
         )}
       </div>
     </article>
@@ -59,11 +67,11 @@ function ArticleCard({ item }: { item: ContentMeta }) {
 
 export default function NewsPage() {
   const [articles, setArticles] = useState<ContentMeta[]>([]);
-  const [subcat1List, setSubcat1List] = useState<string[]>([]);
+  const [subcatMap, setSubcatMap] = useState<SubcatMap>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetch() {
+    async function fetchNews() {
       try {
         const { data } = await client.models.ContentMeta.listContentMetaByTopicAndDate(
           { topic: "news" },
@@ -71,21 +79,12 @@ export default function NewsPage() {
         );
         const items = (data ?? []).filter((i) => i.isPublished);
         setArticles(items);
-
-        const seen = new Set<string>();
-        const cats: string[] = [];
-        for (const item of items) {
-          if (item.subcat1 && !seen.has(item.subcat1)) {
-            seen.add(item.subcat1);
-            cats.push(item.subcat1);
-          }
-        }
-        setSubcat1List(cats);
+        setSubcatMap(buildSubcatMap(items));
       } finally {
         setLoading(false);
       }
     }
-    fetch();
+    fetchNews();
   }, []);
 
   return (
@@ -95,21 +94,43 @@ export default function NewsPage() {
         <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">News</h1>
       </header>
 
-      {/* subcat1 pills */}
-      {subcat1List.length > 0 && (
-        <nav aria-label="News topics" className="flex flex-wrap gap-2 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
-          {subcat1List.map((cat) => (
-            <Link
-              key={cat}
-              href={`/news/${cat}`}
-              className="px-3 py-1.5 rounded-full text-xs font-medium border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition-colors capitalize"
-            >
-              {label(cat)}
-            </Link>
+      {/* ── subcat1 / subcat2 map ── */}
+      {!loading && subcatMap.length > 0 && (
+        <div className="mb-10 pb-10 border-b border-zinc-200 dark:border-zinc-800 space-y-6">
+          {subcatMap.map(({ subcat1, subcat2s }) => (
+            <div key={subcat1}>
+              {/* subcat1 heading — clickable */}
+              <Link
+                href={`/news/${subcat1}`}
+                className="inline-block text-sm font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide mb-2 hover:text-blue-700 dark:hover:text-blue-400 transition-colors capitalize"
+              >
+                {label(subcat1)}
+              </Link>
+
+              {/* subcat2 links + All */}
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/news/${subcat1}`}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                >
+                  All
+                </Link>
+                {subcat2s.map((s2) => (
+                  <Link
+                    key={s2}
+                    href={`/news/${subcat1}/${s2}`}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors capitalize"
+                  >
+                    {label(s2)}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
-        </nav>
+        </div>
       )}
 
+      {/* ── article list ── */}
       {loading ? (
         <SkeletonList count={5} />
       ) : articles.length === 0 ? (

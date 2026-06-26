@@ -19,7 +19,6 @@ function label(slug: string) {
 
 function ArticleCard({ item }: { item: ContentMeta }) {
   const href = `/news/${item.subcat1}/${item.subcat2}/${item.slug}`;
-
   return (
     <article className="group flex gap-4 border-b border-zinc-200 dark:border-zinc-800 py-6 first:pt-0">
       {item.imageUrl && (
@@ -47,30 +46,43 @@ function ArticleCard({ item }: { item: ContentMeta }) {
 export default function NewsSubcat2Page() {
   const { subcat1, subcat2 } = useParams<{ subcat1: string; subcat2: string }>();
   const [articles, setArticles] = useState<ContentMeta[]>([]);
+  const [subcat2s, setSubcat2s] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!subcat1 || !subcat2) return;
-    async function fetch() {
+    async function fetchArticles() {
       try {
-        // Query by subcat2 GSI, filter subcat1 + topic client-side
-        const { data } = await client.models.ContentMeta.listContentMetaBySubcat2AndDate(
-          { subcat2 },
-          { sortDirection: "DESC", limit: 200 }
+        // Fetch all articles under subcat1 to build the sibling subcat2 nav
+        const { data } = await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
+          { subcat1 },
+          { sortDirection: "DESC", limit: 100 }
         );
-        const items = (data ?? []).filter(
-          (i) => i.isPublished && i.topic === "news" && i.subcat1 === subcat1
-        );
-        setArticles(items);
+        const allItems = (data ?? []).filter((i) => i.isPublished && i.topic === "news");
+
+        // Derive sibling subcat2s for nav
+        const seen = new Set<string>();
+        const cats: string[] = [];
+        for (const item of allItems) {
+          if (item.subcat2 && !seen.has(item.subcat2)) {
+            seen.add(item.subcat2);
+            cats.push(item.subcat2);
+          }
+        }
+        setSubcat2s(cats);
+
+        // Filter to only this subcat2
+        setArticles(allItems.filter((i) => i.subcat2 === subcat2));
       } finally {
         setLoading(false);
       }
     }
-    fetch();
+    fetchArticles();
   }, [subcat1, subcat2]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
+
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500 mb-8">
         <Link href="/news" className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">News</Link>
@@ -91,15 +103,32 @@ export default function NewsSubcat2Page() {
         </h1>
       </header>
 
-      <div className="mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
-        <Link
-          href={`/news/${subcat1}`}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-        >
-          ← All <span className="capitalize">{label(subcat1)}</span>
-        </Link>
-      </div>
+      {/* subcat2 navigation — All + siblings, active on current */}
+      {!loading && subcat2s.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
+          <Link
+            href={`/news/${subcat1}`}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+          >
+            All
+          </Link>
+          {subcat2s.map((s2) => (
+            <Link
+              key={s2}
+              href={`/news/${subcat1}/${s2}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
+                s2 === subcat2
+                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+              }`}
+            >
+              {label(s2)}
+            </Link>
+          ))}
+        </div>
+      )}
 
+      {/* Article list */}
       {loading ? (
         <SkeletonList count={3} />
       ) : articles.length === 0 ? (

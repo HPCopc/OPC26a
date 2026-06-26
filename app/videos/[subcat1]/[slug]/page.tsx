@@ -1,4 +1,4 @@
- import { getContentBySlug } from '@/lib/getContent';
+import { getContentBySlug } from '@/lib/getContent';
 import { notFound, redirect } from 'next/navigation';
 import ProtectedContentDetail from '@/components/content/detail/ProtectedContentDetail';
 import { cookies } from 'next/headers';
@@ -9,13 +9,12 @@ import config from '@/amplify_outputs.json';
 const { runWithAmplifyServerContext } = createServerRunner({ config });
 
 type Props = {
-  params: Promise<{ subcat1: string; slug: string }>;
+  params: Promise<{ subcat1: string; subcat2: string; slug: string }>;
 };
 
-export default async function VideoDetailPage({ params }: Props) {
-  const { subcat1, slug } = await params;
+export default async function NewsArticleDetailPage({ params }: Props) {
+  const { subcat1, subcat2, slug } = await params;
 
-  // ── Check if user is logged in ──────────────────────────────
   let isLoggedIn = false;
   try {
     await runWithAmplifyServerContext({
@@ -30,7 +29,7 @@ export default async function VideoDetailPage({ params }: Props) {
   }
 
   if (!isLoggedIn) {
-    redirect(`/login?next=/videos/${subcat1}/${slug}`);
+    redirect(`/login?next=/news/${subcat1}/${subcat2}/${slug}`);
   }
 
   const item = await getContentBySlug(slug);

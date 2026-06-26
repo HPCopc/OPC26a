@@ -19,7 +19,6 @@ function label(slug: string) {
 
 function ArticleCard({ item }: { item: ContentMeta }) {
   const href = `/news/${item.subcat1}/${item.subcat2}/${item.slug}`;
-
   return (
     <article className="group flex gap-4 border-b border-zinc-200 dark:border-zinc-800 py-6 first:pt-0">
       {item.imageUrl && (
@@ -52,12 +51,12 @@ function ArticleCard({ item }: { item: ContentMeta }) {
 export default function NewsSubcat1Page() {
   const { subcat1 } = useParams<{ subcat1: string }>();
   const [articles, setArticles] = useState<ContentMeta[]>([]);
-  const [subcat2List, setSubcat2List] = useState<string[]>([]);
+  const [subcat2s, setSubcat2s] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!subcat1) return;
-    async function fetch() {
+    async function fetchArticles() {
       try {
         const { data } = await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
           { subcat1 },
@@ -66,6 +65,7 @@ export default function NewsSubcat1Page() {
         const items = (data ?? []).filter((i) => i.isPublished && i.topic === "news");
         setArticles(items);
 
+        // Derive unique subcat2s from results
         const seen = new Set<string>();
         const cats: string[] = [];
         for (const item of items) {
@@ -74,16 +74,17 @@ export default function NewsSubcat1Page() {
             cats.push(item.subcat2);
           }
         }
-        setSubcat2List(cats);
+        setSubcat2s(cats);
       } finally {
         setLoading(false);
       }
     }
-    fetch();
+    fetchArticles();
   }, [subcat1]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
+
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500 mb-8">
         <Link href="/news" className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">News</Link>
@@ -96,21 +97,28 @@ export default function NewsSubcat1Page() {
         <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight capitalize">{label(subcat1)}</h1>
       </header>
 
-      {/* subcat2 pills */}
-      {subcat2List.length > 0 && (
-        <nav aria-label="Sub-topics" className="flex flex-wrap gap-2 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
-          {subcat2List.map((cat) => (
+      {/* subcat2 navigation */}
+      {!loading && subcat2s.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
+          <Link
+            href={`/news/${subcat1}`}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            All
+          </Link>
+          {subcat2s.map((s2) => (
             <Link
-              key={cat}
-              href={`/news/${subcat1}/${cat}`}
-              className="px-3 py-1.5 rounded-full text-xs font-medium border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition-colors capitalize"
+              key={s2}
+              href={`/news/${subcat1}/${s2}`}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors capitalize"
             >
-              {label(cat)}
+              {label(s2)}
             </Link>
           ))}
-        </nav>
+        </div>
       )}
 
+      {/* Article list */}
       {loading ? (
         <SkeletonList count={4} />
       ) : articles.length === 0 ? (

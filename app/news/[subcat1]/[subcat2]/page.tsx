@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({ authMode: "apiKey" });
 type ContentMeta = Schema["ContentMeta"]["type"];
 
 function formatDate(d: string) {

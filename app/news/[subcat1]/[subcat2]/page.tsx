@@ -90,7 +90,7 @@ export default function NewsSubcat2Page() {
   }, [subcat1, subcat2]);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
 
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500 mb-8">

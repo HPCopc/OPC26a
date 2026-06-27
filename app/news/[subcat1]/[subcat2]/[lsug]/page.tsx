@@ -1,4 +1,4 @@
- import { getContentBySlug } from '@/lib/getContent';
+import { getContentBySlug } from '@/lib/getContent';
 import { notFound, redirect } from 'next/navigation';
 import ProtectedContentDetail from '@/components/content/detail/ProtectedContentDetail';
 import { cookies } from 'next/headers';
@@ -13,7 +13,10 @@ type Props = {
 };
 
 export default async function NewsArticleDetailPage({ params }: Props) {
-  const { subcat1, subcat2, slug } = await params;
+  const resolved = await params;
+  console.log('🔑 raw params:', JSON.stringify(resolved));
+  const { subcat1, subcat2, slug } = resolved;
+  console.log('🔑 slug:', slug);
 
   let isLoggedIn = false;
   try {

@@ -36,6 +36,7 @@ export default async function EventsPage() {
         initialNextToken={nextToken}
         contentType="events"
         requiresAuth={false}
+        compact={true}  
         fetchPage={async (token) => {
           'use server';
           const { items: next, nextToken: nextNext } =

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
+import { getSubcat2 } from "@/lib/taxonomy";
 
 const client = generateClient<Schema>({ authMode: "apiKey" });
 type ContentMeta = Schema["ContentMeta"]["type"];
@@ -48,11 +49,30 @@ function ArticleCard({ item }: { item: ContentMeta }) {
   );
 }
 
+function SkeletonList({ count }: { count: number }) {
+  return (
+    <div>
+      {[...Array(count)].map((_, i) => (
+        <div key={i} className="flex gap-4 py-6 border-b border-zinc-100 dark:border-zinc-800 animate-pulse">
+          <div className="w-28 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-md shrink-0" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded w-24" />
+            <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-3/4" />
+            <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function NewsSubcat1Page() {
   const { subcat1 } = useParams<{ subcat1: string }>();
   const [articles, setArticles] = useState<ContentMeta[]>([]);
-  const [subcat2s, setSubcat2s] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ── Pull subcat2s from taxonomy (static, like videos) ──
+  const subcat2Items = getSubcat2("news", subcat1);
 
   useEffect(() => {
     if (!subcat1) return;
@@ -64,17 +84,6 @@ export default function NewsSubcat1Page() {
         );
         const items = (data ?? []).filter((i) => i.isPublished && i.topic === "news");
         setArticles(items);
-
-        // Derive unique subcat2s from results
-        const seen = new Set<string>();
-        const cats: string[] = [];
-        for (const item of items) {
-          if (item.subcat2 && !seen.has(item.subcat2)) {
-            seen.add(item.subcat2);
-            cats.push(item.subcat2);
-          }
-        }
-        setSubcat2s(cats);
       } finally {
         setLoading(false);
       }
@@ -97,8 +106,8 @@ export default function NewsSubcat1Page() {
         <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight capitalize">{label(subcat1)}</h1>
       </header>
 
-      {/* subcat2 navigation */}
-      {!loading && subcat2s.length > 0 && (
+      {/* ── Subcat2 navigation ── */}
+      {subcat2Items.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
           <Link
             href={`/news/${subcat1}`}
@@ -106,13 +115,13 @@ export default function NewsSubcat1Page() {
           >
             All
           </Link>
-          {subcat2s.map((s2) => (
+          {subcat2Items.map((s) => (
             <Link
-              key={s2}
-              href={`/news/${subcat1}/${s2}`}
+              key={s.slug}
+              href={`/news/${subcat1}/${s.slug}`}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors capitalize"
             >
-              {label(s2)}
+              {s.label}
             </Link>
           ))}
         </div>
@@ -129,23 +138,6 @@ export default function NewsSubcat1Page() {
       ) : (
         <div>{articles.map((item) => <ArticleCard key={item.id} item={item} />)}</div>
       )}
-    </div>
-  );
-}
-
-function SkeletonList({ count }: { count: number }) {
-  return (
-    <div>
-      {[...Array(count)].map((_, i) => (
-        <div key={i} className="flex gap-4 py-6 border-b border-zinc-100 dark:border-zinc-800 animate-pulse">
-          <div className="w-28 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-md shrink-0" />
-          <div className="flex-1 space-y-2 pt-1">
-            <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded w-24" />
-            <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-3/4" />
-            <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded w-full" />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

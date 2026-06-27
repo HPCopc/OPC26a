@@ -68,11 +68,12 @@ function SkeletonList({ count }: { count: number }) {
   );
 }
 
-export default function NewsPage() {
+export default function NewsPage({ params }: { params: { subcat1: string } }) {
+
   const router = useRouter();
   const [articles, setArticles] = useState<ContentMeta[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeSubcat1, setActiveSubcat1] = useState<string | null>(null);
+  const [activeSubcat1, setActiveSubcat1] = useState<string | null>(params.subcat1 ?? null);
   const [activeSubcat2, setActiveSubcat2] = useState<string | null>(null);
 
   const subcat1Items = getSubcat1("news");

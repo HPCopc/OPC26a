@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import { getSubcat2 } from "@/lib/taxonomy";
+import { getSubcat1, getSubcat2 } from "@/lib/taxonomy";
 
 const client = generateClient<Schema>({ authMode: "apiKey" });
 type ContentMeta = Schema["ContentMeta"]["type"];
@@ -29,11 +29,13 @@ function ArticleCard({ item }: { item: ContentMeta }) {
       )}
       <div className="flex flex-col gap-1.5 min-w-0">
         <div className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wide font-medium">
-          {item.subcat2 && (
-            <Link href={`/news/${item.subcat1}/${item.subcat2}`} className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
-              {label(item.subcat2)}
-            </Link>
-          )}
+          <Link href={`/news/${item.subcat1}`} className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
+            {label(item.subcat1 ?? "")}
+          </Link>
+          <span>/</span>
+          <Link href={`/news/${item.subcat1}/${item.subcat2}`} className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
+            {label(item.subcat2 ?? "")}
+          </Link>
           <span className="ml-auto normal-case tracking-normal">{formatDate(item.date)}</span>
         </div>
         <Link href={href}>
@@ -56,7 +58,7 @@ function SkeletonList({ count }: { count: number }) {
         <div key={i} className="flex gap-4 py-6 border-b border-zinc-100 dark:border-zinc-800 animate-pulse">
           <div className="w-28 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-md shrink-0" />
           <div className="flex-1 space-y-2 pt-1">
-            <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded w-24" />
+            <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded w-32" />
             <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-3/4" />
             <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded w-full" />
           </div>
@@ -66,77 +68,131 @@ function SkeletonList({ count }: { count: number }) {
   );
 }
 
-export default function NewsSubcat1Page() {
-  const { subcat1 } = useParams<{ subcat1: string }>();
+export default function NewsPage() {
+  const router = useRouter();
   const [articles, setArticles] = useState<ContentMeta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeSubcat1, setActiveSubcat1] = useState<string | null>(null);
+  const [activeSubcat2, setActiveSubcat2] = useState<string | null>(null);
 
-  // ── Pull subcat2s from taxonomy (static, like videos) ──
-  const subcat2Items = getSubcat2("news", subcat1);
+  const subcat1Items = getSubcat1("news");
+  const subcat2Items = activeSubcat1 ? getSubcat2("news", activeSubcat1) : [];
 
   useEffect(() => {
-    if (!subcat1) return;
-    async function fetchArticles() {
+    async function fetchNews() {
       try {
-        const { data } = await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
-          { subcat1 },
+        const { data } = await client.models.ContentMeta.listContentMetaByTopicAndDate(
+          { topic: "news" },
           { sortDirection: "DESC", limit: 100 }
         );
-        const items = (data ?? []).filter((i) => i.isPublished && i.topic === "news");
+        const items = (data ?? []).filter((i) => i.isPublished);
         setArticles(items);
       } finally {
         setLoading(false);
       }
     }
-    fetchArticles();
-  }, [subcat1]);
+    fetchNews();
+  }, []);
+
+  // Filter articles based on active selections
+  const filteredArticles = articles.filter((item) => {
+    if (activeSubcat2) return item.subcat1 === activeSubcat1 && item.subcat2 === activeSubcat2;
+    if (activeSubcat1) return item.subcat1 === activeSubcat1;
+    return true;
+  });
+
+  function handleSubcat1Click(slug: string) {
+    if (activeSubcat1 === slug) {
+      // clicking active subcat1 deselects and goes back to All
+      setActiveSubcat1(null);
+      setActiveSubcat2(null);
+    } else {
+      setActiveSubcat1(slug);
+      setActiveSubcat2(null);
+    }
+  }
+
+  function handleSubcat2Click(slug: string) {
+    setActiveSubcat2(activeSubcat2 === slug ? null : slug);
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
-
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500 mb-8">
-        <Link href="/news" className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">News</Link>
-        <span>/</span>
-        <span className="text-zinc-700 dark:text-zinc-300 font-medium capitalize">{label(subcat1)}</span>
-      </nav>
-
       <header className="mb-8">
-        <p className="text-xs uppercase tracking-widest text-zinc-400 dark:text-zinc-500 font-medium mb-1">News · Topic</p>
-        <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight capitalize">{label(subcat1)}</h1>
+        <p className="text-xs uppercase tracking-widest text-zinc-400 dark:text-zinc-500 font-medium mb-1">Coverage</p>
+        <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">News</h1>
       </header>
 
-      {/* ── Subcat2 navigation ── */}
-      {subcat2Items.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
-          <Link
-            href={`/news/${subcat1}`}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+      {/* ── Row 1: Subcat1 nav ── */}
+      {subcat1Items.length > 0 && (
+        <div className="flex gap-2 flex-wrap mb-3">
+          <button
+            onClick={() => { setActiveSubcat1(null); setActiveSubcat2(null); }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              activeSubcat1 === null
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+            }`}
           >
             All
-          </Link>
-          {subcat2Items.map((s) => (
-            <Link
+          </button>
+          {subcat1Items.map((s) => (
+            <button
               key={s.slug}
-              href={`/news/${subcat1}/${s.slug}`}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors capitalize"
+              onClick={() => handleSubcat1Click(s.slug)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors capitalize ${
+                activeSubcat1 === s.slug
+                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+              }`}
             >
               {s.label}
-            </Link>
+            </button>
           ))}
         </div>
       )}
 
-      {/* Article list */}
-      {loading ? (
-        <SkeletonList count={4} />
-      ) : articles.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-sm text-zinc-400 mb-3">No articles in this topic yet.</p>
-          <Link href="/news" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">Browse all news</Link>
+      {/* ── Row 2: Subcat2 nav (only when a subcat1 is selected) ── */}
+      {activeSubcat1 && subcat2Items.length > 0 && (
+        <div className="flex gap-2 flex-wrap mb-8 pb-8 border-b border-zinc-200 dark:border-zinc-800">
+          <button
+            onClick={() => setActiveSubcat2(null)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              activeSubcat2 === null
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+            }`}
+          >
+            All
+          </button>
+          {subcat2Items.map((s) => (
+            <button
+              key={s.slug}
+              onClick={() => handleSubcat2Click(s.slug)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors capitalize ${
+                activeSubcat2 === s.slug
+                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
         </div>
+      )}
+
+      {/* ── spacing when no subcat2 row ── */}
+      {(!activeSubcat1 || subcat2Items.length === 0) && (
+        <div className="mb-8 border-b border-zinc-200 dark:border-zinc-800" />
+      )}
+
+      {/* ── Article list ── */}
+      {loading ? (
+        <SkeletonList count={5} />
+      ) : filteredArticles.length === 0 ? (
+        <p className="text-sm text-zinc-400 py-12 text-center">No news articles published yet.</p>
       ) : (
-        <div>{articles.map((item) => <ArticleCard key={item.id} item={item} />)}</div>
+        <div>{filteredArticles.map((item) => <ArticleCard key={item.id} item={item} />)}</div>
       )}
     </div>
   );

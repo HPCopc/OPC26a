@@ -117,7 +117,7 @@ export default function NewsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <main className="max-w-5xl mx-auto px-4 py-10">
       <header className="mb-8">
         <p className="text-xs uppercase tracking-widest text-zinc-400 dark:text-zinc-500 font-medium mb-1">Coverage</p>
         <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">News</h1>
@@ -194,6 +194,6 @@ export default function NewsPage() {
       ) : (
         <div>{filteredArticles.map((item) => <ArticleCard key={item.id} item={item} />)}</div>
       )}
-    </div>
+    </main>
   );
 }

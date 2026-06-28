@@ -34,6 +34,7 @@ export default async function WhitepapersPage() {
         initialNextToken={nextToken}
         contentType="whitepapers"
         requiresAuth={false}
+        mode="list"
         isAuthenticated={false}
         fetchPage={async (token) => {
           'use server';

@@ -36,7 +36,7 @@ export default async function ResourcesPage() {
         initialNextToken={nextToken}
         contentType="resources"
         requiresAuth={false}
-        mode="list"
+        compact={true}
         fetchPage={async (token) => {
           'use server';
           const { items: next, nextToken: nextNext } =

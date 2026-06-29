@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 
 type CognitoUser = {
-  Username: string;
-  Enabled:  boolean;
+  Username:   string;
+  Enabled:    boolean;
   UserStatus: string;
   Attributes: { Name: string; Value: string }[];
 };
@@ -14,17 +14,24 @@ function attr(user: CognitoUser, name: string) {
 }
 
 export default function UsersPage() {
-  const [users, setUsers]         = useState<CognitoUser[]>([]);
-  const [loading, setLoading]     = useState(true);
+  const [users, setUsers]           = useState<CognitoUser[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState<string | null>(null);
   const [showInvite, setShowInvite] = useState(false);
-  const [email, setEmail]         = useState('');
-  const [tempPw, setTempPw]       = useState('');
-  const [busy, setBusy]           = useState(false);
+  const [email, setEmail]           = useState('');
+  const [tempPw, setTempPw]         = useState('');
+  const [busy, setBusy]             = useState(false);
 
   async function load() {
     setLoading(true);
-    const res = await fetch('/api/admin/users');
-    setUsers(await res.json());
+    try {
+      const res  = await fetch('/api/admin/users');
+      const data = await res.json();
+      setUsers(Array.isArray(data) ? data : []);
+      if (!Array.isArray(data)) setError('API error — check configuration.');
+    } catch {
+      setError('Failed to connect to API.');
+    }
     setLoading(false);
   }
 
@@ -45,6 +52,13 @@ export default function UsersPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
+
+      {error && (
+        <p className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded px-4 py-2">
+          {error}
+        </p>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-800">User Management</h1>
         <button
@@ -101,37 +115,45 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {users.map(user => (
-                <tr key={user.Username} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 text-slate-800">{attr(user, 'email')}</td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                      {user.UserStatus}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${user.Enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                      {user.Enabled ? 'Active' : 'Disabled'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right flex justify-end gap-2">
-                    <button
-                      disabled={busy}
-                      onClick={() => call({ action: user.Enabled ? 'disable' : 'enable', username: user.Username })}
-                      className="px-3 py-1 text-xs rounded border border-slate-200 hover:bg-slate-100 text-slate-600 disabled:opacity-50"
-                    >
-                      {user.Enabled ? 'Disable' : 'Enable'}
-                    </button>
-                    <button
-                      disabled={busy}
-                      onClick={() => { if (confirm(`Delete ${attr(user, 'email')}?`)) call({ action: 'delete', username: user.Username }); }}
-                      className="px-3 py-1 text-xs rounded border border-red-200 hover:bg-red-50 text-red-600 disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">
+                    No users found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                users.map(user => (
+                  <tr key={user.Username} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 text-slate-800">{attr(user, 'email')}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                        {user.UserStatus}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${user.Enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                        {user.Enabled ? 'Active' : 'Disabled'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right flex justify-end gap-2">
+                      <button
+                        disabled={busy}
+                        onClick={() => call({ action: user.Enabled ? 'disable' : 'enable', username: user.Username })}
+                        className="px-3 py-1 text-xs rounded border border-slate-200 hover:bg-slate-100 text-slate-600 disabled:opacity-50"
+                      >
+                        {user.Enabled ? 'Disable' : 'Enable'}
+                      </button>
+                      <button
+                        disabled={busy}
+                        onClick={() => { if (confirm(`Delete ${attr(user, 'email')}?`)) call({ action: 'delete', username: user.Username }); }}
+                        className="px-3 py-1 text-xs rounded border border-red-200 hover:bg-red-50 text-red-600 disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

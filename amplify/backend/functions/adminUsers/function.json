@@ -1,0 +1,25 @@
+{
+  "runtime": "nodejs18.x",
+  "handler": "index.handler",
+  "timeout": 30,
+  "memory": 512,
+  "environment": {
+    "APP_AWS_REGION": "use-env-var",
+    "APP_AWS_ACCESS_KEY_ID": "use-env-var",
+    "APP_AWS_SECRET_ACCESS_KEY": "use-env-var",
+    "COGNITO_USER_POOL_ID": "use-env-var"
+  },
+  "permissions": {
+    "auth": {
+      "cognito": [
+        "ListUsers",
+        "AdminCreateUser",
+        "AdminDisableUser",
+        "AdminEnableUser",
+        "AdminDeleteUser",
+        "AdminAddUserToGroup",
+        "AdminRemoveUserFromGroup"
+      ]
+    }
+  }
+}

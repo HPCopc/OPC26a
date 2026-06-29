@@ -1,0 +1,12 @@
+[
+  {
+    "path": "/admin/users",
+    "method": "GET",
+    "function": "adminUsers"
+  },
+  {
+    "path": "/admin/users",
+    "method": "POST",
+    "function": "adminUsers"
+  }
+]

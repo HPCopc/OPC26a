@@ -8,6 +8,7 @@ import Link from 'next/link';
 const navItems = [
   { href: '/admin/pages',   label: 'Page Manager',    icon: '📄' },
   { href: '/admin/contents', label: 'Content Manager', icon: '📝' },
+  { href: '/admin/users',    label: 'User Management', icon: '👥' },  
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

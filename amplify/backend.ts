@@ -6,6 +6,7 @@ import { adminUsers } from './functions/adminUsers/resource';
 import { HttpApi, HttpMethod, CorsHttpMethod } from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Stack } from 'aws-cdk-lib';
 
 const backend = defineBackend({
   auth,
@@ -14,13 +15,16 @@ const backend = defineBackend({
   adminUsers,
 });
 
-// Give adminUsers Lambda the User Pool ID it needs at runtime
-backend.adminUsers.addEnvironment(
-  'COGNITO_USER_POOL_ID',
-  backend.auth.resources.userPool.userPoolId
-);
+// IMPORTANT: replace this with your actual Cognito User Pool ID
+// (AWS Console → Cognito → User Pools → your pool → Pool ID)
+const USER_POOL_ID = 'us-east-1_RVcjNBkPP';
 
-// Grant adminUsers Lambda permission to call the Cognito admin APIs it uses
+// Hardcoded literal value — avoids a cross-stack CDK token,
+// which is what caused the circular dependency with auth/function stacks
+backend.adminUsers.addEnvironment('COGNITO_USER_POOL_ID', USER_POOL_ID);
+
+const functionStack = Stack.of(backend.adminUsers.resources.lambda);
+
 backend.adminUsers.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: [
@@ -32,7 +36,9 @@ backend.adminUsers.resources.lambda.addToRolePolicy(
       'cognito-idp:AdminAddUserToGroup',
       'cognito-idp:AdminRemoveUserFromGroup',
     ],
-    resources: [backend.auth.resources.userPool.userPoolArn],
+    // Wildcard built from the function's own stack region/account —
+    // no token import from the auth stack, so no circular dependency
+    resources: [`arn:aws:cognito-idp:${functionStack.region}:${functionStack.account}:userpool/${USER_POOL_ID}`],
   })
 );
 

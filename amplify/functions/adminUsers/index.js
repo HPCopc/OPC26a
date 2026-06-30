@@ -9,12 +9,9 @@ import {
   AdminRemoveUserFromGroupCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
+// No manual credentials — Lambda's execution role is used automatically
 const client = new CognitoIdentityProviderClient({
-  region: process.env.APP_AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY,
-  },
+  region: process.env.AWS_REGION,
 });
 
 const POOL = process.env.COGNITO_USER_POOL_ID;

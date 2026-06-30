@@ -19,14 +19,20 @@ const client = new CognitoIdentityProviderClient({
 
 const POOL = process.env.COGNITO_USER_POOL_ID;
 
+function ok() {
+  return {
+    statusCode: 200,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ok: true }),
+  };
+}
+
 // Amplify Gen 2 Lambda handler
 export const handler = async (event) => {
   try {
     const method = event.requestContext.http.method;
 
-    // ───────────────────────────────
     // GET /admin/users → list users
-    // ───────────────────────────────
     if (method === "GET") {
       const cmd = new ListUsersCommand({
         UserPoolId: POOL,
@@ -42,9 +48,7 @@ export const handler = async (event) => {
       };
     }
 
-    // ───────────────────────────────
     // POST /admin/users → admin actions
-    // ───────────────────────────────
     if (method === "POST") {
       const body = JSON.parse(event.body);
 
@@ -87,4 +91,51 @@ export const handler = async (event) => {
         await client.send(
           new AdminDeleteUserCommand({
             UserPoolId: POOL,
-            Username
+            Username: body.username,
+          })
+        );
+        return ok();
+      }
+
+      if (body.action === "set-group") {
+        if (body.oldGroup) {
+          await client.send(
+            new AdminRemoveUserFromGroupCommand({
+              UserPoolId: POOL,
+              Username: body.username,
+              GroupName: body.oldGroup,
+            })
+          );
+        }
+        await client.send(
+          new AdminAddUserToGroupCommand({
+            UserPoolId: POOL,
+            Username: body.username,
+            GroupName: body.newGroup,
+          })
+        );
+        return ok();
+      }
+
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "Unknown action" }),
+      };
+    }
+
+    return {
+      statusCode: 405,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Method not allowed" }),
+    };
+
+  } catch (err) {
+    console.error("adminUsers error:", err);
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Internal server error" }),
+    };
+  }
+};

@@ -17,7 +17,7 @@ const backend = defineBackend({
 
 // IMPORTANT: replace this with your actual Cognito User Pool ID
 // (AWS Console → Cognito → User Pools → your pool → Pool ID)
-const USER_POOL_ID = 'us-east-1_gP4r3r53M';
+const USER_POOL_ID = 'us-east-1_EXCmFy428';
 
 // Hardcoded literal value — avoids a cross-stack CDK token,
 // which is what caused the circular dependency with auth/function stacks

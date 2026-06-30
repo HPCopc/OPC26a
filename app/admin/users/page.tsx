@@ -13,6 +13,8 @@ function attr(user: CognitoUser, name: string) {
   return user.Attributes?.find(a => a.Name === name)?.Value ?? '—';
 }
 
+const BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function UsersPage() {
   const [users, setUsers]           = useState<CognitoUser[]>([]);
   const [loading, setLoading]       = useState(true);
@@ -25,7 +27,7 @@ export default function UsersPage() {
   async function load() {
     setLoading(true);
     try {
-      const res  = await fetch('/api/admin/users');
+      const res  = await fetch(`${BASE}/admin/users`);
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
       if (!Array.isArray(data)) setError('API error — check configuration.');
@@ -39,7 +41,7 @@ export default function UsersPage() {
 
   async function call(body: object) {
     setBusy(true);
-    await fetch('/api/admin/users', { method: 'POST', body: JSON.stringify(body) });
+    await fetch(`${BASE}/admin/users`, { method: 'POST', body: JSON.stringify(body) });
     await load();
     setBusy(false);
   }

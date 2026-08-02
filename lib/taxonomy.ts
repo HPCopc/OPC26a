@@ -33,8 +33,12 @@ export const TAXONOMY: Record<string, TopicTaxonomy> = {
         { label: 'OSP Differentials',           slug: 'osp-differentials'        },
         { label: 'Climate Scrutiny',            slug: 'climate-scrutiny'         },
       ],
-      opc:      [],
-      shaleoil: [],
+      opc: [
+        { label: 'General', slug: 'general' },
+      ],
+      shaleoil: [
+        { label: 'General', slug: 'general' },
+      ],
       crudeqm: [
         { label: 'Crude Contaminants',          slug: 'crude-contaminants'       },
         { label: 'Assays of Major Crudes',      slug: 'assays-of-major-crudes'   },

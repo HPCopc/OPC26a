@@ -49,9 +49,10 @@ const TYPE_COLORS: Record<ContentType, string> = {
 
 function buildHref(item: ContentCardItem): string {
   switch (item.topic) {
-    case "news":
-      // /news/[subcat1]/[subcat2]/[slug]
-      return `/news/${item.subcat1 ?? "_"}/${item.subcat2 ?? "_"}/${item.slug}`;
+    case "news": {
+      const subcat2 = item.subcat2 ?? "general";
+      return `/news/${item.subcat1 ?? "_"}/${subcat2}/${item.slug}`;
+    }
     case "videos":
       // /videos/[subcat1]/[slug]
       return `/videos/${item.subcat1 ?? "_"}/${item.slug}`;

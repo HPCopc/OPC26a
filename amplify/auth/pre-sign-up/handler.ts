@@ -1,51 +1,20 @@
 import type { PreSignUpTriggerHandler } from "aws-lambda";
+import { isDisposableEmailDomain } from "disposable-email-domains-js";
 
-// Fallback hardcoded blocklist in case mailcheck.ai is down
-const BLOCKED_DOMAINS = [
-  "mailinator.com",
-  "guerrillamail.com",
+// Blocked in addition to the bundled blocklist: these were on the original
+// hand-maintained list but are absent from disposable-email-domains-js@1.26.0.
+const EXTRA_BLOCKED_DOMAINS = new Set([
   "tempmail.com",
-  "yopmail.com",
-  "10minutemail.com",
   "throwaway.email",
-  "trashmail.com",
-  "maildrop.cc",
-  "fakeinbox.com",
-  "dispostable.com",
-];
-
-async function isDisposableDomain(domain: string): Promise<boolean> {
-  try {
-    const response = await fetch(
-      `https://www.mailcheck.ai/api/${domain}`,
-      {
-        method: "GET",
-        headers: { "Accept": "application/json" },
-        // 3 second timeout
-        signal: AbortSignal.timeout(3000),
-      }
-    );
-
-    if (!response.ok) {
-      // API failed — fall back to hardcoded list
-      console.warn(`mailcheck.ai returned ${response.status}, using fallback`);
-      return BLOCKED_DOMAINS.includes(domain);
-    }
-
-    const data = await response.json();
-    console.log(`mailcheck.ai response for ${domain}:`, data);
-
-    // mailcheck.ai returns { "disposable": true/false }
-    return data.disposable === true;
-
-  } catch (error) {
-    // Network error — fall back to hardcoded list
-    console.warn("mailcheck.ai unreachable, using fallback blocklist", error);
-    return BLOCKED_DOMAINS.includes(domain);
-  }
-}
+]);
 
 export const handler: PreSignUpTriggerHandler = async (event) => {
+  // Only screen self-service sign-ups. Admin-created users (app/api/admin/users)
+  // and federated sign-ins are already trusted.
+  if (event.triggerSource !== "PreSignUp_SignUp") {
+    return event;
+  }
+
   const email = event.request.userAttributes["email"];
 
   if (!email) {
@@ -58,9 +27,7 @@ export const handler: PreSignUpTriggerHandler = async (event) => {
     throw new Error("Invalid email format.");
   }
 
-  const disposable = await isDisposableDomain(domain);
-
-  if (disposable) {
+  if (EXTRA_BLOCKED_DOMAINS.has(domain) || isDisposableEmailDomain(domain)) {
     throw new Error(
       `Sign up is not allowed with disposable email domain: ${domain}. Please use a permanent email address.`
     );

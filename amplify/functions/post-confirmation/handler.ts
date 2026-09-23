@@ -4,21 +4,29 @@ import { generateClient } from 'aws-amplify/data';
 import { getAmplifyDataClientConfig } from '@aws-amplify/backend/function/runtime';
 import { env } from '$amplify/env/post-confirmation';
 import type { Schema } from '../../data/resource';
-// import type { Schema } from '../../../amplify/data/resource';
+
 console.log('🔧 Loading Lambda function...');
 
-// ---- Configure Amplify Data client at module load (ESM supports top-level await)
-const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env as any);
+// Configured on first use, not at module load. A failure here used to happen
+// during Lambda INIT, before the handler's try/catch existed, so Cognito
+// surfaced it to the user and blocked sign-up and password reset.
+let cachedClient: ReturnType<typeof generateClient<Schema>> | null = null;
 
-console.log('📡 GraphQL Endpoint:', resourceConfig.API?.GraphQL?.endpoint);
-console.log('🌍 Region:', resourceConfig.API?.GraphQL?.region);
+async function getClient() {
+  if (!cachedClient) {
+    const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env as any);
 
+    console.log('📡 GraphQL Endpoint:', resourceConfig.API?.GraphQL?.endpoint);
+    console.log('🌍 Region:', resourceConfig.API?.GraphQL?.region);
 
-Amplify.configure(resourceConfig, libraryOptions);
+    Amplify.configure(resourceConfig, libraryOptions);
 
-const client = generateClient<Schema>({
-  authMode: 'iam'  // <-- This is critical!
-});
+    cachedClient = generateClient<Schema>({
+      authMode: 'iam'  // <-- This is critical!
+    });
+  }
+  return cachedClient;
+}
 
 // Small helpers to sanitize optional attributes
 const s = (v?: string | null) => (typeof v === 'string' ? v.trim() : '');
@@ -32,16 +40,13 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
  const phoneNumber = s(event.request.userAttributes.phone_number);
 const companyName = s(event.request.userAttributes['custom:companyName'] ?? event.request.userAttributes.companyName);
 
- console.log(`Post-confirmation triggered for user: ${sub}`);
+ console.log(`Post-confirmation triggered for user: ${sub} (${event.triggerSource})`);
 
  try {
+  const client = await getClient();
 
-  // First, test if we can even connect to the GraphQL API
-  console.log('🔍 Testing GraphQL connection...');
-  
-  // Try fetch by PK
-  console.log(`🔍 Attempting to get profile for: ${sub}`);
   // Try fetch by PK (we set id === sub)
+  console.log(`🔍 Attempting to get profile for: ${sub}`);
   const existing = await client.models.UserProfile.get({ id: sub });
 
 console.log('📊 Get result:', JSON.stringify(existing, null, 2));
@@ -58,16 +63,15 @@ console.log('📊 Get result:', JSON.stringify(existing, null, 2));
     phoneNumber: phoneNumber || existing.data.phoneNumber || '',
      companyName: companyName || existing.data.companyName || '',
    });
-   
+
    if (updateResult.data) {
      console.log(`✅ Profile updated successfully for: ${sub}`);
-     console.log('✅ Update result:', JSON.stringify(updateResult.data, null, 2));
    } else {
      console.error('❌ Update failed:', JSON.stringify(updateResult.errors, null, 2));
    }
-   
+
   } else {
-        
+
    // Create new profile
    const result = await client.models.UserProfile.create({
     id: sub,    // PK
@@ -101,36 +105,30 @@ console.log('📊 Create result:', JSON.stringify(result, null, 2));
  } catch (error: any) {
 
   console.error('❌ ERROR CAUGHT in post-confirmation handler:');
-  console.error('Error name:', error.name);
-  console.error('Error message:', error.message);
-  console.error('Error stack:', error.stack);
-  
-  // Log the full error object for debugging
-  try {
-    console.error('Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-  } catch (e) {
-    console.error('Could not stringify full error');
-  }
+  console.error('Error name:', error?.name);
+  console.error('Error message:', error?.message);
+  console.error('Error stack:', error?.stack);
 
-
-  // Optional: handle race where record already exists
-  if (error?.errors?.some((e: any) => String(e.message || '').includes('already exists'))) {
+  // Optional: handle race where create collided with an existing record
+  if (cachedClient && error?.errors?.some((e: any) => String(e.message || '').includes('already exists'))) {
    console.warn('⚠️ Create collided (already exists). Falling back to update.');
-   await client.models.UserProfile.update({
-    id: sub,
-    userId: sub,
-    email: email || '',
-    givenName,
-    familyName,
-    phoneNumber,
-    companyName,
-   });
-  } else {
-   console.error('❌ Error in post-confirmation handler:', error);
-   // Do not throw — Cognito confirmation must not be blocked
+   try {
+    await cachedClient.models.UserProfile.update({
+     id: sub,
+     userId: sub,
+     email: email || '',
+     givenName,
+     familyName,
+     phoneNumber,
+     companyName,
+    });
+   } catch (retryError) {
+    console.error('❌ Fallback update also failed:', retryError);
+   }
   }
  }
 
+ // Always return the event. Cognito sign-up and password reset must never be
+ // blocked by a profile-write failure.
  return event;
 };
-

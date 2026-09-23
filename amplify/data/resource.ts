@@ -126,7 +126,10 @@ const schema = a.schema({
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
 
-});
+})
+// Grants the postConfirmation Lambda IAM access to the data API and injects
+// the AMPLIFY_DATA_* env vars it needs to build a client.
+.authorization((allow) => [allow.resource(postConfirmation).to(["query", "mutate"])]);
 
 export type Schema = ClientSchema<typeof schema>;
 

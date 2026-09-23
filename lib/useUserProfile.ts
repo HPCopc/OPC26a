@@ -1,34 +1,18 @@
 // lib/useUserProfile.ts
 import { useState, useEffect } from 'react';
-import { generateClient } from 'aws-amplify/data';
-import { fetchUserAttributes } from 'aws-amplify/auth';
-import type { Schema } from '@/amplify/data/resource';
-
-const client = generateClient<Schema>();
+import { getProfileStatus, type ProfileStatus } from '@/lib/postLoginRoute';
 
 export function useUserProfile() {
-  const [profile, setProfile] = useState<Schema['UserProfile']['type'] | null>(null);
+  const [state, setState] = useState<ProfileStatus>({ status: 'signedOut', profile: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const attributes = await fetchUserAttributes();
-        const userId = attributes.sub;
-
-        if (!userId) {
-          setProfile(null);
-          return;
-        }
-
-        const { data } = await client.models.UserProfile.list({
-          filter: { userId: { eq: userId } },
-        });
-
-        setProfile(data?.[0] ?? null);
+        setState(await getProfileStatus());
       } catch {
-        // Not authenticated or network error — treat as logged out
-        setProfile(null);
+        // Network or API error: treat as logged out
+        setState({ status: 'signedOut', profile: null });
       } finally {
         setLoading(false);
       }
@@ -37,5 +21,5 @@ export function useUserProfile() {
     load();
   }, []);
 
-  return { profile, loading };
+  return { ...state, loading };
 }

@@ -14,6 +14,8 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sub, setSub] = useState<string | null>(null);
+  // Company Name comes from sign-up; it's only editable if we couldn't find it.
+  const [companyLocked, setCompanyLocked] = useState(false);
 
   const [form, setForm] = useState({
     companyName: '',
@@ -23,7 +25,6 @@ export default function OnboardingPage() {
     state: '',
     zipCode: '',
     country: '',
-    subscriptionType: 'free',
   });
 
   // Required fields
@@ -51,25 +52,33 @@ export default function OnboardingPage() {
         const { data } = await client.models.UserProfile.get({ id: userId });
 
         if (data) {
-          // Pre-fill form
-          setForm(prev => ({
-            ...prev,
-            companyName: data.companyName ?? '',
-            jobTitle: data.jobTitle ?? '',
-            addressLine1: data.addressLine1 ?? '',
-            city: data.city ?? '',
-            state: data.state ?? '',
-            zipCode: data.zipCode ?? '',
-            country: data.country ?? '',
-            subscriptionType: data.subscriptionType ?? 'free',
-          }));
-
           // Already completed → go home
           if (data.profileCompleted) {
             router.replace('/');
             return;
           }
         }
+
+        // No profile means the postConfirmation Lambda failed; the company
+        // name is still on the Cognito user from the sign-up form.
+        let companyName = data?.companyName ?? '';
+        if (!companyName) {
+          const attrs = await fetchUserAttributes();
+          companyName = (attrs['custom:companyName'] ?? '').trim();
+        }
+        setCompanyLocked(Boolean(companyName));
+
+        // Pre-fill form
+        setForm(prev => ({
+          ...prev,
+          companyName,
+          jobTitle: data?.jobTitle ?? '',
+          addressLine1: data?.addressLine1 ?? '',
+          city: data?.city ?? '',
+          state: data?.state ?? '',
+          zipCode: data?.zipCode ?? '',
+          country: data?.country ?? '',
+        }));
       } catch {
         router.replace('/login');
         return;
@@ -97,7 +106,6 @@ export default function OnboardingPage() {
     setSaving(true);
 
     try {
-      const currentUser = await getCurrentUser();
       const userAttributes = await fetchUserAttributes();
 
       const existing = await client.models.UserProfile.get({ id: sub });
@@ -114,6 +122,7 @@ export default function OnboardingPage() {
           familyName: userAttributes.family_name || '',
           phoneNumber: userAttributes.phone_number || '',
           ...form,
+          subscriptionType: 'free',
           profileCompleted: true,
         });
       } else {
@@ -166,8 +175,8 @@ export default function OnboardingPage() {
           <input
             name="companyName"
             value={form.companyName}
-//            onChange={onChange}
-            disabled
+            onChange={onChange}
+            disabled={companyLocked}
             className="w-full px-3 py-2 border rounded-md"
             placeholder="Company LLC"
             required
@@ -245,21 +254,6 @@ export default function OnboardingPage() {
             placeholder="United States"
             required
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Subscription</label>
-          <select
-            name="subscriptionType"
-            value={form.subscriptionType}
-            onChange={onChange}
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="free">Free</option>
-            <option value="pro">Pro</option>
-            <option value="team">Team</option>
-            <option value="enterprise">Enterprise</option>
-          </select>
         </div>
 
         <button

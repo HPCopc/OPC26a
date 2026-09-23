@@ -8,20 +8,22 @@ import { useUserProfile } from '@/lib/useUserProfile';
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { profile, loading } = useUserProfile();
+  const { status, profile, loading } = useUserProfile();
 
   useEffect(() => {
     if (loading) return;
 
-    if (!profile) {
+    if (status === 'signedOut') {
       router.replace('/login');
       return;
     }
 
-    if (profile.profileCompleted !== true && pathname !== '/onboarding') {
+    // Signed in but the postConfirmation Lambda never created a profile:
+    // onboarding creates it, so send them there rather than to /login.
+    if ((status === 'noProfile' || profile.profileCompleted !== true) && pathname !== '/onboarding') {
       router.replace('/onboarding');
     }
-  }, [loading, profile, pathname, router]);
+  }, [loading, status, profile, pathname, router]);
 
   if (loading) {
     return (

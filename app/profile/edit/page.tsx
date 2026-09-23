@@ -44,6 +44,12 @@ export default function EditProfilePage() {
         return;
       }
 
+      // No profile to edit yet: onboarding is the page that creates one.
+      if (!data) {
+        router.replace('/onboarding');
+        return;
+      }
+
       if (data) {
         setSubscriptionType(data.subscriptionType || 'free');
         setForm({

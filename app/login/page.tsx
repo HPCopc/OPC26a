@@ -4,9 +4,10 @@
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Hub } from 'aws-amplify/utils';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { getCurrentUser } from 'aws-amplify/auth';
+import { getPostLoginRoute } from '@/lib/postLoginRoute';
 
 const formFields = {
   signUp: {
@@ -59,25 +60,25 @@ const formFields = {
 export default function LoginPage() {
   const router = useRouter();
 
-  useEffect(() => {
-    const unsubscribe = Hub.listen('auth', async ({ payload }) => {
-      if (payload.event === 'signedIn') {
-        try {
-          const session = await fetchAuthSession();
-          const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) ?? [];
-          
-          console.log('Cognito groups:', groups);
+  const routed = useRef(false);
 
-          if (groups.includes('ADMINS')) {
-            router.replace('/admin');
-          } else {
-            console.log('Redirecting to /');
-            router.replace('/');
-          }
-        } catch {
-          router.replace('/');
-        }
+  useEffect(() => {
+    const route = async () => {
+      if (routed.current) return;
+      routed.current = true;
+      try {
+        router.replace(await getPostLoginRoute());
+      } catch {
+        router.replace('/');
       }
+    };
+
+    // Already signed in (e.g. bounced here by the guard): no signedIn event
+    // will fire, so route now instead of spinning on "Signing you in...".
+    getCurrentUser().then(route).catch(() => {});
+
+    const unsubscribe = Hub.listen('auth', ({ payload }) => {
+      if (payload.event === 'signedIn') route();
     });
 
     return () => unsubscribe();

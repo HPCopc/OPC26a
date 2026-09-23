@@ -28,6 +28,11 @@ async function getClient() {
   return cachedClient;
 }
 
+// The data client returns GraphQL errors instead of throwing them. Throw so
+// every failure goes through the handler's catch.
+const writeError = (op: string, errors: unknown) =>
+  Object.assign(new Error(`UserProfile ${op} failed`), { errors });
+
 // Small helpers to sanitize optional attributes
 const s = (v?: string | null) => (typeof v === 'string' ? v.trim() : '');
 const toLower = (v?: string | null) => (typeof v === 'string' ? v.trim().toLowerCase() : '');
@@ -64,11 +69,8 @@ console.log('📊 Get result:', JSON.stringify(existing, null, 2));
      companyName: companyName || existing.data.companyName || '',
    });
 
-   if (updateResult.data) {
-     console.log(`✅ Profile updated successfully for: ${sub}`);
-   } else {
-     console.error('❌ Update failed:', JSON.stringify(updateResult.errors, null, 2));
-   }
+   if (!updateResult.data) throw writeError('update', updateResult.errors);
+   console.log(`✅ Profile updated successfully for: ${sub}`);
 
   } else {
 
@@ -94,11 +96,8 @@ console.log('📊 Get result:', JSON.stringify(existing, null, 2));
    });
 console.log('📊 Create result:', JSON.stringify(result, null, 2));
 
-   if (result.data?.id) {
-    console.log(`✅ Created profile for: ${sub}`);
-   } else {
-    console.error('❌ Failed to create profile:', result.errors);
-   }
+   if (!result.data?.id) throw writeError('create', result.errors);
+   console.log(`✅ Created profile for: ${sub}`);
   }
 
   console.log(`🏁 Handler completed successfully for user: ${sub}`);
@@ -109,11 +108,15 @@ console.log('📊 Create result:', JSON.stringify(result, null, 2));
   console.error('Error message:', error?.message);
   console.error('Error stack:', error?.stack);
 
+  console.error('Errors:', JSON.stringify(error?.errors ?? null, null, 2));
+
+  let recovered = false;
+
   // Optional: handle race where create collided with an existing record
   if (cachedClient && error?.errors?.some((e: any) => String(e.message || '').includes('already exists'))) {
    console.warn('⚠️ Create collided (already exists). Falling back to update.');
    try {
-    await cachedClient.models.UserProfile.update({
+    const retry = await cachedClient.models.UserProfile.update({
      id: sub,
      userId: sub,
      email: email || '',
@@ -122,9 +125,17 @@ console.log('📊 Create result:', JSON.stringify(result, null, 2));
      phoneNumber,
      companyName,
     });
+    recovered = Boolean(retry.data);
+    if (!recovered) console.error('❌ Fallback update also failed:', JSON.stringify(retry.errors, null, 2));
    } catch (retryError) {
     console.error('❌ Fallback update also failed:', retryError);
    }
+  }
+
+  // Stable marker for a CloudWatch metric filter / alarm. The user can still
+  // sign in; onboarding creates the missing profile on their next login.
+  if (!recovered) {
+   console.error(`PROFILE_WRITE_FAILED sub=${sub} trigger=${event.triggerSource}`);
   }
  }
 

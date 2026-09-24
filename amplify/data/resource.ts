@@ -62,6 +62,10 @@ const schema = a.schema({
     topic:           a.string().required(),
     subcat1:         a.string(),
     subcat2:         a.string(),
+    // Composite keys so subcategory listings are scoped to their parents
+    // ("general" exists under several subcat1s). Built by lib/taxonomy.ts.
+    topicSubcat1:    a.string(),   // "news#opc"
+    topicSubcat2:    a.string(),   // "news#opc#general"
     date:            a.date().required(),
     isPublished:     a.boolean().default(true),
     authorId:        a.string(),
@@ -75,6 +79,8 @@ const schema = a.schema({
     index("topic").sortKeys(["date"]),
     index("subcat1").sortKeys(["date"]),
     index("subcat2").sortKeys(["date"]),
+    index("topicSubcat1").sortKeys(["date"]),
+    index("topicSubcat2").sortKeys(["date"]),
   ])
  
   .authorization((allow) => [

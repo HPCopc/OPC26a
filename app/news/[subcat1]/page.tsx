@@ -19,7 +19,7 @@ export default async function NewsSubcat1Page({ params }: Props) {
 
   const pageSlug = buildPageSlug('news', subcat1); // → "news-markets"
   const page = await getPage(pageSlug);
-  const { items, nextToken } = await getContentBySubcat1(subcat1);
+  const { items, nextToken } = await getContentBySubcat1('news', subcat1);
 
   const cardItems: ContentCardItem[] = items.map((item) => ({
     id:       item.id,
@@ -92,7 +92,7 @@ export default async function NewsSubcat1Page({ params }: Props) {
         fetchPage={async (token) => {
           'use server';
           const { items: next, nextToken: nextNext } =
-            await getContentBySubcat1(subcat1, token);
+            await getContentBySubcat1('news', subcat1, token);
           return {
             items: next.map((item) => ({
               id:       item.id,

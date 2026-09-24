@@ -3,7 +3,7 @@ import RichEditor from '@/components/RichEditor';
 import { useState, useEffect, useTransition } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
-import { TOPICS, getSubcat1, getSubcat2, type TaxonomyItem } from '@/lib/taxonomy';
+import { TOPICS, getSubcat1, getSubcat2, topicSubcat1Key, topicSubcat2Key, type TaxonomyItem } from '@/lib/taxonomy';
 import { useMessage } from '@/lib/utils';
 
 const client = generateClient<Schema>({ authMode: 'userPool' });
@@ -384,6 +384,10 @@ export default function AdminContentPage() {
           topic:       form.topic,
           subcat1:     form.subcat1 || undefined,
           subcat2:     form.subcat2 || undefined,
+          topicSubcat1: form.subcat1 ? topicSubcat1Key(form.topic, form.subcat1) : undefined,
+          topicSubcat2: form.subcat1 && form.subcat2
+            ? topicSubcat2Key(form.topic, form.subcat1, form.subcat2)
+            : undefined,
           date:        form.date,
           isPublished: form.isPublished,
           imageUrl:    form.imageUrl || undefined,

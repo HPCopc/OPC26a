@@ -74,6 +74,16 @@ export const TAXONOMY: Record<string, TopicTaxonomy> = {
 /** All top-level topics */
 export const TOPICS = Object.keys(TAXONOMY) as string[];
 
+/** ContentMeta.topicSubcat1 — index key scoping a subcat1 to its topic */
+export function topicSubcat1Key(topic: string, subcat1: string): string {
+  return `${topic}#${subcat1}`;
+}
+
+/** ContentMeta.topicSubcat2 — index key scoping a subcat2 to its topic + subcat1 */
+export function topicSubcat2Key(topic: string, subcat1: string, subcat2: string): string {
+  return `${topic}#${subcat1}#${subcat2}`;
+}
+
 /** Get subcat1 items for a topic */
 export function getSubcat1(topic: string): TaxonomyItem[] {
   return TAXONOMY[topic]?.subcat1 ?? [];

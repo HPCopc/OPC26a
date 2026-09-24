@@ -11,6 +11,7 @@ import { cookies } from 'next/headers';
 import { cache } from 'react';
 import config from '@/amplify_outputs.json';
 import type { Schema } from '@/amplify/data/resource';
+import { topicSubcat1Key, topicSubcat2Key } from '@/lib/taxonomy';
 
 const getClient = async () =>
   generateServerClientUsingCookies<Schema>({ config, cookies });
@@ -121,19 +122,21 @@ export const getContentByTopic = cache(
 
 export const getContentBySubcat1 = cache(
   async (
+    topic:     string,
     subcat1:   string,
     nextToken: string | null = null
   ): Promise<ContentListResult> => {
     try {
       const client = await getClient();
+      const topicSubcat1 = topicSubcat1Key(topic, subcat1);
       let data: any[] | undefined;
       let next: string | null | undefined;
       let errors: any[] | undefined = undefined;
 
       try {
         ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
-            { subcat1 },
+          await client.models.ContentMeta.listContentMetaByTopicSubcat1AndDate(
+            { topicSubcat1 },
             {
               authMode:      'userPool',
               limit:         PAGE_SIZE,
@@ -143,8 +146,8 @@ export const getContentBySubcat1 = cache(
           ));
       } catch {
         ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaBySubcat1AndDate(
-            { subcat1 },
+          await client.models.ContentMeta.listContentMetaByTopicSubcat1AndDate(
+            { topicSubcat1 },
             {
               authMode:      'identityPool',
               limit:         PAGE_SIZE,
@@ -167,19 +170,22 @@ export const getContentBySubcat1 = cache(
 
 export const getContentBySubcat2 = cache(
   async (
+    topic:     string,
+    subcat1:   string,
     subcat2:   string,
     nextToken: string | null = null
   ): Promise<ContentListResult> => {
     try {
       const client = await getClient();
+      const topicSubcat2 = topicSubcat2Key(topic, subcat1, subcat2);
       let data: any[] | undefined;
       let next: string | null | undefined;
       let errors: any[] | undefined = undefined;
 
       try {
         ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaBySubcat2AndDate(
-            { subcat2 },
+          await client.models.ContentMeta.listContentMetaByTopicSubcat2AndDate(
+            { topicSubcat2 },
             {
               authMode:      'userPool',
               limit:         PAGE_SIZE,
@@ -189,8 +195,8 @@ export const getContentBySubcat2 = cache(
           ));
       } catch {
         ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaBySubcat2AndDate(
-            { subcat2 },
+          await client.models.ContentMeta.listContentMetaByTopicSubcat2AndDate(
+            { topicSubcat2 },
             {
               authMode:      'identityPool',
               limit:         PAGE_SIZE,

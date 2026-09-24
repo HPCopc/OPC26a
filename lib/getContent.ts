@@ -232,14 +232,8 @@ export async function getContentBySlug(
       { authMode: 'apiKey', limit: 1 }
     );
 
-    console.log('🔍 [getContentBySlug] slug:', slug);
-    console.log('🔍 [getContentBySlug] meta data:', JSON.stringify(data));
-    console.log('❌ [getContentBySlug] meta errors:', JSON.stringify(errors));
-
     if (errors?.length || !data?.length) return null;
     const meta = data[0];
-
-    console.log('📋 [getContentBySlug] meta.topic:', meta.topic);
 
     if (!meta.isPublished) return null;
 
@@ -252,9 +246,6 @@ export async function getContentBySlug(
           { metaId: meta.id },
           { authMode: 'apiKey', limit: 1 }
         );
-
-      console.log('📦 [getContentBySlug] PublicContentBody:', JSON.stringify(bodyItems));
-      console.log('❌ [getContentBySlug] bodyErrors:', JSON.stringify(bodyErrors));
 
       const body = bodyItems?.[0];
       return mapMeta(meta, body ? {
@@ -272,9 +263,6 @@ export async function getContentBySlug(
           { authMode: 'userPool', limit: 1 }
         );
 
-      console.log('🔐 [getContentBySlug] ProtectedContentBody:', JSON.stringify(bodyItems));
-      console.log('❌ [getContentBySlug] bodyErrors:', JSON.stringify(bodyErrors));
-
       const body = bodyItems?.[0];
       return mapMeta(meta, body ? {
         body:    body.body    ?? null,
@@ -285,7 +273,6 @@ export async function getContentBySlug(
     } catch {
       // Not logged in — return meta only, body will be null
       // Page/component should show a login gate
-      console.log('🔒 [getContentBySlug] user not logged in, returning meta only');
       return mapMeta(meta, undefined);
     }
 

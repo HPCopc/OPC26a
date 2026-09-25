@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 type CognitoUser = {
   Username:   string;
@@ -15,6 +16,24 @@ function attr(user: CognitoUser, name: string) {
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
+// The admin API requires the signed-in user's Cognito access token
+async function apiFetch(init: RequestInit = {}) {
+  const session = await fetchAuthSession();
+  const token = session.tokens?.accessToken?.toString();
+  if (!token) throw new Error('You are not signed in.');
+
+  const res = await fetch(`${BASE}/admin/users`, {
+    ...init,
+    headers: { ...init.headers, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) throw new Error('You do not have permission to manage users.');
+    throw new Error(data?.error ?? `Request failed (${res.status}).`);
+  }
+  return data;
+}
+
 export default function UsersPage() {
   const [users, setUsers]           = useState<CognitoUser[]>([]);
   const [loading, setLoading]       = useState(true);
@@ -27,12 +46,11 @@ export default function UsersPage() {
   async function load() {
     setLoading(true);
     try {
-      const res  = await fetch(`${BASE}/admin/users`);
-      const data = await res.json();
+      const data = await apiFetch();
       setUsers(Array.isArray(data) ? data : []);
-      if (!Array.isArray(data)) setError('API error — check configuration.');
-    } catch {
-      setError('Failed to connect to API.');
+      setError(Array.isArray(data) ? null : 'API error — check configuration.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to connect to API.');
     }
     setLoading(false);
   }
@@ -41,9 +59,14 @@ export default function UsersPage() {
 
   async function call(body: object) {
     setBusy(true);
-    await fetch(`${BASE}/admin/users`, { method: 'POST', body: JSON.stringify(body) });
-    await load();
-    setBusy(false);
+    try {
+      await apiFetch({ method: 'POST', body: JSON.stringify(body) });
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Request failed.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleInvite() {

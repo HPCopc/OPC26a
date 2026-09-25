@@ -5,6 +5,7 @@ import { postConfirmation } from './functions/post-confirmation/resource';
 import { adminUsers } from './functions/adminUsers/resource';
 import { HttpApi, HttpMethod, CorsHttpMethod } from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+import { HttpUserPoolAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Stack } from 'aws-cdk-lib';
 
@@ -47,9 +48,13 @@ const apiStack = backend.createStack('adminUserApiStack');
 const httpApi = new HttpApi(apiStack, 'AdminUserApi', {
   apiName: 'adminUserApi',
   corsPreflight: {
-    allowOrigins: ['*'],
+    allowOrigins: [
+      'https://main.d1lw1esjveekyl.amplifyapp.com',
+      'http://localhost:3000',
+      'http://192.168.0.102:3000',
+    ],
     allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.POST, CorsHttpMethod.OPTIONS],
-    allowHeaders: ['Content-Type'],
+    allowHeaders: ['Content-Type', 'Authorization'],
   },
 });
 
@@ -58,10 +63,19 @@ const adminUsersIntegration = new HttpLambdaIntegration(
   backend.adminUsers.resources.lambda
 );
 
+// Reject any request without a valid token from this app's user pool.
+// The Lambda additionally requires the caller to be in ADMINS.
+const adminUsersAuthorizer = new HttpUserPoolAuthorizer(
+  'AdminUsersAuthorizer',
+  backend.auth.resources.userPool,
+  { userPoolClients: [backend.auth.resources.userPoolClient] }
+);
+
 httpApi.addRoutes({
   path: '/admin/users',
   methods: [HttpMethod.GET, HttpMethod.POST],
   integration: adminUsersIntegration,
+  authorizer: adminUsersAuthorizer,
 });
 
 backend.addOutput({

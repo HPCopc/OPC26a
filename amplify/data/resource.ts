@@ -45,10 +45,9 @@ const schema = a.schema({
     authorId: a.string(),
   })
   .identifier(["slug"])
+  // Admin-only. The public site reads through the published* queries below,
+  // which never return drafts.
   .authorization((allow) => [
-    allow.publicApiKey().to(["read"]),
-    allow.guest().to(["read"]),
-    allow.authenticated().to(["read"]),
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
 
@@ -82,13 +81,10 @@ const schema = a.schema({
     index("topicSubcat1").sortKeys(["date"]),
     index("topicSubcat2").sortKeys(["date"]),
   ])
- 
+  // Admin-only; see the published* queries.
   .authorization((allow) => [
-  allow.publicApiKey().to(["read"]),
-  allow.guest().to(["read"]),
-  allow.authenticated().to(["read"]),
-  allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
-]),
+    allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+  ]),
 
   // ─────────────────────────────────────────────────────────────
   // PUBLIC CONTENT BODY
@@ -105,10 +101,8 @@ const schema = a.schema({
     index("metaId"),
     index("contentType"),
   ])
+  // Admin-only; read via publishedPublicBody.
   .authorization((allow) => [
-    allow.publicApiKey().to(["read"]),
-    allow.guest().to(["read"]),
-    allow.authenticated().to(["read"]),
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
 
@@ -127,10 +121,99 @@ const schema = a.schema({
     index("metaId"),
     index("contentType"),
   ])
+  // Admin-only; signed-in users read via publishedProtectedBody.
   .authorization((allow) => [
-    allow.authenticated().to(["read"]),
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
+
+  // ─────────────────────────────────────────────────────────────
+  // PUBLISHED-ONLY READS
+  // The content models above are admin-only, so drafts can't be read by
+  // querying them directly with the public API key. The site reads through
+  // these queries instead; their resolvers drop drafts before returning.
+  // ─────────────────────────────────────────────────────────────
+  PublishedPage: a.customType({
+    slug:   a.string().required(),
+    title:  a.string().required(),
+    intro:  a.string(),
+    status: a.string(),
+  }),
+
+  PublishedContent: a.customType({
+    id:          a.id().required(),
+    title:       a.string().required(),
+    slug:        a.string().required(),
+    intro:       a.string(),
+    topic:       a.string().required(),
+    subcat1:     a.string(),
+    subcat2:     a.string(),
+    date:        a.string().required(),
+    isPublished: a.boolean(),
+    imageUrl:    a.string(),
+    location:    a.string(),
+    eventDate:   a.string(),
+  }),
+
+  PublishedContentList: a.customType({
+    items:     a.ref("PublishedContent").array(),
+    nextToken: a.string(),
+  }),
+
+  PublishedBody: a.customType({
+    body:    a.string(),
+    s3Key:   a.string(),
+    fileKey: a.string(),
+  }),
+
+  publishedPage: a.query()
+    .arguments({ slug: a.string().required() })
+    .returns(a.ref("PublishedPage"))
+    .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+    .handler(a.handler.custom({ dataSource: a.ref("Page"), entry: "./resolvers/publishedPage.js" })),
+
+  publishedPages: a.query()
+    .arguments({ prefix: a.string() })
+    .returns(a.ref("PublishedPage").array())
+    .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+    .handler(a.handler.custom({ dataSource: a.ref("Page"), entry: "./resolvers/publishedPages.js" })),
+
+  // field: "topic" | "topicSubcat1" | "topicSubcat2"
+  publishedContentList: a.query()
+    .arguments({
+      field:     a.string().required(),
+      value:     a.string().required(),
+      limit:     a.integer(),
+      nextToken: a.string(),
+    })
+    .returns(a.ref("PublishedContentList"))
+    .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+    .handler(a.handler.custom({ dataSource: a.ref("ContentMeta"), entry: "./resolvers/publishedContentList.js" })),
+
+  publishedContentBySlug: a.query()
+    .arguments({ slug: a.string().required() })
+    .returns(a.ref("PublishedContent"))
+    .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+    .handler(a.handler.custom({ dataSource: a.ref("ContentMeta"), entry: "./resolvers/publishedContentBySlug.js" })),
+
+  // Body of a published events/resources item.
+  publishedPublicBody: a.query()
+    .arguments({ slug: a.string().required() })
+    .returns(a.ref("PublishedBody"))
+    .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+    .handler([
+      a.handler.custom({ dataSource: a.ref("ContentMeta"), entry: "./resolvers/publishedBodyMeta.js" }),
+      a.handler.custom({ dataSource: a.ref("PublicContentBody"), entry: "./resolvers/publishedBody.js" }),
+    ]),
+
+  // Body of a published news/videos/whitepapers item — signed-in users only.
+  publishedProtectedBody: a.query()
+    .arguments({ slug: a.string().required() })
+    .returns(a.ref("PublishedBody"))
+    .authorization((allow) => [allow.authenticated()])
+    .handler([
+      a.handler.custom({ dataSource: a.ref("ContentMeta"), entry: "./resolvers/publishedBodyMeta.js" }),
+      a.handler.custom({ dataSource: a.ref("ProtectedContentBody"), entry: "./resolvers/publishedBody.js" }),
+    ]),
 
 })
 // Grants the postConfirmation Lambda IAM access to the data API and injects

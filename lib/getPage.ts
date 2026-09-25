@@ -43,7 +43,8 @@ export const getPage = cache(async (slug: string): Promise<PageRecord | null> =>
   try {
     const client = getClient();
 
-    const { data, errors } = await client.models.Page.get(
+    // publishedPage returns null for drafts, so they never leave the API.
+    const { data, errors } = await client.queries.publishedPage(
       { slug },
       { authMode: 'apiKey' }
    );
@@ -52,14 +53,12 @@ if (errors?.length || !data) return null;
 
 const page = data;
 
-if (page.status === 'draft') return null;
-
 return {
-   
+
   slug: page.slug,
   title: page.title,
   intro: page.intro ?? null,
-  status: page.status ?? null,
+  status: (page.status as PageRecord['status']) ?? null,
 };
  
   } catch (err) {
@@ -79,26 +78,22 @@ export const getPagesByPrefix = cache(async (prefix: string): Promise<PageRecord
   try {
     const client = getClient();
 
-    // List all pages — Page table will be small (< 100 records total)
-    const { data, errors } = await client.models.Page.list({
-        limit: 100,
-        authMode: 'apiKey',
-    });
+    // Drafts and other prefixes are filtered out by the publishedPages resolver.
+    const { data, errors } = await client.queries.publishedPages(
+      { prefix },
+      { authMode: 'apiKey' }
+    );
 
     if (errors?.length || !data?.length) return [];
 
     return data
-      .filter(
-        (p) =>
-          p.slug.startsWith(prefix) &&
-          p.status !== 'draft'
-      )
+      .filter((p): p is NonNullable<typeof p> => p != null)
       .map((p) => ({
-         
+
         slug: p.slug,
         title: p.title,
         intro: p.intro ?? null,
-        status: p.status ?? null,
+        status: (p.status as PageRecord['status']) ?? null,
       }))
       .sort((a, b) => a.slug.localeCompare(b.slug)); // consistent ordering
   } catch (err) {

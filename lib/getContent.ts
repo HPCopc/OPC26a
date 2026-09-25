@@ -72,100 +72,40 @@ function mapMeta(raw: any, bodyData?: { body?: string | null; s3Key?: string | n
   };
 }
 
-// ─── Listing Functions (unchanged) ───────────────────────────────────────────
+// ─── Listing Functions ───────────────────────────────────────────────────────
+// publishedContentList only returns published items, so drafts never reach
+// the server (or anyone calling the API directly with the public key).
+
+async function listPublished(
+  field:     'topic' | 'topicSubcat1' | 'topicSubcat2',
+  value:     string,
+  nextToken: string | null
+): Promise<ContentListResult> {
+  try {
+    const client = await getClient();
+    const { data, errors } = await client.queries.publishedContentList(
+      { field, value, limit: PAGE_SIZE, nextToken: nextToken ?? undefined },
+      { authMode: 'apiKey' }
+    );
+
+    if (errors?.length || !data) return { items: [], nextToken: null };
+    return {
+      items:     (data.items ?? []).filter(i => i != null).map(i => mapMeta(i)),
+      nextToken: data.nextToken ?? null,
+    };
+  } catch {
+    return { items: [], nextToken: null };
+  }
+}
 
 export const getContentByTopic = cache(
-  async (
-    topic:     string,
-    nextToken: string | null = null
-  ): Promise<ContentListResult> => {
-    try {
-      const client = await getClient();
-      let data: any[] | undefined;
-      let next: string | null | undefined;
-      let errors: any[] | undefined = undefined;
-
-      try {
-        ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaByTopicAndDate(
-            { topic },
-            {
-              authMode:      'userPool',
-              limit:         PAGE_SIZE,
-              nextToken:     nextToken ?? undefined,
-              sortDirection: 'DESC',
-            }
-          ));
-      } catch {
-        ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaByTopicAndDate(
-            { topic },
-            {
-              authMode:      'identityPool',
-              limit:         PAGE_SIZE,
-              nextToken:     nextToken ?? undefined,
-              sortDirection: 'DESC',
-            }
-          ));
-      }
-
-      if (errors?.length) return { items: [], nextToken: null };
-      return {
-        items:     (data ?? []).filter(i => i.isPublished).map(i => mapMeta(i)),
-        nextToken: next ?? null,
-      };
-    } catch {
-      return { items: [], nextToken: null };
-    }
-  }
+  async (topic: string, nextToken: string | null = null): Promise<ContentListResult> =>
+    listPublished('topic', topic, nextToken)
 );
 
 export const getContentBySubcat1 = cache(
-  async (
-    topic:     string,
-    subcat1:   string,
-    nextToken: string | null = null
-  ): Promise<ContentListResult> => {
-    try {
-      const client = await getClient();
-      const topicSubcat1 = topicSubcat1Key(topic, subcat1);
-      let data: any[] | undefined;
-      let next: string | null | undefined;
-      let errors: any[] | undefined = undefined;
-
-      try {
-        ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaByTopicSubcat1AndDate(
-            { topicSubcat1 },
-            {
-              authMode:      'userPool',
-              limit:         PAGE_SIZE,
-              nextToken:     nextToken ?? undefined,
-              sortDirection: 'DESC',
-            }
-          ));
-      } catch {
-        ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaByTopicSubcat1AndDate(
-            { topicSubcat1 },
-            {
-              authMode:      'identityPool',
-              limit:         PAGE_SIZE,
-              nextToken:     nextToken ?? undefined,
-              sortDirection: 'DESC',
-            }
-          ));
-      }
-
-      if (errors?.length) return { items: [], nextToken: null };
-      return {
-        items:     (data ?? []).filter(i => i.isPublished).map(i => mapMeta(i)),
-        nextToken: next ?? null,
-      };
-    } catch {
-      return { items: [], nextToken: null };
-    }
-  }
+  async (topic: string, subcat1: string, nextToken: string | null = null): Promise<ContentListResult> =>
+    listPublished('topicSubcat1', topicSubcat1Key(topic, subcat1), nextToken)
 );
 
 export const getContentBySubcat2 = cache(
@@ -174,47 +114,8 @@ export const getContentBySubcat2 = cache(
     subcat1:   string,
     subcat2:   string,
     nextToken: string | null = null
-  ): Promise<ContentListResult> => {
-    try {
-      const client = await getClient();
-      const topicSubcat2 = topicSubcat2Key(topic, subcat1, subcat2);
-      let data: any[] | undefined;
-      let next: string | null | undefined;
-      let errors: any[] | undefined = undefined;
-
-      try {
-        ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaByTopicSubcat2AndDate(
-            { topicSubcat2 },
-            {
-              authMode:      'userPool',
-              limit:         PAGE_SIZE,
-              nextToken:     nextToken ?? undefined,
-              sortDirection: 'DESC',
-            }
-          ));
-      } catch {
-        ({ data, nextToken: next, errors } =
-          await client.models.ContentMeta.listContentMetaByTopicSubcat2AndDate(
-            { topicSubcat2 },
-            {
-              authMode:      'identityPool',
-              limit:         PAGE_SIZE,
-              nextToken:     nextToken ?? undefined,
-              sortDirection: 'DESC',
-            }
-          ));
-      }
-
-      if (errors?.length) return { items: [], nextToken: null };
-      return {
-        items:     (data ?? []).filter(i => i.isPublished).map(i => mapMeta(i)),
-        nextToken: next ?? null,
-      };
-    } catch {
-      return { items: [], nextToken: null };
-    }
-  }
+  ): Promise<ContentListResult> =>
+    listPublished('topicSubcat2', topicSubcat2Key(topic, subcat1, subcat2), nextToken)
 );
 
 // ─── Detail Function ──────────────────────────────────────────────────────────
@@ -226,49 +127,32 @@ export async function getContentBySlug(
   try {
     const client = await getClient();
 
-    // 1. Fetch ContentMeta — always public
-    const { data, errors } = await client.models.ContentMeta.listContentMetaBySlug(
+    // 1. Fetch ContentMeta — always public; null for drafts
+    const { data: meta, errors } = await client.queries.publishedContentBySlug(
       { slug },
-      { authMode: 'apiKey', limit: 1 }
+      { authMode: 'apiKey' }
     );
 
-    if (errors?.length || !data?.length) return null;
-    const meta = data[0];
-
-    if (!meta.isPublished) return null;
+    if (errors?.length || !meta) return null;
 
     const isPublic = PUBLIC_TOPICS.includes(meta.topic);
 
-    // 2a. Public topic → query PublicContentBody with apiKey (no login needed)
+    // 2a. Public topic → PublicContentBody with apiKey (no login needed)
     if (isPublic) {
-      const { data: bodyItems, errors: bodyErrors } =
-        await client.models.PublicContentBody.listPublicContentBodyByMetaId(
-          { metaId: meta.id },
-          { authMode: 'apiKey', limit: 1 }
-        );
-
-      const body = bodyItems?.[0];
-      return mapMeta(meta, body ? {
-        body:    body.body    ?? null,
-        s3Key:   body.s3Key   ?? null,
-        fileKey: body.fileKey ?? null,
-      } : undefined);
+      const { data: body } = await client.queries.publishedPublicBody(
+        { slug },
+        { authMode: 'apiKey' }
+      );
+      return mapMeta(meta, body ?? undefined);
     }
 
-    // 2b. Protected topic → query ProtectedContentBody, requires login
+    // 2b. Protected topic → ProtectedContentBody, requires login
     try {
-      const { data: bodyItems, errors: bodyErrors } =
-        await client.models.ProtectedContentBody.listProtectedContentBodyByMetaId(
-          { metaId: meta.id },
-          { authMode: 'userPool', limit: 1 }
-        );
-
-      const body = bodyItems?.[0];
-      return mapMeta(meta, body ? {
-        body:    body.body    ?? null,
-        s3Key:   body.s3Key   ?? null,
-        fileKey: body.fileKey ?? null,
-      } : undefined);
+      const { data: body } = await client.queries.publishedProtectedBody(
+        { slug },
+        { authMode: 'userPool' }
+      );
+      return mapMeta(meta, body ?? undefined);
 
     } catch {
       // Not logged in — return meta only, body will be null

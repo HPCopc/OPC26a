@@ -67,7 +67,13 @@ export default function LoginPage() {
       if (routed.current) return;
       routed.current = true;
       try {
-        router.replace(await getPostLoginRoute());
+        const next = await getPostLoginRoute();
+        // Send users back to the page that bounced them here, unless they
+        // still have somewhere to be (admin home, onboarding). Only same-site
+        // paths are allowed so ?from= can't redirect off-site.
+        const from = new URLSearchParams(window.location.search).get('from');
+        const safeFrom = from && from.startsWith('/') && !from.startsWith('//') && !from.startsWith('/\\');
+        router.replace(next === '/' && safeFrom ? from : next);
       } catch {
         router.replace('/');
       }

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { sanitizeHtml } from '@/lib/sanitizeHtml';
+import { isHttpsUrl, isOptimizedImageUrl } from '@/lib/imageHosts';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 // ContentType values match the schema's `topic` field exactly.
@@ -95,16 +97,35 @@ function Thumbnail({
   title: string;
   topic: ContentType;
 }) {
+  // Hosts listed in lib/imageHosts.js go through next/image; any other
+  // https host renders as a plain <img>, since next/image throws on
+  // unconfigured hosts and would take the whole listing down with it.
+  const [failed, setFailed] = useState(false);
+  const imgClass = "object-cover transition-transform duration-300 group-hover:scale-105";
+  const showImage = url && isHttpsUrl(url) && !failed;
+
   return (
     <div className="relative w-full aspect-[16/9] bg-slate-100 overflow-hidden rounded-t-md flex-shrink-0">
-      {url ? (
-        <Image
-          src={url}
-          alt={title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+      {showImage ? (
+        isOptimizedImageUrl(url) ? (
+          <Image
+            src={url}
+            alt={title}
+            fill
+            className={imgClass}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            onError={() => setFailed(true)}
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={url}
+            alt={title}
+            loading="lazy"
+            className={`absolute inset-0 w-full h-full ${imgClass}`}
+            onError={() => setFailed(true)}
+          />
+        )
       ) : (
         <PlaceholderIcon topic={topic} />
       )}

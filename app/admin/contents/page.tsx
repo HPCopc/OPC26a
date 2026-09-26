@@ -5,6 +5,7 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { TOPICS, getSubcat1, getSubcat2, topicSubcat1Key, topicSubcat2Key, type TaxonomyItem } from '@/lib/taxonomy';
 import { useMessage } from '@/lib/utils';
+import { isHttpsUrl } from '@/lib/imageHosts';
 
 const client = generateClient<Schema>({ authMode: 'userPool' });
 
@@ -371,6 +372,10 @@ export default function AdminContentPage() {
       showMessage('❌ Topic, Title, Slug and Date are required');
       return;
     }
+    if (form.imageUrl && !isHttpsUrl(form.imageUrl)) {
+      showMessage('❌ Image URL must be a full https:// link');
+      return;
+    }
     const seo = parseSeo(form.seo);
     if (seo.error) { showMessage('❌ Invalid JSON in SEO'); return; }
 
@@ -452,6 +457,10 @@ export default function AdminContentPage() {
   async function handleUpdate() {
     if (!editingMetaId || !form.title.trim() || !form.date) {
       showMessage('❌ Title and Date are required');
+      return;
+    }
+    if (form.imageUrl && !isHttpsUrl(form.imageUrl)) {
+      showMessage('❌ Image URL must be a full https:// link');
       return;
     }
     const seo = parseSeo(form.seo);

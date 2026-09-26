@@ -75,6 +75,12 @@ function mapMeta(raw: any, bodyData?: { body?: string | null; s3Key?: string | n
 // ─── Listing Functions ───────────────────────────────────────────────────────
 // publishedContentList only returns published items, so drafts never reach
 // the server (or anyone calling the API directly with the public key).
+//
+// DynamoDB applies the limit before the isPublished filter, so one call can
+// come back short (or empty) when drafts sit among the newest items. Keep
+// following nextToken until the page is full or the index runs out.
+
+const MAX_QUERIES_PER_PAGE = 20;
 
 async function listPublished(
   field:     'topic' | 'topicSubcat1' | 'topicSubcat2',
@@ -83,16 +89,22 @@ async function listPublished(
 ): Promise<ContentListResult> {
   try {
     const client = await getClient();
-    const { data, errors } = await client.queries.publishedContentList(
-      { field, value, limit: PAGE_SIZE, nextToken: nextToken ?? undefined },
-      { authMode: 'apiKey' }
-    );
+    const items: ContentItem[] = [];
+    let token = nextToken;
 
-    if (errors?.length || !data) return { items: [], nextToken: null };
-    return {
-      items:     (data.items ?? []).filter(i => i != null).map(i => mapMeta(i)),
-      nextToken: data.nextToken ?? null,
-    };
+    for (let i = 0; i < MAX_QUERIES_PER_PAGE && items.length < PAGE_SIZE; i++) {
+      const { data, errors } = await client.queries.publishedContentList(
+        { field, value, limit: PAGE_SIZE - items.length, nextToken: token ?? undefined },
+        { authMode: 'apiKey' }
+      );
+      if (errors?.length || !data) break;
+
+      items.push(...(data.items ?? []).filter(i => i != null).map(i => mapMeta(i)));
+      token = data.nextToken ?? null;
+      if (!token) break;
+    }
+
+    return { items, nextToken: token };
   } catch {
     return { items: [], nextToken: null };
   }

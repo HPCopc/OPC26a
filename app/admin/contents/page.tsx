@@ -13,6 +13,23 @@ const client = generateClient<Schema>({ authMode: 'userPool' });
 
 const PUBLIC_TOPICS = ['events', 'resources'];
 
+// Body records for one ContentMeta, looked up through the metaId index.
+// (A filtered list() only scans 100 records per call, so it misses bodies
+// once the table grows past that.)
+async function listBodies(isPublic: boolean, metaId: string) {
+  const { data, errors } = isPublic
+    ? await client.models.PublicContentBody.listPublicContentBodyByMetaId({ metaId })
+    : await client.models.ProtectedContentBody.listProtectedContentBodyByMetaId({ metaId });
+  if (errors?.length) throw new Error(errors[0].message);
+  return data;
+}
+
+const PROTECTED_CONTENT_TYPES: Record<string, 'NEWS' | 'VIDEOS' | 'WHITEPAPERS'> = {
+  news:        'NEWS',
+  videos:      'VIDEOS',
+  whitepapers: 'WHITEPAPERS',
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type MetaRecord = Schema['ContentMeta']['type'];
@@ -425,14 +442,9 @@ export default function AdminContentPage() {
             return;
           }
         } else {
-          const contentTypeMap: Record<string, 'NEWS' | 'VIDEOS' | 'WHITEPAPERS'> = {
-            news:        'NEWS',
-            videos:      'VIDEOS',
-            whitepapers: 'WHITEPAPERS',
-          };
           const bodyResult = await client.models.ProtectedContentBody.create({
             metaId,
-            contentType: contentTypeMap[form.topic],
+            contentType: PROTECTED_CONTENT_TYPES[form.topic],
             body:        form.body || undefined,
             s3Key:       form.s3Key || undefined,
             fileKey:     form.fileKey || undefined,
@@ -469,7 +481,7 @@ export default function AdminContentPage() {
     startTransition(async () => {
       try {
         // 1️⃣ Update ContentMeta
-        await client.models.ContentMeta.update({
+        const metaResult = await client.models.ContentMeta.update({
           id:          editingMetaId,
           title:       form.title,
           intro:       form.intro || undefined,
@@ -481,25 +493,36 @@ export default function AdminContentPage() {
           eventDate:   form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
         });
 
-        // 2️⃣ Update the correct body table
-        if (editingBodyId) {
-          const isPublic = PUBLIC_TOPICS.includes(form.topic);
+        if (metaResult.errors?.length) {
+          showMessage(`❌ ${metaResult.errors[0].message}`);
+          return;
+        }
 
-          if (isPublic) {
-            await client.models.PublicContentBody.update({
-              id:      editingBodyId,
-              body:    form.body || undefined,
-              s3Key:   form.s3Key || undefined,
-              fileKey: form.fileKey || undefined,
-            });
-          } else {
-            await client.models.ProtectedContentBody.update({
-              id:      editingBodyId,
-              body:    form.body || undefined,
-              s3Key:   form.s3Key || undefined,
-              fileKey: form.fileKey || undefined,
-            });
-          }
+        // 2️⃣ Update the correct body table, or create the body if it is missing
+        const isPublic = PUBLIC_TOPICS.includes(form.topic);
+        const fields = {
+          body:    form.body || undefined,
+          s3Key:   form.s3Key || undefined,
+          fileKey: form.fileKey || undefined,
+        };
+        const bodyResult = isPublic
+          ? editingBodyId
+            ? await client.models.PublicContentBody.update({ id: editingBodyId, ...fields })
+            : await client.models.PublicContentBody.create({
+                metaId:      editingMetaId,
+                contentType: form.topic === 'events' ? 'EVENTS' : 'RESOURCES',
+                ...fields,
+              })
+          : editingBodyId
+            ? await client.models.ProtectedContentBody.update({ id: editingBodyId, ...fields })
+            : await client.models.ProtectedContentBody.create({
+                metaId:      editingMetaId,
+                contentType: PROTECTED_CONTENT_TYPES[form.topic],
+                ...fields,
+              });
+        if (bodyResult.errors?.length) {
+          showMessage(`❌ ${bodyResult.errors[0].message}`);
+          return;
         }
 
         showMessage('✅ Content updated!');
@@ -523,20 +546,12 @@ export default function AdminContentPage() {
         const deletingItem = items.find(i => i.id === deleteId);
         const isPublic = deletingItem ? PUBLIC_TOPICS.includes(deletingItem.topic) : false;
 
-        if (isPublic) {
-          const { data: bodyRecords } = await client.models.PublicContentBody.list({
-            filter: { metaId: { eq: deleteId } },
-          });
-          for (const body of bodyRecords) {
-            await client.models.PublicContentBody.delete({ id: body.id });
-          }
-        } else {
-          const { data: bodyRecords } = await client.models.ProtectedContentBody.list({
-            filter: { metaId: { eq: deleteId } },
-          });
-          for (const body of bodyRecords) {
-            await client.models.ProtectedContentBody.delete({ id: body.id });
-          }
+        const bodyRecords = await listBodies(isPublic, deleteId);
+        for (const body of bodyRecords) {
+          const { errors } = isPublic
+            ? await client.models.PublicContentBody.delete({ id: body.id })
+            : await client.models.ProtectedContentBody.delete({ id: body.id });
+          if (errors?.length) { showMessage(`❌ ${errors[0].message}`); return; }
         }
 
         await client.models.ContentMeta.delete({ id: deleteId });
@@ -553,18 +568,12 @@ export default function AdminContentPage() {
   // ── Start edit: load meta + fetch from correct body table ──
   async function startEdit(item: MetaRecord) {
     const isPublic = PUBLIC_TOPICS.includes(item.topic);
-    let body = null;
-
-    if (isPublic) {
-      const { data: bodyRecords } = await client.models.PublicContentBody.list({
-        filter: { metaId: { eq: item.id } },
-      });
-      body = bodyRecords[0] ?? null;
-    } else {
-      const { data: bodyRecords } = await client.models.ProtectedContentBody.list({
-        filter: { metaId: { eq: item.id } },
-      });
-      body = bodyRecords[0] ?? null;
+    let body;
+    try {
+      body = (await listBodies(isPublic, item.id))[0] ?? null;
+    } catch (e) {
+      showMessage('❌ ' + (e as Error).message);
+      return;
     }
 
     setForm({

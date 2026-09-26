@@ -31,7 +31,7 @@ export default async function WhitepaperDetailPage({ params }: Props) {
 
   // ── Redirect to login if not logged in ──────────────────────
   if (!isLoggedIn) {
-    redirect(`/login?next=/whitepapers/${slug}`);
+    redirect(`/login?from=/whitepapers/${slug}`);
   }
 
   // ── Fetch content ───────────────────────────────────────────

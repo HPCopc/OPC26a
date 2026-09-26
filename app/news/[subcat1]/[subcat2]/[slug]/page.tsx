@@ -29,7 +29,7 @@ export default async function NewsArticleDetailPage({ params }: Props) {
   }
 
   if (!isLoggedIn) {
-    redirect(`/login?next=/news/${subcat1}/${subcat2}/${slug}`);
+    redirect(`/login?from=/news/${subcat1}/${subcat2}/${slug}`);
   }
 
   const item = await getContentBySlug(slug);

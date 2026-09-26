@@ -9,11 +9,11 @@ import config from '@/amplify_outputs.json';
 const { runWithAmplifyServerContext } = createServerRunner({ config });
 
 type Props = {
-  params: Promise<{ subcat1: string; subcat2: string; slug: string }>;
+  params: Promise<{ subcat1: string; slug: string }>;
 };
 
-export default async function NewsArticleDetailPage({ params }: Props) {
-  const { subcat1, subcat2, slug } = await params;
+export default async function VideoDetailPage({ params }: Props) {
+  const { subcat1, slug } = await params;
 
   let isLoggedIn = false;
   try {
@@ -29,7 +29,7 @@ export default async function NewsArticleDetailPage({ params }: Props) {
   }
 
   if (!isLoggedIn) {
-    redirect(`/login?next=/news/${subcat1}/${subcat2}/${slug}`);
+    redirect(`/login?from=/videos/${subcat1}/${slug}`);
   }
 
   const item = await getContentBySlug(slug);

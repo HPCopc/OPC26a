@@ -5,6 +5,7 @@ import type { ContentCardItem } from '@/components/content/ContentCard';
 import { getSubcat1, getSubcat2, buildPageSlug } from '@/lib/taxonomy';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 type Props = {
   params: Promise<{ subcat1: string; subcat2: string }>;
@@ -45,7 +46,7 @@ export default async function NewsSubcat2Page({ params }: Props) {
       {page?.intro && (
         <div
           className="text-gray-500 mb-8"
-          dangerouslySetInnerHTML={{ __html: page.intro }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.intro) }}
         />
       )}
 

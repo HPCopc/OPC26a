@@ -2,6 +2,7 @@ import { getPage } from '@/lib/getPage';
 import { getContentByTopic } from '@/lib/getContent';
 import ContentList from '@/components/content/ContentList';
 import type { ContentCardItem } from '@/components/content/ContentCard';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 export default async function WhitepapersPage() {
   const page = await getPage('whitepapers');
@@ -25,7 +26,7 @@ export default async function WhitepapersPage() {
       {page?.intro && (
         <div
           className="text-gray-500 mb-8"
-          dangerouslySetInnerHTML={{ __html: page.intro }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.intro) }}
         />
       )}
 

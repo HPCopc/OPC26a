@@ -28,7 +28,8 @@
     "disposable-email-domains-js": "^1.26.0",
     "next": "^15.1.6",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "sanitize-html": "^2.17.7"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.21.0",
@@ -38,6 +39,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.1",
     "autoprefixer": "^10.4.24",
     "aws-cdk": "^2.241.0",
     "aws-cdk-lib": "^2.241.0",

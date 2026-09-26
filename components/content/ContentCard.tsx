@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 // ContentType values match the schema's `topic` field exactly.
@@ -206,14 +207,15 @@ export default function ContentCard({ item, compact = false, className = "" }: C
          <h3
           className="text-[15px] font-semibold text-slate-800 leading-snug
             group-hover:text-amber-700 transition-colors duration-150 line-clamp-3"
-          dangerouslySetInnerHTML={{ __html: item.title }}
-        />
+        >
+          {item.title}
+        </h3>
 
         {/* Excerpt */}
         {item.excerpt && (
         <div
           className="text-[13px] text-slate-500 leading-relaxed line-clamp-2 flex-1"
-          dangerouslySetInnerHTML={{ __html: item.excerpt }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.excerpt) }}
         />
 )}
 

@@ -6,6 +6,7 @@
 // Whitepapers show download button if fileKey is present.
 
 import type { ContentItem } from '@/lib/getContent';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 type Props = {
   item: ContentItem;
@@ -86,7 +87,7 @@ export default function ProtectedContentDetail({ item }: Props) {
             prose-headings:font-bold prose-headings:text-gray-900
             prose-p:text-gray-700 prose-p:leading-relaxed
             prose-a:text-[#00a86b] prose-a:no-underline hover:prose-a:underline"
-          dangerouslySetInnerHTML={{ __html: item.intro }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.intro) }}
         />
       )}
 
@@ -99,7 +100,7 @@ export default function ProtectedContentDetail({ item }: Props) {
             prose-a:text-[#00a86b] prose-a:no-underline hover:prose-a:underline
             prose-strong:text-gray-900
             prose-ul:list-disc prose-ol:list-decimal"
-          dangerouslySetInnerHTML={{ __html: item.body }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body) }}
         />
       )}
 

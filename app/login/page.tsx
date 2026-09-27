@@ -6,8 +6,9 @@ import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { Hub } from 'aws-amplify/utils';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { getCurrentUser, signUp, type SignUpInput } from 'aws-amplify/auth';
 import { getPostLoginRoute } from '@/lib/postLoginRoute';
+import { isDefaultBlocked } from '@/amplify/shared/blockedEmailDomains';
 
 const formFields = {
   signUp: {
@@ -57,6 +58,28 @@ const formFields = {
   },
 };
 
+const COMPANY_EMAIL_MESSAGE = 'Please sign up with your company email address.';
+
+const services = {
+  // Instant feedback for the common personal domains. The pre-sign-up Lambda
+  // is the real check (it reads the admin-managed BlockedEmailDomain table).
+  async validateCustomSignUp(formData: Record<string, string>) {
+    if (formData.email && isDefaultBlocked(formData.email)) {
+      return { email: COMPANY_EMAIL_MESSAGE };
+    }
+  },
+  // Cognito prefixes Lambda errors with "PreSignUp failed with error ";
+  // show only the Lambda's own message.
+  async handleSignUp(input: SignUpInput) {
+    try {
+      return await signUp(input);
+    } catch (e) {
+      if (e instanceof Error) e.message = e.message.replace(/^PreSignUp failed with error\s*/i, '');
+      throw e;
+    }
+  },
+};
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -96,6 +119,7 @@ export default function LoginPage() {
         formFields={formFields}
         initialState="signIn"
         loginMechanisms={['email']}
+        services={services}
       >
         {() => (
           <div className="flex items-center justify-center py-8">

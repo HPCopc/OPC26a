@@ -1,5 +1,6 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { postConfirmation } from '../functions/post-confirmation/resource';
+import { preSignUp } from '../auth/pre-sign-up/resource';
 
 const schema = a.schema({
 
@@ -29,6 +30,22 @@ const schema = a.schema({
   ])
   .authorization((allow) => [
     allow.ownerDefinedIn("userId").to(["create", "read", "update", "delete"]),
+    allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+  ]),
+
+  // ─────────────────────────────────────────────────────────────
+  // BLOCKED EMAIL DOMAIN
+  // Domains that can't be used to sign up (gmail.com, comcast.net, ...).
+  // Admin-only; managed at /admin/blocked-emails. The pre-sign-up Lambda
+  // reads it with IAM (see the schema authorization below).
+  // ─────────────────────────────────────────────────────────────
+  BlockedEmailDomain: a.model({
+    domain:   a.string().required(),   // lowercase, e.g. "gmail.com"
+    category: a.enum(["personal", "isp", "disposable", "other"]),
+    note:     a.string(),
+  })
+  .identifier(["domain"])
+  .authorization((allow) => [
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
 
@@ -216,9 +233,13 @@ const schema = a.schema({
     ]),
 
 })
-// Grants the postConfirmation Lambda IAM access to the data API and injects
-// the AMPLIFY_DATA_* env vars it needs to build a client.
-.authorization((allow) => [allow.resource(postConfirmation).to(["query", "mutate"])]);
+// Grants the postConfirmation and preSignUp Lambdas IAM access to the data
+// API and injects the AMPLIFY_DATA_* env vars they need to build a client.
+// preSignUp only reads (BlockedEmailDomain).
+.authorization((allow) => [
+  allow.resource(postConfirmation).to(["query", "mutate"]),
+  allow.resource(preSignUp).to(["query"]),
+]);
 
 export type Schema = ClientSchema<typeof schema>;
 

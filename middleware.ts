@@ -5,7 +5,7 @@ import { fetchAuthSession } from 'aws-amplify/auth/server';
 import { runWithAmplifyServerContext } from '@/utils/amplifyServerUtils';
 import { hasCognitoSession } from '@/utils/authCookies';
 
-// Detail pages of the protected topics (news, videos, whitepapers) need a
+// Detail pages of the protected topics (news, top10, videos, whitepapers) need a
 // signed-in user; their list/category pages stay public. Events and
 // resources are public all the way down.
 function isDetailPage(seg: string[]) {
@@ -13,7 +13,8 @@ function isDetailPage(seg: string[]) {
     case 'whitepapers':
       return seg.length === 2; // /whitepapers/<slug>
     case 'videos':
-      return seg.length === 3; // /videos/<cat>/<slug>
+    case 'top10':
+      return seg.length === 3; // /videos/<cat>/<slug>, /top10/<cat>/<slug>
     case 'news':
       return seg.length === 4; // /news/<cat>/<sub>/<slug>
     default:

@@ -12,6 +12,7 @@ import { contentPath } from '@/lib/contentPath';
 
 export type ContentType =
   | "news"
+  | "top10"
   | "videos"
   | "whitepapers"
   | "resources"
@@ -37,6 +38,7 @@ export interface ContentCardItem {
 
 const TYPE_LABELS: Record<ContentType, string> = {
   news:        "News",
+  top10:       "Top 10",
   videos:      "Video",
   whitepapers: "Whitepaper",
   resources:   "Resource",
@@ -45,6 +47,7 @@ const TYPE_LABELS: Record<ContentType, string> = {
 
 const TYPE_COLORS: Record<ContentType, string> = {
   news:        "bg-amber-600  text-white",
+  top10:       "bg-red-700    text-white",
   videos:      "bg-blue-700   text-white",
   whitepapers: "bg-slate-700  text-white",
   resources:   "bg-teal-700   text-white",
@@ -127,7 +130,7 @@ function Thumbnail({
 }
 
 function PlaceholderIcon({ topic }: { topic: ContentType }) {
-  const icons: Record<ContentType, React.ReactNode> = {
+  const icons: Record<Exclude<ContentType, "top10">, React.ReactNode> = {
     news: (
       <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -167,7 +170,7 @@ function PlaceholderIcon({ topic }: { topic: ContentType }) {
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-slate-50">
-      {icons[topic]}
+      {icons[topic === "top10" ? "news" : topic]}
     </div>
   );
 }

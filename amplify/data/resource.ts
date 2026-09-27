@@ -125,11 +125,11 @@ const schema = a.schema({
 
   // ─────────────────────────────────────────────────────────────
   // PROTECTED CONTENT BODY
-  // For topic = "news", "video", "whitepaper" — login required
+  // For topic = "news", "top10", "video", "whitepaper" — login required
   // ─────────────────────────────────────────────────────────────
   ProtectedContentBody: a.model({
     metaId:      a.id().required(),
-    contentType: a.enum(["NEWS", "VIDEOS", "WHITEPAPERS"]),
+    contentType: a.enum(["NEWS", "TOP10", "VIDEOS", "WHITEPAPERS"]),
     body:        a.string(),
     s3Key:       a.string(),
     fileKey:     a.string(),
@@ -139,6 +139,41 @@ const schema = a.schema({
     index("contentType"),
   ])
   // Admin-only; signed-in users read via publishedProtectedBody.
+  .authorization((allow) => [
+    allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
+  ]),
+
+  // ─────────────────────────────────────────────────────────────
+  // HOME BOX
+  // One box on the home page: gray header (optionally linked), then any
+  // mix of description, buttons and a feed of the newest articles.
+  // Admin-only; managed at /admin/home, read via publishedHomeBoxes.
+  // ─────────────────────────────────────────────────────────────
+  HomeBoxButton: a.customType({
+    label:   a.string().required(),
+    href:    a.string().required(),
+    style:   a.string(),            // "primary" | "secondary"
+    newTab:  a.boolean(),
+  }),
+
+  HomeBox: a.model({
+    title:           a.string().required(),
+    titleLink:       a.string(),
+    column:          a.enum(["left", "right"]),
+    sortOrder:       a.integer().required(),
+    description:     a.string(),     // rich text HTML
+    buttons:         a.ref("HomeBoxButton").array(),
+    buttonsPosition: a.enum(["above", "below"]),  // relative to the news feed
+    newsTopic:       a.string(),     // empty = no news feed
+    newsSubcat1:     a.string(),
+    newsSubcat2:     a.string(),
+    newsLimit:       a.integer(),
+    newsNumbered:    a.boolean(),
+    showMore:        a.boolean(),
+    moreLabel:       a.string(),
+    moreLink:        a.string(),     // empty = the feed's listing page
+    isPublished:     a.boolean().default(true),
+  })
   .authorization((allow) => [
     allow.groups(["ADMINS"]).to(["create", "read", "update", "delete"]),
   ]),
@@ -181,6 +216,30 @@ const schema = a.schema({
     s3Key:   a.string(),
     fileKey: a.string(),
   }),
+
+  PublishedHomeBox: a.customType({
+    id:              a.id().required(),
+    title:           a.string().required(),
+    titleLink:       a.string(),
+    column:          a.string(),
+    sortOrder:       a.integer(),
+    description:     a.string(),
+    buttons:         a.ref("HomeBoxButton").array(),
+    buttonsPosition: a.string(),
+    newsTopic:       a.string(),
+    newsSubcat1:     a.string(),
+    newsSubcat2:     a.string(),
+    newsLimit:       a.integer(),
+    newsNumbered:    a.boolean(),
+    showMore:        a.boolean(),
+    moreLabel:       a.string(),
+    moreLink:        a.string(),
+  }),
+
+  publishedHomeBoxes: a.query()
+    .returns(a.ref("PublishedHomeBox").array())
+    .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+    .handler(a.handler.custom({ dataSource: a.ref("HomeBox"), entry: "./resolvers/publishedHomeBoxes.js" })),
 
   publishedPage: a.query()
     .arguments({ slug: a.string().required() })

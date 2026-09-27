@@ -33,8 +33,9 @@ function toLocalDateTimeInput(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-const PROTECTED_CONTENT_TYPES: Record<string, 'NEWS' | 'VIDEOS' | 'WHITEPAPERS'> = {
+const PROTECTED_CONTENT_TYPES: Record<string, 'NEWS' | 'TOP10' | 'VIDEOS' | 'WHITEPAPERS'> = {
   news:        'NEWS',
+  top10:       'TOP10',
   videos:      'VIDEOS',
   whitepapers: 'WHITEPAPERS',
 };

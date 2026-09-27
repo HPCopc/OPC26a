@@ -1,62 +1,36 @@
-"use client";
+import HomeBoxCard from '@/components/HomeBoxCard';
+import { getHomeBoxes } from '@/lib/getHomeBoxes';
 
-import { useState, useEffect } from "react";
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-// import "./../app/app.css";
-import "@aws-amplify/ui-react/styles.css";
-import GrayCard from "@/components/MainGrayCard";
+// Boxes are admin-managed (/admin/home), so always render fresh.
+export const dynamic = 'force-dynamic';
 
+export default async function HomePage() {
+  const boxes = await getHomeBoxes();   // sorted by sortOrder
+  const left  = boxes.filter((b) => b.column === 'left');
+  const right = boxes.filter((b) => b.column === 'right');
 
-
-const cardData = [
-  { title: "Shale Oil", description: "shale oil" },
-  { title: "Leveraging AI and ML to Navigate Crude Market Uncertainty:", description: "aiml"},
-  { title: "Crude Analyzer Innovations: Cutting-Edge Solutions", description: "crudeanalyzer" },
-  { title: "Crude Oil & Biofeed Management", description: "crudeoil" },
-  { title: "Opportunity Crudes Conference since 2008", description: "opc2008" },
-  { title: "Unlock Insights from Our Recent Opportunity Crudes Conference on Crude Flexibility to Meet the Energy TrilemmaCrude Oil & Biofeed", description: "Unlock" },
-  { title: "Markets", description: "market" },
-  { title: "Opportunity Crudes", description: "OPC" },
-];
-
-const xcardData = [
-  { title: "Predictive Operations", description: "Leverage ML-driven virtual assays to foresee handling challenges before they impact your margins." },
-  { title: "Strategic Processing", description: "Use AI to identify the most cost-effective pathways and blending recipes for complex crude slates." },
-  { title: "Proactive Resilience", description: "Transition from reactive troubleshooting to closed-loop, ML-driven optimization." },
-  { title: "Partner With Us", description: "Showcase your thought leadership in the digital oilfield and connect with refinery professionals." },
-  { title: "MODCON SYSTEMS", description: "Next‑generation process analyzers for oil refining, natural gas, chemical and energy industries." },
-  { title: "Crude Oil & Biofeed", description: "Key insights from industry leaders on optimizing refineries for the energy trilemma." },
-  { title: "Conference Proceedings", description: "Purchase the PDF proceedings from our exclusive October 2024 event." },
-  { title: "Energy Trilemma", description: "Insights on balancing security, affordability, and sustainability in crude operations." },
-];
-
-export default function HomeClient() {
-   
-  const pairs = [];
-  for (let i = 0; i < cardData.length; i += 2) {
-    pairs.push(cardData.slice(i, i + 2));
+  if (boxes.length === 0) {
+    return <div className="max-w-6xl mx-auto px-4 py-10" />;
   }
- 
-
- 
 
   return (
-  <>
-     
-    
-      <div >
-        {pairs.map((pair, idx) => (
-          <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-4">
-            {pair.map((item, i) => (
-              <GrayCard key={`${idx}-${i}`} title={item.title} description={item.description}/>
-            ))}
-          </div>
-        ))}
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Phones: one column, rows in order (left box before right box). */}
+      <div className="flex flex-col gap-6 md:hidden">
+        {[...boxes]
+          .sort((a, b) => a.sortOrder - b.sortOrder || (a.column === 'left' ? -1 : 1))
+          .map((box) => <HomeBoxCard key={box.id} box={box} />)}
       </div>
-     
-    
-    <div>this is ad</div>
-  </>
-);
+
+      {/* Wider screens: two independent columns, as on the original site. */}
+      <div className="hidden md:grid md:grid-cols-2 gap-6 items-start">
+        <div className="flex flex-col gap-6">
+          {left.map((box) => <HomeBoxCard key={box.id} box={box} />)}
+        </div>
+        <div className="flex flex-col gap-6">
+          {right.map((box) => <HomeBoxCard key={box.id} box={box} />)}
+        </div>
+      </div>
+    </div>
+  );
 }

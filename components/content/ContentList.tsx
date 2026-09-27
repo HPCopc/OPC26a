@@ -29,6 +29,7 @@ export interface ContentListProps {
 
 const TOPIC_LABELS: Record<ContentType, string> = {
   news:        "news articles",
+  top10:       "Top 10 articles",
   videos:      "videos",
   whitepapers: "whitepapers",
   resources:   "resources",

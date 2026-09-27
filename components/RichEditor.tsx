@@ -15,7 +15,8 @@ export default function RichEditor({ value, onChange }: RichEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Link.configure({ openOnClick: false }),
+      // No target/rel here: sanitizeHtml decides new-tab per link at render.
+      Link.configure({ openOnClick: false, HTMLAttributes: { target: null, rel: null } }),
       Placeholder.configure({ placeholder: 'Write page content here...' }),
     ],
     content: value,
@@ -87,7 +88,10 @@ export default function RichEditor({ value, onChange }: RichEditorProps) {
         <div className="w-px bg-gray-300 mx-1" />
 
         <ToolbarButton onClick={() => {
-          const url = window.prompt('Enter URL:');
+          const url = window.prompt(
+            'Enter a page on this site (e.g. /contact) or a full URL (https://…):',
+            editor.getAttributes('link').href ?? ''
+          );
           if (url) editor.chain().focus().setLink({ href: url }).run();
         }} active={editor.isActive('link')} title="Link">
           🔗

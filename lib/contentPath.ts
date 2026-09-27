@@ -15,6 +15,8 @@ export function contentPath(item: PathFields): string {
   switch (item.topic) {
     case 'news':
       return `/news/${item.subcat1 ?? '_'}/${item.subcat2 ?? 'general'}/${item.slug}`;
+    case 'top10':
+      return `/top10/${item.subcat1 ?? '_'}/${item.slug}`;
     case 'videos':
       return `/videos/${item.subcat1 ?? '_'}/${item.slug}`;
     default:

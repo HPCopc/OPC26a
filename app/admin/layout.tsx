@@ -6,6 +6,7 @@ import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import Link from 'next/link';
 
 const navItems = [
+  { href: '/admin/home',     label: 'Home Page',       icon: '🏠' },
   { href: '/admin/pages',   label: 'Page Manager',    icon: '📄' },
   { href: '/admin/contents', label: 'Content Manager', icon: '📝' },
   { href: '/admin/users',    label: 'User Management', icon: '👥' },

@@ -85,16 +85,17 @@ const MAX_QUERIES_PER_PAGE = 20;
 async function listPublished(
   field:     'topic' | 'topicSubcat1' | 'topicSubcat2',
   value:     string,
-  nextToken: string | null
+  nextToken: string | null,
+  pageSize:  number = PAGE_SIZE
 ): Promise<ContentListResult> {
   try {
     const client = await getClient();
     const items: ContentItem[] = [];
     let token = nextToken;
 
-    for (let i = 0; i < MAX_QUERIES_PER_PAGE && items.length < PAGE_SIZE; i++) {
+    for (let i = 0; i < MAX_QUERIES_PER_PAGE && items.length < pageSize; i++) {
       const { data, errors } = await client.queries.publishedContentList(
-        { field, value, limit: PAGE_SIZE - items.length, nextToken: token ?? undefined },
+        { field, value, limit: pageSize - items.length, nextToken: token ?? undefined },
         { authMode: 'apiKey' }
       );
       if (errors?.length || !data) break;
@@ -128,6 +129,23 @@ export const getContentBySubcat2 = cache(
     nextToken: string | null = null
   ): Promise<ContentListResult> =>
     listPublished('topicSubcat2', topicSubcat2Key(topic, subcat1, subcat2), nextToken)
+);
+
+/** The newest `limit` published items of a topic, or of one of its subcategories. */
+export const getLatestContent = cache(
+  async (
+    topic:    string,
+    subcat1:  string | null,
+    subcat2:  string | null,
+    limit:    number
+  ): Promise<ContentItem[]> => {
+    const { items } = subcat1 && subcat2
+      ? await listPublished('topicSubcat2', topicSubcat2Key(topic, subcat1, subcat2), null, limit)
+      : subcat1
+        ? await listPublished('topicSubcat1', topicSubcat1Key(topic, subcat1), null, limit)
+        : await listPublished('topic', topic, null, limit);
+    return items;
+  }
 );
 
 // ─── Detail Function ──────────────────────────────────────────────────────────

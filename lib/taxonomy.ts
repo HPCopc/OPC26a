@@ -12,6 +12,18 @@ export interface TopicTaxonomy {
   subcat2: Record<string, TaxonomyItem[]>;
 }
 
+// news → markets subtopics. top10 uses the same list as its subtopics, so
+// the two can't drift apart.
+const MARKETS_SUBTOPICS: TaxonomyItem[] = [
+  { label: 'Feature of the Week',        slug: 'feature-of-the-week'      },
+  { label: 'Futures Weekly Recaps',       slug: 'futures-weekly-recaps'    },
+  { label: 'Forecasts',                   slug: 'forecasts'                },
+  { label: 'Crude Trades',                slug: 'crude-trades'             },
+  { label: 'Oil Production Newsflash',    slug: 'oil-production-newsflash' },
+  { label: 'OSP Differentials',           slug: 'osp-differentials'        },
+  { label: 'Climate Scrutiny',            slug: 'climate-scrutiny'         },
+];
+
 export const TAXONOMY: Record<string, TopicTaxonomy> = {
 
   news: {
@@ -24,15 +36,7 @@ export const TAXONOMY: Record<string, TopicTaxonomy> = {
       { label: 'Technology',            slug: 'technology' },
     ],
     subcat2: {
-      markets: [
-        { label: 'Feature of the Week',        slug: 'feature-of-the-week'      },
-        { label: 'Futures Weekly Recaps',       slug: 'futures-weekly-recaps'    },
-        { label: 'Forecasts',                   slug: 'forecasts'                },
-        { label: 'Crude Trades',                slug: 'crude-trades'             },
-        { label: 'Oil Production Newsflash',    slug: 'oil-production-newsflash' },
-        { label: 'OSP Differentials',           slug: 'osp-differentials'        },
-        { label: 'Climate Scrutiny',            slug: 'climate-scrutiny'         },
-      ],
+      markets: MARKETS_SUBTOPICS,
       opc: [
         { label: 'General', slug: 'general' },
       ],
@@ -53,6 +57,11 @@ export const TAXONOMY: Record<string, TopicTaxonomy> = {
         { label: 'Licenses',                    slug: 'licenses'                 },
       ],
     },
+  },
+
+  top10: {
+    subcat1: MARKETS_SUBTOPICS,
+    subcat2: {},
   },
 
   videos: {

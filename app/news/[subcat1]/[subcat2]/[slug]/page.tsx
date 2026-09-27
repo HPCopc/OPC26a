@@ -1,4 +1,5 @@
 import { getContentBySlug } from '@/lib/getContent';
+import { contentPath } from '@/lib/contentPath';
 import { notFound, redirect } from 'next/navigation';
 import ProtectedContentDetail from '@/components/content/detail/ProtectedContentDetail';
 import { cookies } from 'next/headers';
@@ -34,6 +35,11 @@ export default async function NewsArticleDetailPage({ params }: Props) {
 
   const item = await getContentBySlug(slug);
   if (!item) notFound();
+
+  // The slug lookup ignores topic and categories, so send any other URL
+  // (e.g. /events/<news-slug>) to the item's real one.
+  const path = contentPath(item);
+  if (path !== `/news/${subcat1}/${subcat2}/${slug}`) redirect(path);
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">

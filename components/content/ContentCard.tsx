@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { sanitizeHtml } from '@/lib/sanitizeHtml';
 import { isHttpsUrl, isOptimizedImageUrl } from '@/lib/imageHosts';
+import { contentPath } from '@/lib/contentPath';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 // ContentType values match the schema's `topic` field exactly.
@@ -49,25 +50,6 @@ const TYPE_COLORS: Record<ContentType, string> = {
   resources:   "bg-teal-700   text-white",
   events:      "bg-orange-600 text-white",
 };
-
-function buildHref(item: ContentCardItem): string {
-  switch (item.topic) {
-    case "news": {
-      const subcat2 = item.subcat2 ?? "general";
-      return `/news/${item.subcat1 ?? "_"}/${subcat2}/${item.slug}`;
-    }
-    case "videos":
-      // /videos/[subcat1]/[slug]
-      return `/videos/${item.subcat1 ?? "_"}/${item.slug}`;
-    case "whitepapers":
-      // /whitepapers/[subcat1]/[slug]
-      return `/whitepapers/${item.slug}`;
-    case "resources":
-      return `/resources/${item.slug}`;
-    case "events":
-      return `/events/${item.slug}`;
-  }
-}
 
 function formatDate(dateStr?: string | null): string {
   if (!dateStr) return "";
@@ -200,7 +182,7 @@ export interface ContentCardProps {
 }
 
 export default function ContentCard({ item, compact = false, className = "" }: ContentCardProps) {
-  const href = buildHref(item);
+  const href = contentPath(item);
 
   return (
     <Link

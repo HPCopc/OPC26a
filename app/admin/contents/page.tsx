@@ -415,6 +415,18 @@ export default function AdminContentPage() {
 
     startTransition(async () => {
       try {
+        // Detail pages look items up by slug alone, so slugs must be unique
+        // across all topics (drafts included).
+        const existing = await client.models.ContentMeta.listContentMetaBySlug({ slug: form.slug });
+        if (existing.errors?.length) {
+          showMessage(`❌ ${existing.errors[0].message}`);
+          return;
+        }
+        if (existing.data.length > 0) {
+          showMessage(`❌ The slug "${form.slug}" is already used by "${existing.data[0].title}". Choose another.`);
+          return;
+        }
+
         // 1️⃣ Create ContentMeta
         const metaResult = await client.models.ContentMeta.create({
           title:       form.title,

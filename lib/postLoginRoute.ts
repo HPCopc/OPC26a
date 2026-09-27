@@ -2,7 +2,7 @@
 // One rule for where a signed-in user belongs, shared by the login page and
 // the (protected) guard.
 import { generateClient } from 'aws-amplify/data';
-import { fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
+import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 import type { Schema } from '@/amplify/data/resource';
 
 const client = generateClient<Schema>({ authMode: 'userPool' });
@@ -17,9 +17,16 @@ export type ProfileStatus =
 export async function getProfileStatus(): Promise<ProfileStatus> {
   let sub: string | undefined;
   try {
-    sub = (await fetchUserAttributes()).sub;
-  } catch {
-    return { status: 'signedOut', profile: null };
+    // Reads the stored tokens; throws UserUnAuthenticatedException only when
+    // there is no session. A failed token refresh (network blip) throws
+    // something else and keeps the tokens, so rethrow it instead of calling
+    // the user signed out.
+    sub = (await getCurrentUser()).userId;
+  } catch (e) {
+    if ((e as Error)?.name === 'UserUnAuthenticatedException') {
+      return { status: 'signedOut', profile: null };
+    }
+    throw e;
   }
   if (!sub) return { status: 'signedOut', profile: null };
 

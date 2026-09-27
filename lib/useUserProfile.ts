@@ -1,25 +1,29 @@
 // lib/useUserProfile.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getProfileStatus, type ProfileStatus } from '@/lib/postLoginRoute';
 
 export function useUserProfile() {
   const [state, setState] = useState<ProfileStatus>({ status: 'signedOut', profile: null });
   const [loading, setLoading] = useState(true);
+  // Network or API failure. Kept apart from signedOut so a brief outage
+  // shows a retry instead of bouncing a signed-in user to /login.
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setState(await getProfileStatus());
-      } catch {
-        // Network or API error: treat as logged out
-        setState({ status: 'signedOut', profile: null });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setState(await getProfileStatus());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { ...state, loading };
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { ...state, loading, error, retry: load };
 }

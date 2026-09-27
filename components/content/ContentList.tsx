@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { usePathname } from "next/navigation";
 import ContentCard, { ContentCardItem, ContentType } from "./ContentCard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ const TOPIC_LABELS: Record<ContentType, string> = {
 
 function LoginGate({ contentType }: { contentType?: ContentType }) {
   const label = contentType ? TOPIC_LABELS[contentType] : "content";
+  const pathname = usePathname();
   return (
     <div className="flex flex-col items-center gap-4 py-12 px-6 border border-dashed border-slate-200 rounded-md bg-slate-50 text-center">
       <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
@@ -51,7 +53,7 @@ function LoginGate({ contentType }: { contentType?: ContentType }) {
         </p>
       </div>
       <a
-        href="/login"
+        href={`/login?from=${encodeURIComponent(pathname)}`}
         className="inline-flex items-center gap-2 px-4 py-2 rounded bg-amber-600 hover:bg-amber-700
           text-white text-sm font-semibold transition-colors duration-150"
       >

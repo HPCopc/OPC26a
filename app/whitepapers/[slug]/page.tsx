@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { fetchAuthSession } from 'aws-amplify/auth/server';
 import { createServerRunner } from '@aws-amplify/adapter-nextjs';
 import config from '@/amplify_outputs.json';
+import { hasCognitoSession } from '@/utils/authCookies';
 
 const { runWithAmplifyServerContext } = createServerRunner({ config });
 
@@ -26,7 +27,11 @@ export default async function WhitepaperDetailPage({ params }: Props) {
         isLoggedIn = !!session?.tokens?.accessToken;
       },
     });
-  } catch {
+  } catch (e) {
+    // A failed check with a session cookie is a transient error, not a
+    // sign-out: surface it instead of redirecting to /login.
+    const cookieNames = (await cookies()).getAll().map((c) => c.name);
+    if (hasCognitoSession(cookieNames)) throw e;
     isLoggedIn = false;
   }
 

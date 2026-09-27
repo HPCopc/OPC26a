@@ -24,6 +24,15 @@ async function listBodies(isPublic: boolean, metaId: string) {
   return data;
 }
 
+// A stored ISO (UTC) time as the local "YYYY-MM-DDTHH:mm" a datetime-local
+// input expects. Saving reads the input as local time, so the round trip
+// keeps the same wall-clock time.
+function toLocalDateTimeInput(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 const PROTECTED_CONTENT_TYPES: Record<string, 'NEWS' | 'VIDEOS' | 'WHITEPAPERS'> = {
   news:        'NEWS',
   videos:      'VIDEOS',
@@ -364,8 +373,16 @@ export default function AdminContentPage() {
   useEffect(() => { loadItems(); }, []);
 
   async function loadItems() {
-    const { data } = await client.models.ContentMeta.list();
-    setItems([...data].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '')));
+    // list() returns at most 100 records per call; follow nextToken for the rest.
+    const all: MetaRecord[] = [];
+    let nextToken: string | null | undefined;
+    do {
+      const result = await client.models.ContentMeta.list({ limit: 1000, nextToken });
+      if (result.errors?.length) { showMessage(`❌ ${result.errors[0].message}`); break; }
+      all.push(...result.data);
+      nextToken = result.nextToken;
+    } while (nextToken);
+    setItems(all.sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '')));
   }
 
   const filteredItems = topicFilter === 'all'
@@ -484,13 +501,14 @@ export default function AdminContentPage() {
         const metaResult = await client.models.ContentMeta.update({
           id:          editingMetaId,
           title:       form.title,
-          intro:       form.intro || undefined,
+          // null (not undefined) so emptying a field actually clears it
+          intro:       form.intro || null,
           date:        form.date,
           isPublished: form.isPublished,
-          imageUrl:    form.imageUrl || undefined,
-          seo:         seo.value,
-          location:    form.location || undefined,
-          eventDate:   form.eventDate ? new Date(form.eventDate).toISOString() : undefined,
+          imageUrl:    form.imageUrl || null,
+          seo:         seo.value ?? null,
+          location:    form.location || null,
+          eventDate:   form.eventDate ? new Date(form.eventDate).toISOString() : null,
         });
 
         if (metaResult.errors?.length) {
@@ -501,9 +519,9 @@ export default function AdminContentPage() {
         // 2️⃣ Update the correct body table, or create the body if it is missing
         const isPublic = PUBLIC_TOPICS.includes(form.topic);
         const fields = {
-          body:    form.body || undefined,
-          s3Key:   form.s3Key || undefined,
-          fileKey: form.fileKey || undefined,
+          body:    form.body || null,
+          s3Key:   form.s3Key || null,
+          fileKey: form.fileKey || null,
         };
         const bodyResult = isPublic
           ? editingBodyId
@@ -554,7 +572,8 @@ export default function AdminContentPage() {
           if (errors?.length) { showMessage(`❌ ${errors[0].message}`); return; }
         }
 
-        await client.models.ContentMeta.delete({ id: deleteId });
+        const metaResult = await client.models.ContentMeta.delete({ id: deleteId });
+        if (metaResult.errors?.length) { showMessage(`❌ ${metaResult.errors[0].message}`); return; }
 
         showMessage('✅ Deleted!');
         setDeleteId(null);
@@ -588,9 +607,7 @@ export default function AdminContentPage() {
       imageUrl:    item.imageUrl ?? '',
       seo:         normalizeSeo(item.seo),
       location:    item.location ?? '',
-      eventDate:   item.eventDate
-                     ? new Date(item.eventDate).toISOString().slice(0, 16)
-                     : '',
+      eventDate:   item.eventDate ? toLocalDateTimeInput(item.eventDate) : '',
       body:    body?.body ?? '',
       s3Key:   body?.s3Key ?? '',
       fileKey: body?.fileKey ?? '',

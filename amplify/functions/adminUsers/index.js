@@ -57,17 +57,23 @@ export const handler = async (event) => {
 
     // GET /admin/users → list users
     if (method === "GET") {
-      const cmd = new ListUsersCommand({
-        UserPoolId: POOL,
-        Limit: 60,
-      });
-
-      const result = await client.send(cmd);
+      // Cognito returns at most 60 users per call; follow PaginationToken.
+      const users = [];
+      let token;
+      do {
+        const result = await client.send(new ListUsersCommand({
+          UserPoolId: POOL,
+          Limit: 60,
+          PaginationToken: token,
+        }));
+        users.push(...(result.Users ?? []));
+        token = result.PaginationToken;
+      } while (token);
 
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(result.Users ?? []),
+        body: JSON.stringify(users),
       };
     }
 

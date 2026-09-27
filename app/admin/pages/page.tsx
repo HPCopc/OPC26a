@@ -296,8 +296,16 @@ export default function AdminPagesPage() {
   useEffect(() => { loadPages(); }, []);
 
   async function loadPages() {
-    const { data } = await client.models.Page.list();
-    setPages(data);
+    // list() returns at most 100 records per call; follow nextToken for the rest.
+    const all: PageRecord[] = [];
+    let nextToken: string | null | undefined;
+    do {
+      const result = await client.models.Page.list({ limit: 1000, nextToken });
+      if (result.errors?.length) { showMessage(`❌ ${result.errors[0].message}`); break; }
+      all.push(...result.data);
+      nextToken = result.nextToken;
+    } while (nextToken);
+    setPages(all);
   }
 
   
@@ -397,14 +405,19 @@ export default function AdminPagesPage() {
 
   startTransition(async () => {
     try {
-      await client.models.Page.update({
+      const result = await client.models.Page.update({
         slug:     editingId,
         title:    form.title,
-        intro:    form.intro || undefined,
+        // null (not undefined) so emptying a field actually clears it
+        intro:    form.intro || null,
         status:   form.status,
         featured: form.featured,
-        seo:      seoValue,   // raw string or undefined, same as create
+        seo:      seoValue ?? null,
       });
+      if (result.errors?.length) {
+        showMessage(`❌ ${result.errors[0].message}`);
+        return;
+      }
       showMessage('✅ Page updated!');
       setEditingId(null);
       setForm(emptyForm);
@@ -422,7 +435,11 @@ export default function AdminPagesPage() {
     try {
       if (!deleteId) return;  // ensures it's a string
 
-      await client.models.Page.delete({ slug: deleteId });
+      const result = await client.models.Page.delete({ slug: deleteId });
+      if (result.errors?.length) {
+        showMessage(`❌ ${result.errors[0].message}`);
+        return;
+      }
 
       showMessage('✅ Page deleted!');
       setDeleteId(null);

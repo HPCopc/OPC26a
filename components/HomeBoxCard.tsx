@@ -78,7 +78,7 @@ export default function HomeBoxCard({ box }: { box: HomeBoxData }) {
       <div className="p-6 flex flex-col gap-4">
         {box.description && (
           <div
-            className="text-gray-700 flex flex-col gap-2 [&_a]:text-amber-700 [&_a]:underline [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_li]:p-0 [&_li:hover]:bg-transparent [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold"
+            className="rich-text text-gray-700 [&_a]:text-amber-700 [&_a]:underline"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(box.description) }}
           />
         )}
@@ -91,7 +91,7 @@ export default function HomeBoxCard({ box }: { box: HomeBoxData }) {
               className={`${box.newsNumbered ? 'list-decimal' : 'list-disc'} pl-5 flex flex-col gap-1.5 text-sm`}
             >
               {box.news.map((item) => (
-                <li key={item.id} className="p-0 hover:bg-transparent">
+                <li key={item.id}>
                   <Link href={contentPath(item)} className="font-normal text-gray-800 hover:text-amber-700">
                     {item.title}
                   </Link>

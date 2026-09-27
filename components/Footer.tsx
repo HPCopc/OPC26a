@@ -31,14 +31,16 @@ const BottomLinks: FooterLink[] = [
   { label: 'Advertise', href: '/contact' },
 ];
 
+// Matches the original site's footer: a #EFEFEF band of link columns, then
+// a black bar with the site links and copyright.
 function LinkColumn({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
-      <h2 className="font-bold uppercase text-sm tracking-wide mb-4">{title}</h2>
-      <ul className="space-y-2">
+      <h2 className="font-bold uppercase text-base mb-2.5">{title}</h2>
+      <ul className="text-sm leading-[30px]">
         {links.map(({ label, href }) => (
           <li key={label}>
-            <Link href={href} className="text-sm text-gray-700 hover:text-black hover:underline">
+            <Link href={href} className="font-normal text-black hover:underline">
               {label}
             </Link>
           </li>
@@ -52,27 +54,27 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="flex flex-col">
+    <footer className="flex flex-col mt-20">
 
-      {/* Top section */}
-      <div className="bg-gray-100 px-4 sm:px-10 py-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
+      {/* Link columns */}
+      <div className="bg-[#EFEFEF] px-6 sm:px-10 py-6 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-10">
         <LinkColumn title="Topic"    links={Topics}   />
         <LinkColumn title="More"     links={More}     />
         <LinkColumn title="Services" links={Services} />
       </div>
 
       {/* Bottom bar */}
-      <div className="bg-black text-white px-4 sm:px-10 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
+      <div className="bg-black text-white px-6 sm:px-10 py-3 flex flex-col sm:flex-row gap-2 sm:gap-8 items-center text-sm">
         <ul className="flex flex-wrap justify-center gap-6 sm:gap-10">
           {BottomLinks.map(({ label, href }) => (
             <li key={label}>
-              <Link href={href} className="text-sm hover:text-gray-300">
+              <Link href={href} className="font-normal text-white hover:underline">
                 {label}
               </Link>
             </li>
           ))}
         </ul>
-        <p className="text-sm">Copyright © {currentYear} OpportunityCrudes.com</p>
+        <p className="sm:ml-auto">Copyright © {currentYear} OpportunityCrudes.com</p>
       </div>
 
     </footer>

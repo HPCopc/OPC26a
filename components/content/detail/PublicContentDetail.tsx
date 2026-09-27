@@ -123,7 +123,7 @@ export default function PublicContentDetail({ item }: Props) {
       {/* Body — full content, publicly visible */}
       {item.body && (
         <div
-          className="prose prose-gray max-w-none mb-10
+          className="rich-text prose prose-gray max-w-none mb-10
             prose-headings:font-bold prose-headings:text-gray-900
             prose-p:text-gray-700 prose-p:leading-relaxed
             prose-a:text-[#00a86b] prose-a:no-underline hover:prose-a:underline

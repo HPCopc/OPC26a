@@ -18,19 +18,10 @@ export default function Navigation() {
 
   const loadUserInfo = async () => {
   try {
-    console.log('1. Starting loadUserInfo');
-    
     const attributes = await fetchUserAttributes();
-    console.log('2. Attributes:', attributes);
-    
     const session = await fetchAuthSession();
-    console.log('3. Session:', session);
-    console.log('4. Tokens:', session.tokens);
-    console.log('5. ID Token payload:', session.tokens?.accessToken?.payload);
-    
     const groups = session.tokens?.accessToken?.payload['cognito:groups'] as string[] ?? [];
-    console.log('6. Groups:', groups);
-    
+
     setUserName(attributes.given_name || attributes.email?.split('@')[0] || 'User');
     setIsAdmin(groups.includes('ADMINS'));
     

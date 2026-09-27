@@ -4,12 +4,13 @@ import type { NextRequest } from 'next/server';
 import { fetchAuthSession } from 'aws-amplify/auth/server';
 import { runWithAmplifyServerContext } from '@/utils/amplifyServerUtils';
 
-// Detail pages need a signed-in user; their list/category pages stay public.
+// Detail pages of the protected topics (news, videos, whitepapers) need a
+// signed-in user; their list/category pages stay public. Events and
+// resources are public all the way down.
 function isDetailPage(seg: string[]) {
   switch (seg[0]) {
-    case 'events':
     case 'whitepapers':
-      return seg.length === 2; // /events/<slug>
+      return seg.length === 2; // /whitepapers/<slug>
     case 'videos':
       return seg.length === 3; // /videos/<cat>/<slug>
     case 'news':

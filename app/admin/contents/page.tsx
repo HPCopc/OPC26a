@@ -455,33 +455,41 @@ export default function AdminContentPage() {
         const metaId = metaResult.data?.id;
         if (!metaId) { showMessage('❌ Failed to get meta ID'); return; }
 
-        // 2️⃣ Write to PublicContentBody or ProtectedContentBody based on topic
+        // 2️⃣ Write to PublicContentBody or ProtectedContentBody based on topic.
+        // If that fails, remove the ContentMeta again so a teaser with no
+        // body is not left behind (it would be listed and hold the slug).
         const isPublic = PUBLIC_TOPICS.includes(form.topic);
+        const fields = {
+          metaId,
+          body:    form.body || undefined,
+          s3Key:   form.s3Key || undefined,
+          fileKey: form.fileKey || undefined,
+        };
+        let bodyError: string | null = null;
+        try {
+          const bodyResult = isPublic
+            ? await client.models.PublicContentBody.create({
+                ...fields,
+                contentType: form.topic === 'events' ? 'EVENTS' : 'RESOURCES',
+              })
+            : await client.models.ProtectedContentBody.create({
+                ...fields,
+                contentType: PROTECTED_CONTENT_TYPES[form.topic],
+              });
+          if (bodyResult.errors?.length) bodyError = bodyResult.errors[0].message;
+        } catch (e) {
+          bodyError = (e as Error).message;
+        }
 
-        if (isPublic) {
-          const bodyResult = await client.models.PublicContentBody.create({
-            metaId,
-            contentType: form.topic === 'events' ? 'EVENTS' : 'RESOURCES',
-            body:        form.body || undefined,
-            s3Key:       form.s3Key || undefined,
-            fileKey:     form.fileKey || undefined,
-          });
-          if (bodyResult.errors?.length) {
-            showMessage(`❌ ${bodyResult.errors[0].message}`);
-            return;
-          }
-        } else {
-          const bodyResult = await client.models.ProtectedContentBody.create({
-            metaId,
-            contentType: PROTECTED_CONTENT_TYPES[form.topic],
-            body:        form.body || undefined,
-            s3Key:       form.s3Key || undefined,
-            fileKey:     form.fileKey || undefined,
-          });
-          if (bodyResult.errors?.length) {
-            showMessage(`❌ ${bodyResult.errors[0].message}`);
-            return;
-          }
+        if (bodyError) {
+          const rollback = await client.models.ContentMeta.delete({ id: metaId }).catch(() => null);
+          showMessage(
+            rollback && !rollback.errors?.length
+              ? `❌ Could not save the body, nothing was created: ${bodyError}`
+              : `❌ Could not save the body (${bodyError}), and removing the half-created item also failed. Delete "${form.title}" from the list before retrying.`
+          );
+          loadItems();
+          return;
         }
 
         showMessage('✅ Content created!');
@@ -567,7 +575,9 @@ export default function AdminContentPage() {
     });
   }
 
-  // ── Delete: remove body first, then meta ──
+  // ── Delete: remove meta first, then body ──
+  // Meta first so a partial failure never leaves a listed teaser with no
+  // body; a leftover body is invisible and is reported below.
   async function handleDelete() {
     if (!deleteId) return;
     startTransition(async () => {
@@ -577,19 +587,26 @@ export default function AdminContentPage() {
         const isPublic = deletingItem ? PUBLIC_TOPICS.includes(deletingItem.topic) : false;
 
         const bodyRecords = await listBodies(isPublic, deleteId);
-        for (const body of bodyRecords) {
-          const { errors } = isPublic
-            ? await client.models.PublicContentBody.delete({ id: body.id })
-            : await client.models.ProtectedContentBody.delete({ id: body.id });
-          if (errors?.length) { showMessage(`❌ ${errors[0].message}`); return; }
-        }
 
         const metaResult = await client.models.ContentMeta.delete({ id: deleteId });
         if (metaResult.errors?.length) { showMessage(`❌ ${metaResult.errors[0].message}`); return; }
 
-        showMessage('✅ Deleted!');
+        let bodyFailed = false;
+        for (const body of bodyRecords) {
+          const result = await (isPublic
+            ? client.models.PublicContentBody.delete({ id: body.id })
+            : client.models.ProtectedContentBody.delete({ id: body.id })
+          ).catch(() => null);
+          if (!result || result.errors?.length) bodyFailed = true;
+        }
+
         setDeleteId(null);
         loadItems();
+        if (bodyFailed) {
+          showMessage(`⚠️ Deleted from the site, but its body record could not be removed (metaId ${deleteId}).`);
+          return;
+        }
+        showMessage('✅ Deleted!');
       } catch (e) {
         showMessage('❌ ' + (e as Error).message);
       }

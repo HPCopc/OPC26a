@@ -14,6 +14,9 @@ export default function EditProfilePage() {
   const [saving, setSaving] = useState(false);
   const [sub, setSub] = useState<string | null>(null);
   const [subscriptionType, setSubscriptionType] = useState<string>('free');
+  // Set when the profile could not be loaded; the form is then hidden so
+  // saving blank fields can't overwrite the stored profile.
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   const [form, setForm] = useState({
     companyName: '',
@@ -31,16 +34,23 @@ export default function EditProfilePage() {
   }, []);
 
   const loadProfile = async () => {
+    setLoading(true);
+    setLoadError(null);
+    let userId: string;
     try {
-      const user = await getCurrentUser();
-      const userId = user.userId;
-      setSub(userId);
+      userId = (await getCurrentUser()).userId;
+    } catch {
+      router.push('/login?from=/profile/edit');
+      return;
+    }
 
+    try {
       // Fetch existing profile
       const { data, errors } = await client.models.UserProfile.get({ id: userId });
-      
-      if (errors) {
+
+      if (errors?.length) {
         console.error('Error loading profile:', errors);
+        setLoadError(errors[0]?.message || 'Unknown error');
         return;
       }
 
@@ -51,6 +61,7 @@ export default function EditProfilePage() {
       }
 
       if (data) {
+        setSub(userId);
         setSubscriptionType(data.subscriptionType || 'free');
         setForm({
           companyName: data.companyName || '',
@@ -65,7 +76,7 @@ export default function EditProfilePage() {
       }
     } catch (error) {
       console.error('Error loading profile:', error);
-      router.push('/login');
+      setLoadError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -115,6 +126,31 @@ export default function EditProfilePage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <h1 className="text-2xl font-semibold mb-4">Edit Profile</h1>
+        <p className="text-red-600 mb-4">
+          Your profile could not be loaded, so it can't be edited right now. ({loadError})
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={loadProfile}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+          >
+            Try again
+          </button>
+          <button
+            onClick={() => router.push('/')}
+            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition"
+          >
+            Back
+          </button>
+        </div>
       </div>
     );
   }

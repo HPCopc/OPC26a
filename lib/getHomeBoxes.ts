@@ -73,8 +73,10 @@ export async function getHomeBoxes(): Promise<HomeBoxData[]> {
         buttonsPosition: b.buttonsPosition === 'above' ? 'above' : 'below',
         news,
         newsNumbered:    !!b.newsNumbered,
+        // Top 10 has no listing page (the box is its only list), so a Top 10
+        // feed gets no "more" link unless the admin set one explicitly.
         moreLink:        b.showMore
-          ? (b.moreLink || (topic ? feedListingPath(topic, b.newsSubcat1, b.newsSubcat2) : null))
+          ? (b.moreLink || (topic && topic !== 'top10' ? feedListingPath(topic, b.newsSubcat1, b.newsSubcat2) : null))
           : null,
         moreLabel:       b.moreLabel || 'more ›',
       };

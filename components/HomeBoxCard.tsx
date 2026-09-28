@@ -52,12 +52,18 @@ function Buttons({ buttons }: { buttons: HomeBoxButton[] }) {
   );
 }
 
-export default function HomeBoxCard({ box }: { box: HomeBoxData }) {
+// Register buttons are for visitors only; members already have access.
+function isRegisterHref(href: string) {
+  return href === '/register' || href.startsWith('/register?') || href.startsWith('/register/');
+}
+
+export default function HomeBoxCard({ box, signedIn }: { box: HomeBoxData; signedIn: boolean }) {
   const titleHref = safeHref(box.titleLink);
   const moreHref  = safeHref(box.moreLink);
   const ListTag   = box.newsNumbered ? 'ol' : 'ul';
 
-  const buttons = box.buttons.length > 0 ? <Buttons buttons={box.buttons} /> : null;
+  const visibleButtons = signedIn ? box.buttons.filter((b) => !isRegisterHref(b.href)) : box.buttons;
+  const buttons = visibleButtons.length > 0 ? <Buttons buttons={visibleButtons} /> : null;
 
   return (
     <section className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">

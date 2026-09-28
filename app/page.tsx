@@ -1,11 +1,27 @@
 import HomeBoxCard from '@/components/HomeBoxCard';
 import { getHomeBoxes } from '@/lib/getHomeBoxes';
+import { cookies } from 'next/headers';
+import { fetchAuthSession } from 'aws-amplify/auth/server';
+import { runWithAmplifyServerContext } from '@/utils/amplifyServerUtils';
 
 // Boxes are admin-managed (/admin/home), so always render fresh.
 export const dynamic = 'force-dynamic';
 
+// Only decides whether to show Register buttons, so a failed check just
+// counts as signed out.
+async function isSignedIn(): Promise<boolean> {
+  try {
+    return await runWithAmplifyServerContext({
+      nextServerContext: { cookies },
+      operation: async (contextSpec) => !!(await fetchAuthSession(contextSpec)).tokens,
+    });
+  } catch {
+    return false;
+  }
+}
+
 export default async function HomePage() {
-  const boxes = await getHomeBoxes();   // sorted by sortOrder
+  const [boxes, signedIn] = await Promise.all([getHomeBoxes(), isSignedIn()]);   // boxes sorted by sortOrder
   const left  = boxes.filter((b) => b.column === 'left');
   const right = boxes.filter((b) => b.column === 'right');
 
@@ -19,16 +35,16 @@ export default async function HomePage() {
       <div className="flex flex-col gap-6 md:hidden">
         {[...boxes]
           .sort((a, b) => a.sortOrder - b.sortOrder || (a.column === 'left' ? -1 : 1))
-          .map((box) => <HomeBoxCard key={box.id} box={box} />)}
+          .map((box) => <HomeBoxCard key={box.id} box={box} signedIn={signedIn} />)}
       </div>
 
       {/* Wider screens: two independent columns, as on the original site. */}
       <div className="hidden md:grid md:grid-cols-2 gap-6 items-start">
         <div className="flex flex-col gap-6">
-          {left.map((box) => <HomeBoxCard key={box.id} box={box} />)}
+          {left.map((box) => <HomeBoxCard key={box.id} box={box} signedIn={signedIn} />)}
         </div>
         <div className="flex flex-col gap-6">
-          {right.map((box) => <HomeBoxCard key={box.id} box={box} />)}
+          {right.map((box) => <HomeBoxCard key={box.id} box={box} signedIn={signedIn} />)}
         </div>
       </div>
     </div>

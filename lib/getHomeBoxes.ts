@@ -30,7 +30,11 @@ export type HomeBoxData = {
   newsNumbered:    boolean;
   moreLink:        string | null;          // null = no "more" link
   moreLabel:       string;
+  anchor:          string | null;          // scroll target for /#<anchor> links
 };
+
+/** Where "Back to Weekly Insights" lands: the box with the Top 10 feed. */
+export const WEEKLY_INSIGHTS_ANCHOR = 'weekly-insights';
 
 /** The listing page for a news feed, e.g. /news/markets or /top10/forecasts. */
 export function feedListingPath(topic: string, subcat1?: string | null, subcat2?: string | null): string {
@@ -79,6 +83,7 @@ export async function getHomeBoxes(): Promise<HomeBoxData[]> {
           ? (b.moreLink || (topic && topic !== 'top10' ? feedListingPath(topic, b.newsSubcat1, b.newsSubcat2) : null))
           : null,
         moreLabel:       b.moreLabel || 'more ›',
+        anchor:          topic === 'top10' ? WEEKLY_INSIGHTS_ANCHOR : null,
       };
     }));
   } catch (err) {

@@ -1,4 +1,5 @@
 import HomeBoxCard from '@/components/HomeBoxCard';
+import ScrollToBoxAnchor from '@/components/ScrollToBoxAnchor';
 import { getHomeBoxes } from '@/lib/getHomeBoxes';
 import { cookies } from 'next/headers';
 import { fetchAuthSession } from 'aws-amplify/auth/server';
@@ -31,6 +32,7 @@ export default async function HomePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <ScrollToBoxAnchor />
       {/* Phones: one column, rows in order (left box before right box). */}
       <div className="flex flex-col gap-6 md:hidden">
         {[...boxes]

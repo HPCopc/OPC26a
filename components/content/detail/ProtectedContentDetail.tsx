@@ -9,7 +9,9 @@ import type { ContentItem } from '@/lib/getContent';
 import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 type Props = {
-  item: ContentItem;
+  item:    ContentItem;
+  before?: React.ReactNode;   // e.g. the Top 10 bar, above the article
+  after?:  React.ReactNode;   // e.g. Top 10 previous/next, below it
 };
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -22,12 +24,14 @@ function formatDate(dateStr: string | null | undefined): string {
   });
 }
 
-export default function ProtectedContentDetail({ item }: Props) {
+export default function ProtectedContentDetail({ item, before, after }: Props) {
   const isVideo       = item.topic === 'videos';
   const isWhitepaper  = item.topic === 'whitepapers';
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-10">
+
+      {before}
 
       {/* Hero image — skip for videos */}
       {item.imageUrl && !isVideo && (
@@ -111,6 +115,8 @@ export default function ProtectedContentDetail({ item }: Props) {
           <p className="text-sm text-gray-400">Please contact support if this issue persists.</p>
         </div>
       )}
+
+      {after}
 
     </article>
   );

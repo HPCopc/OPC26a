@@ -2,6 +2,7 @@ import { getContentBySlug, getLatestContent } from '@/lib/getContent';
 import { contentPath } from '@/lib/contentPath';
 import { notFound, redirect } from 'next/navigation';
 import ProtectedContentDetail from '@/components/content/detail/ProtectedContentDetail';
+import { Top10NavBar, Top10NavFooter } from '@/components/content/detail/Top10Nav';
 import { cookies } from 'next/headers';
 import { fetchAuthSession } from 'aws-amplify/auth/server';
 import { createServerRunner } from '@aws-amplify/adapter-nextjs';
@@ -56,7 +57,11 @@ export default async function Top10ArticleDetailPage({ params }: Props) {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">
-      <ProtectedContentDetail item={item} />
+      <ProtectedContentDetail
+        item={item}
+        before={<Top10NavBar items={current} currentId={item.id} />}
+        after={<Top10NavFooter items={current} currentId={item.id} />}
+      />
     </main>
   );
 }

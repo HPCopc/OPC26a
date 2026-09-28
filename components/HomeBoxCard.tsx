@@ -66,7 +66,12 @@ export default function HomeBoxCard({ box, signedIn }: { box: HomeBoxData; signe
   const buttons = visibleButtons.length > 0 ? <Buttons buttons={visibleButtons} /> : null;
 
   return (
-    <section className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
+    // data-anchor, not id: the page renders every box twice (phone and
+    // wide layouts). ScrollToBoxAnchor picks the visible one.
+    <section
+      data-anchor={box.anchor ?? undefined}
+      className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col scroll-mt-4"
+    >
       {/* Gray header */}
       <div className="bg-gray-200 px-6 py-4 border-b border-gray-300">
         <h2 className="text-xl font-bold text-gray-800">

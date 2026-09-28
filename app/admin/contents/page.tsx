@@ -6,6 +6,7 @@ import type { Schema } from '@/amplify/data/resource';
 import { TOPICS, getSubcat1, getSubcat2, topicSubcat1Key, topicSubcat2Key, type TaxonomyItem } from '@/lib/taxonomy';
 import { useMessage } from '@/lib/utils';
 import { isHttpsUrl } from '@/lib/imageHosts';
+import { contentPath } from '@/lib/contentPath';
 
 const client = generateClient<Schema>({ authMode: 'userPool' });
 
@@ -136,6 +137,10 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
   const subcat1Items = form.topic ? getSubcat1(form.topic) : [];
   const subcat2Items = form.topic && form.subcat1 ? getSubcat2(form.topic, form.subcat1) : [];
   const isPublicTopic = PUBLIC_TOPICS.includes(form.topic);
+  // Members-only items can move between members-only topics after creation
+  // (their bodies share one table); public items stay where they are.
+  const lockClassification = isEdit && isPublicTopic;
+  const topicOptions = isEdit ? TOPICS.filter(t => !PUBLIC_TOPICS.includes(t)) : TOPICS;
 
   function handleTitleChange(title: string) {
     setForm({ ...form, title, slug: isEdit ? form.slug : slugify(title) });
@@ -150,18 +155,18 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
         <div className="grid grid-cols-3 gap-4">
           <Field label="Topic *">
             <select
-              disabled={isEdit}
+              disabled={lockClassification}
               className="w-full border rounded px-3 py-2 text-sm disabled:bg-slate-50"
               value={form.topic}
               onChange={e => setForm({ ...form, topic: e.target.value, subcat1: '', subcat2: '' })}
             >
-              <option value="">— select —</option>
-              {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
+              {!isEdit && <option value="">— select —</option>}
+              {(lockClassification ? [form.topic] : topicOptions).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </Field>
           <Field label="Subcat1">
             <select
-              disabled={isEdit || subcat1Items.length === 0}
+              disabled={lockClassification || subcat1Items.length === 0}
               className="w-full border rounded px-3 py-2 text-sm disabled:bg-slate-50"
               value={form.subcat1}
               onChange={e => setForm({ ...form, subcat1: e.target.value, subcat2: '' })}
@@ -174,7 +179,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
           </Field>
           <Field label="Subcat2">
             <select
-              disabled={isEdit || subcat2Items.length === 0}
+              disabled={lockClassification || subcat2Items.length === 0}
               className="w-full border rounded px-3 py-2 text-sm disabled:bg-slate-50"
               value={form.subcat2}
               onChange={e => setForm({ ...form, subcat2: e.target.value })}
@@ -186,8 +191,14 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
             </select>
           </Field>
         </div>
-        {isEdit && (
-          <p className="text-xs text-slate-400">Topic and subcategories cannot be changed after creation.</p>
+        {lockClassification && (
+          <p className="text-xs text-slate-400">Topic and subcategories of public items cannot be changed after creation.</p>
+        )}
+        {isEdit && !lockClassification && (
+          <p className="text-xs text-slate-400">
+            Changing these moves the item to{' '}
+            <span className="font-mono">{contentPath(form)}</span>. Old links redirect there.
+          </p>
         )}
         {/* Show which body table will be used */}
         {form.topic && (
@@ -516,11 +527,25 @@ export default function AdminContentPage() {
     const seo = parseSeo(form.seo);
     if (seo.error) { showMessage('❌ Invalid JSON in SEO'); return; }
 
+    const isPublic = PUBLIC_TOPICS.includes(form.topic);
+
     startTransition(async () => {
       try {
-        // 1️⃣ Update ContentMeta
+        // 1️⃣ Update ContentMeta. Members-only items may have been moved to
+        // another members-only topic or subcategory, so rewrite the
+        // classification and its index keys together.
+        const classification = isPublic ? {} : {
+          topic:        form.topic,
+          subcat1:      form.subcat1 || null,
+          subcat2:      form.subcat2 || null,
+          topicSubcat1: form.subcat1 ? topicSubcat1Key(form.topic, form.subcat1) : null,
+          topicSubcat2: form.subcat1 && form.subcat2
+            ? topicSubcat2Key(form.topic, form.subcat1, form.subcat2)
+            : null,
+        };
         const metaResult = await client.models.ContentMeta.update({
           id:          editingMetaId,
+          ...classification,
           title:       form.title,
           // null (not undefined) so emptying a field actually clears it
           intro:       form.intro || null,
@@ -538,7 +563,6 @@ export default function AdminContentPage() {
         }
 
         // 2️⃣ Update the correct body table, or create the body if it is missing
-        const isPublic = PUBLIC_TOPICS.includes(form.topic);
         const fields = {
           body:    form.body || null,
           s3Key:   form.s3Key || null,
@@ -553,7 +577,11 @@ export default function AdminContentPage() {
                 ...fields,
               })
           : editingBodyId
-            ? await client.models.ProtectedContentBody.update({ id: editingBodyId, ...fields })
+            ? await client.models.ProtectedContentBody.update({
+                id:          editingBodyId,
+                contentType: PROTECTED_CONTENT_TYPES[form.topic],
+                ...fields,
+              })
             : await client.models.ProtectedContentBody.create({
                 metaId:      editingMetaId,
                 contentType: PROTECTED_CONTENT_TYPES[form.topic],

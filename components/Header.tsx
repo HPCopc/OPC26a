@@ -115,7 +115,7 @@ export default function Header() {
 
           <div>
             <h1 className="text-6xl md:text-5xl font-bold text-gray-900 mb-4">Opportunity Crudes</h1>
-            <p>in Changing Times</p>
+            <p>in Changing Times: <em className="text-blue-700">AI Advantaged</em></p>
             <p className="text-xs md:text-base italic text-gray-600 max-w-3xl mx-auto">
               Knowledge to Meet Crude Trilemma: Supply, Affordability & Low Carbon Intensity
             </p>

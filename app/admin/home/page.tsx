@@ -48,7 +48,7 @@ const STARTER_BOXES: Partial<BoxForm>[] = [
   {
     title: 'Global Oil Market Weekly Insights', column: 'left', sortOrder: 10,
     description: '<p>Our weekly insights bring you the ten stories that moved the crude market this week: forecasts, crude trades, OSP differentials and more.</p>',
-    buttons: [{ label: 'FREE Access, Register Today', href: '/login', style: 'primary', newTab: false }],
+    buttons: [{ label: 'FREE Access, Register Today', href: '/register', style: 'primary', newTab: false }],
     buttonsPosition: 'above',
     newsTopic: 'top10', newsLimit: 10, newsNumbered: true, showMore: true,
   },

@@ -21,7 +21,7 @@ const More: FooterLink[] = [
 // No advertise page yet: the contact form has an "Advertising Inquiry" option.
 const Services: FooterLink[] = [
   { label: 'Advertise with OpportunityCrudes.com', href: '/contact' },
-  { label: 'Register with OpportunityCrudes.com',  href: '/login'   },
+  { label: 'Register with OpportunityCrudes.com',  href: '/register' },
 ];
 
 const BottomLinks: FooterLink[] = [

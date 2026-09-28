@@ -50,16 +50,25 @@ function LoginGate({ contentType }: { contentType?: ContentType }) {
       <div>
         <p className="text-sm font-semibold text-slate-700 mb-1">Members only</p>
         <p className="text-xs text-slate-500 max-w-xs">
-          Sign in to access all {label} on OpportunityCrudes.com.
+          Register or sign in to access all {label} on OpportunityCrudes.com.
         </p>
       </div>
-      <a
-        href={`/login?from=${encodeURIComponent(pathname)}`}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded bg-amber-600 hover:bg-amber-700
-          text-white text-sm font-semibold transition-colors duration-150"
-      >
-        Sign in
-      </a>
+      <div className="flex gap-3">
+        <a
+          href={`/register?from=${encodeURIComponent(pathname)}`}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded bg-amber-600 hover:bg-amber-700
+            text-white text-sm font-semibold transition-colors duration-150"
+        >
+          Register
+        </a>
+        <a
+          href={`/login?from=${encodeURIComponent(pathname)}`}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded border border-amber-600 text-amber-700
+            hover:bg-amber-50 text-sm font-semibold transition-colors duration-150"
+        >
+          Sign In
+        </a>
+      </div>
     </div>
   );
 }

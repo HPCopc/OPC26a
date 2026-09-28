@@ -79,13 +79,13 @@ export const handler: PreSignUpTriggerHandler = async (event) => {
 
   if (EXTRA_BLOCKED_DOMAINS.has(domain) || isDisposableEmailDomain(domain)) {
     throw new Error(
-      `Sign up is not allowed with disposable email domain: ${domain}. Please use a permanent email address.`
+      `Registration is not allowed with disposable email domain: ${domain}. Please use a permanent email address.`
     );
   }
 
   if (await isBlocked(domain)) {
     throw new Error(
-      `Please sign up with your company email address. Personal email addresses (${domain}) can't be used.`
+      `Please register with your company email address. Personal email addresses (${domain}) can't be used.`
     );
   }
 

@@ -194,7 +194,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
           <p className="text-xs text-slate-400">
             Body will be stored in{' '}
             <span className={`font-semibold ${isPublicTopic ? 'text-green-600' : 'text-amber-600'}`}>
-              {isPublicTopic ? 'PublicContentBody (no login required)' : 'ProtectedContentBody (login required)'}
+              {isPublicTopic ? 'PublicContentBody (public)' : 'ProtectedContentBody (members only)'}
             </span>
           </p>
         )}
@@ -222,7 +222,7 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
           />
         </Field>
 
-        <Field label="Intro" hint="First paragraph — visible to all visitors without login.">
+        <Field label="Intro" hint="First paragraph — visible to all visitors, including those not signed in.">
           <RichEditor
             value={form.intro}
             onChange={html => setForm({ ...form, intro: html })}
@@ -258,10 +258,10 @@ function ContentForm({ form, setForm, onSave, onCancel, loading, isEdit }: {
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">
           Full Content{' '}
           <span className="normal-case font-normal text-slate-400 ml-1">
-            {isPublicTopic ? '(publicly visible)' : '(login required to view)'}
+            {isPublicTopic ? '(publicly visible)' : '(members only)'}
           </span>
         </h2>
-        <Field label="Body" hint={isPublicTopic ? 'Visible to all visitors.' : 'Only visible to logged-in users.'}>
+        <Field label="Body" hint={isPublicTopic ? 'Visible to all visitors.' : 'Only visible to registered members who are signed in.'}>
           <RichEditor
             value={form.body}
             onChange={html => setForm({ ...form, body: html })}
@@ -710,7 +710,7 @@ export default function AdminContentPage() {
                   <td className="px-4 py-3">
                     {PUBLIC_TOPICS.includes(item.topic)
                       ? <span className="text-xs text-green-600 font-medium">Public</span>
-                      : <span className="text-xs text-amber-600 font-medium">Login</span>
+                      : <span className="text-xs text-amber-600 font-medium">Members</span>
                     }
                   </td>
                   <td className="px-4 py-3">

@@ -132,7 +132,7 @@ export default function BlockedEmailsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Blocked Email Domains</h1>
           <p className="text-sm text-slate-500 mt-1 max-w-2xl">
-            People can&apos;t sign up with an email address at these domains (subdomains included).
+            People can&apos;t register with an email address at these domains (subdomains included).
             Throwaway services like mailinator.com are blocked automatically and don&apos;t need to be listed.
             Existing accounts are not affected.
           </p>
@@ -246,7 +246,7 @@ export default function BlockedEmailsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-md p-6 max-w-sm w-full">
             <p className="text-sm text-slate-700 mb-4">
-              Unblock <span className="font-mono font-semibold">{deleteDomain}</span>? People will be able to sign up with it again.
+              Unblock <span className="font-mono font-semibold">{deleteDomain}</span>? People will be able to register with it again.
             </p>
             <div className="flex justify-end gap-2">
               <button onClick={() => setDeleteDomain(null)} className="px-4 py-2 rounded bg-slate-100 text-sm">Cancel</button>

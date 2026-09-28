@@ -115,7 +115,7 @@ export default function Header() {
 
           <div>
             <h1 className="text-6xl md:text-5xl font-bold text-gray-900 mb-4">Opportunity Crudes</h1>
-            <p>in Changing Times: <em className="text-blue-700">AI Advantaged</em></p>
+            <p>in Changing Times: <em className="font-bold text-blue-700">AI Advantaged</em></p>
             <p className="text-xs md:text-base italic text-gray-600 max-w-3xl mx-auto">
               Knowledge to Meet Crude Trilemma: Supply, Affordability & Low Carbon Intensity
             </p>
@@ -188,7 +188,12 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <Link href="/login" className="text-blue-600 font-semibold hover:underline">Login</Link>
+            <div className="flex items-center gap-3 text-sm">
+              <Link href="/login" className="text-blue-600 font-semibold hover:underline">Sign In</Link>
+              <Link href="/register" className="px-3 py-1.5 rounded bg-amber-600 text-white font-semibold hover:bg-amber-700 hover:no-underline">
+                Register
+              </Link>
+            </div>
           )}
         </div>
       </div>

@@ -12,8 +12,7 @@ export interface TopicTaxonomy {
   subcat2: Record<string, TaxonomyItem[]>;
 }
 
-// news → markets subtopics. top10 uses the same list as its subtopics, so
-// the two can't drift apart.
+// news → markets subtopics.
 const MARKETS_SUBTOPICS: TaxonomyItem[] = [
   { label: 'Feature of the Week',        slug: 'feature-of-the-week'      },
   { label: 'Futures Weekly Recaps',       slug: 'futures-weekly-recaps'    },
@@ -24,9 +23,8 @@ const MARKETS_SUBTOPICS: TaxonomyItem[] = [
   { label: 'Climate Scrutiny',            slug: 'climate-scrutiny'         },
 ];
 
-export const TAXONOMY: Record<string, TopicTaxonomy> = {
-
-  news: {
+// news and top10 share one category tree, so the two can't drift apart.
+const NEWS_TAXONOMY: TopicTaxonomy = {
     subcat1: [
       { label: 'Markets',               slug: 'markets'    },
       { label: 'Opportunity Crudes',    slug: 'opc'        },
@@ -57,12 +55,12 @@ export const TAXONOMY: Record<string, TopicTaxonomy> = {
         { label: 'Licenses',                    slug: 'licenses'                 },
       ],
     },
-  },
+};
 
-  top10: {
-    subcat1: MARKETS_SUBTOPICS,
-    subcat2: {},
-  },
+export const TAXONOMY: Record<string, TopicTaxonomy> = {
+
+  news:  NEWS_TAXONOMY,
+  top10: NEWS_TAXONOMY,
 
   videos: {
     subcat1: [

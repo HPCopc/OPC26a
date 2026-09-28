@@ -13,10 +13,10 @@ function isDetailPage(seg: string[]) {
     case 'whitepapers':
       return seg.length === 2; // /whitepapers/<slug>
     case 'videos':
-    case 'top10':
-      return seg.length === 3; // /videos/<cat>/<slug>, /top10/<cat>/<slug>
+      return seg.length === 3; // /videos/<cat>/<slug>
     case 'news':
-      return seg.length === 4; // /news/<cat>/<sub>/<slug>
+    case 'top10':
+      return seg.length === 4; // /news/<cat>/<sub>/<slug>, /top10/<cat>/<sub>/<slug>
     default:
       return false;
   }

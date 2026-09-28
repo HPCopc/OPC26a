@@ -11,11 +11,11 @@ import { hasCognitoSession } from '@/utils/authCookies';
 const { runWithAmplifyServerContext } = createServerRunner({ config });
 
 type Props = {
-  params: Promise<{ subcat1: string; slug: string }>;
+  params: Promise<{ subcat1: string; subcat2: string; slug: string }>;
 };
 
 export default async function Top10ArticleDetailPage({ params }: Props) {
-  const { subcat1, slug } = await params;
+  const { subcat1, subcat2, slug } = await params;
 
   let isLoggedIn = false;
   try {
@@ -35,7 +35,7 @@ export default async function Top10ArticleDetailPage({ params }: Props) {
   }
 
   if (!isLoggedIn) {
-    redirect(`/login?from=/top10/${subcat1}/${slug}`);
+    redirect(`/login?from=/top10/${subcat1}/${subcat2}/${slug}`);
   }
 
   const item = await getContentBySlug(slug);
@@ -44,7 +44,7 @@ export default async function Top10ArticleDetailPage({ params }: Props) {
   // The slug lookup ignores topic and categories, so send any other URL
   // (e.g. /events/<news-slug>) to the item's real one.
   const path = contentPath(item);
-  if (path !== `/top10/${subcat1}/${slug}`) redirect(path);
+  if (path !== `/top10/${subcat1}/${subcat2}/${slug}`) redirect(path);
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">

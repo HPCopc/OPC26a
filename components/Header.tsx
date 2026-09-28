@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Hub } from 'aws-amplify/utils';
-import { getCurrentUser, fetchUserAttributes, fetchAuthSession, signOut } from 'aws-amplify/auth';
+import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
+import { signOutUser } from '@/lib/signOutUser';
 
 interface NavItem {
   label:    string;
@@ -24,6 +25,7 @@ const utilityRight: NavItem[] = [
 ];
 
 const primaryNav: NavItem[] = [
+  { label: 'Home',        href: '/'            },
   { label: 'News',        href: '/news'        },
   { label: 'Videos',      href: '/videos'      },
   { label: 'White Papers',href: '/whitepapers' },
@@ -78,7 +80,7 @@ export default function Header() {
   }, []);
 
   const handleSignOut = async () => {
-    await signOut();
+    await signOutUser();
     router.replace('/login');
   };
 

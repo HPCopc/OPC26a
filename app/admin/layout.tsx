@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { fetchAuthSession, signOut } from 'aws-amplify/auth';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import { signOutUser } from '@/lib/signOutUser';
 import Link from 'next/link';
 
 const navItems = [
@@ -37,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   async function handleSignOut() {
-    await signOut();
+    await signOutUser();
     router.replace('/');
   }
 

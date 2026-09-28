@@ -6,7 +6,8 @@ import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { Hub, I18n } from 'aws-amplify/utils';
-import { getCurrentUser, signUp, type SignUpInput } from 'aws-amplify/auth';
+import { getCurrentUser, signIn, signUp, type SignInInput, type SignUpInput } from 'aws-amplify/auth';
+import { clearCognitoCookies } from '@/utils/authCookies';
 import { getPostLoginRoute } from '@/lib/postLoginRoute';
 import { isDefaultBlocked } from '@/amplify/shared/blockedEmailDomains';
 
@@ -77,6 +78,18 @@ const services = {
       return { email: COMPANY_EMAIL_MESSAGE };
     }
   },
+  // Cognito accepted the password but Amplify couldn't read the new session
+  // back, which a stale auth cookie causes. Clear the auth cookies and sign
+  // in once more instead of showing the error.
+  async handleSignIn(input: SignInInput) {
+    try {
+      return await signIn(input);
+    } catch (e) {
+      if (!(e instanceof Error) || !/unable to get user session/i.test(e.message)) throw e;
+      clearCognitoCookies();
+      return await signIn(input);
+    }
+  },
   // Cognito prefixes Lambda errors with "PreSignUp failed with error ";
   // show only the Lambda's own message.
   async handleSignUp(input: SignUpInput) {
@@ -100,12 +113,12 @@ export default function AuthPage({ initialState }: { initialState: 'signIn' | 's
       routed.current = true;
       try {
         const next = await getPostLoginRoute();
-        // Send users back to the page that bounced them here, unless they
-        // still have somewhere to be (admin home, onboarding). Only same-site
-        // paths are allowed so ?from= can't redirect off-site.
+        // Send users back to the page that bounced them here (admins too,
+        // rather than the admin home), unless they still have onboarding to
+        // do. Only same-site paths are allowed so ?from= can't redirect off-site.
         const from = new URLSearchParams(window.location.search).get('from');
         const safeFrom = from && from.startsWith('/') && !from.startsWith('//') && !from.startsWith('/\\');
-        router.replace(next === '/' && safeFrom ? from : next);
+        router.replace((next === '/' || next === '/admin') && safeFrom ? from : next);
       } catch {
         router.replace('/');
       }

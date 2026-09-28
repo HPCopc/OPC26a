@@ -4,7 +4,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signOut, getCurrentUser, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
+import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
+import { signOutUser } from '@/lib/signOutUser';
 
 export default function Navigation() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function Navigation() {
 
 
   const handleSignOut = async () => {
-    await signOut();
+    await signOutUser();
     router.push('/login');
   };
 

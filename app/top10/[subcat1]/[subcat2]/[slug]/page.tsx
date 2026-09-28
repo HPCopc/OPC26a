@@ -1,4 +1,4 @@
-import { getContentBySlug } from '@/lib/getContent';
+import { getContentBySlug, getLatestContent } from '@/lib/getContent';
 import { contentPath } from '@/lib/contentPath';
 import { notFound, redirect } from 'next/navigation';
 import ProtectedContentDetail from '@/components/content/detail/ProtectedContentDetail';
@@ -9,6 +9,9 @@ import config from '@/amplify_outputs.json';
 import { hasCognitoSession } from '@/utils/authCookies';
 
 const { runWithAmplifyServerContext } = createServerRunner({ config });
+
+// Must match the Weekly Insights box's "number of articles" in /admin/home.
+const TOP10_BOX_SIZE = 10;
 
 type Props = {
   params: Promise<{ subcat1: string; subcat2: string; slug: string }>;
@@ -40,6 +43,11 @@ export default async function Top10ArticleDetailPage({ params }: Props) {
 
   const item = await getContentBySlug(slug);
   if (!item) notFound();
+
+  // Only the articles currently in the home page's Weekly Insights box can
+  // be opened; older ones send the visitor home.
+  const current = await getLatestContent('top10', null, null, TOP10_BOX_SIZE);
+  if (item.topic === 'top10' && !current.some((c) => c.id === item.id)) redirect('/');
 
   // The slug lookup ignores topic and categories, so send any other URL
   // (e.g. /events/<news-slug>) to the item's real one.

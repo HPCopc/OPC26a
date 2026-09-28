@@ -78,19 +78,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // A refresh during the check above put new token cookies on the response
-  // only; the page rendering this same request would still read the expired
-  // ones and bounce the user to /login. Hand the new values to the page too.
-  const refreshed = response.cookies.getAll();
-  if (refreshed.length === 0) return response;
-
-  refreshed.forEach((c) => {
-    if (c.value) request.cookies.set(c.name, c.value);
-    else request.cookies.delete(c.name);
-  });
-  const forwarded = NextResponse.next({ request: { headers: request.headers } });
-  refreshed.forEach((c) => forwarded.cookies.set(c));
-  return forwarded;
+  return response;
 }
 
 export const config = {
